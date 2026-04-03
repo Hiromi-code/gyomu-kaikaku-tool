@@ -147,6 +147,23 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 /* エラーボックス */
 .error-box{background:rgba(232,90,90,.08);border:1px solid rgba(232,90,90,.25);border-radius:var(--radius);padding:14px;color:var(--red);font-size:12px;line-height:1.6;margin-top:14px;}
 
+/* 診断結果 */
+.result-tool-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--radius);margin-bottom:18px;font-weight:700;font-size:14px;border:1px solid;}
+.badge-expense{background:rgba(232,124,58,.12);color:var(--accent);border-color:rgba(232,124,58,.3);}
+.badge-reconcile{background:rgba(58,124,232,.12);color:var(--blue);border-color:rgba(58,124,232,.3);}
+.badge-entry{background:rgba(58,201,138,.12);color:var(--green);border-color:rgba(58,201,138,.3);}
+.result-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.result-sc{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;}
+.result-sc-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;line-height:1;margin-bottom:3px;}
+.result-sc-label{font-size:10px;color:var(--text3);margin-bottom:6px;}
+.result-sc-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.result-sc-fill{height:100%;border-radius:2px;transition:width .8s ease;}
+.result-reason{font-size:13px;color:var(--text2);line-height:1.8;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;}
+.result-tasks{margin-bottom:6px;}
+.result-task-item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);}
+.result-task-item:last-child{border-bottom:none;}
+.result-task-icon{color:var(--accent);flex-shrink:0;}
+
 /* レスポンシブ */
 @media(max-width:480px){
   .quant-grid{grid-template-columns:1fr;}
@@ -178,13 +195,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
   <div class="fa">▶</div>
   <div class="fs"><div class="fd" id="fd1">2</div><span class="fl" id="fl1">AI分析</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd2">3</div><span class="fl" id="fl2">定量入力</span></div>
+  <div class="fs"><div class="fd" id="fd2">3</div><span class="fl" id="fl2">診断結果</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd3">4</div><span class="fl" id="fl3">ROI試算</span></div>
+  <div class="fs"><div class="fd" id="fd3">4</div><span class="fl" id="fl3">定量入力</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd4">5</div><span class="fl" id="fl4">カスタマイズ</span></div>
+  <div class="fs"><div class="fd" id="fd4">5</div><span class="fl" id="fl4">ROI試算</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd5">6</div><span class="fl" id="fl5">生成・DL</span></div>
+  <div class="fs"><div class="fd" id="fd5">6</div><span class="fl" id="fl5">カスタマイズ</span></div>
+  <div class="fa">▶</div>
+  <div class="fs"><div class="fd" id="fd6">7</div><span class="fl" id="fl6">生成・DL</span></div>
 </div>
 
 <div class="main">
@@ -223,7 +242,24 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
   </div>
 </div>
 
-<!-- ③ 定量入力 -->
+<!-- ③ 診断結果 -->
+<div class="screen" id="s-result">
+  <div class="card">
+    <div class="card-label">STEP 3｜AI診断結果</div>
+    <div class="card-title">あなたの業務分析が完了しました</div>
+    <div id="resultBadge"></div>
+    <div class="result-scores" id="resultScores"></div>
+    <div class="result-reason" id="resultReason"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;">あなたの業務で特徴的な3つ</div>
+    <div class="result-tasks" id="resultTasks"></div>
+  </div>
+  <div class="nav">
+    <button class="btn-s" onclick="goScreen('s-diag');updateFlow(0)">← 戻る</button>
+    <button class="btn-p" onclick="goQuant()">この内容で進む →</button>
+  </div>
+</div>
+
+<!-- ④ 定量入力 -->
 <div class="screen" id="s-quant">
   <div class="card">
     <div class="card-label">STEP 3｜定量データの入力</div>
@@ -282,7 +318,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
     </div>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goScreen('s-diag');updateFlow(0)">← 戻る</button>
+    <button class="btn-s" onclick="goScreen('s-result');updateFlow(2)">← 戻る</button>
     <button class="btn-p" onclick="calcROI()">ROIを試算する →</button>
   </div>
 </div>
@@ -290,7 +326,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 <!-- ④ ROI試算結果 -->
 <div class="screen" id="s-roi">
   <div class="card">
-    <div class="card-label">STEP 4｜ROI試算結果</div>
+    <div class="card-label">STEP 5｜ROI試算結果</div>
     <div class="card-title">このツールで得られる効果</div>
     <div class="roi-box">
       <div class="roi-title">ROI CALCULATION RESULT</div>
@@ -304,7 +340,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
     </div>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goScreen('s-quant');updateFlow(2)">← 戻る</button>
+    <button class="btn-s" onclick="goScreen('s-quant');updateFlow(3)">← 戻る</button>
     <button class="btn-p" onclick="goCustomize()">この内容でExcelを作る →</button>
   </div>
 </div>
@@ -322,7 +358,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
     ExcelのダウンロードはPC（Windows・Mac）でのご利用を推奨しています。スマートフォン・タブレットからは診断・ROI試算まで体験できます。
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goScreen('s-roi');updateFlow(3)">← 戻る</button>
+    <button class="btn-s" onclick="goScreen('s-roi');updateFlow(4)">← 戻る</button>
     <button class="btn-p" onclick="generateExcel()">Excelを生成する →</button>
   </div>
 </div>
@@ -354,14 +390,49 @@ const QS=[
 let curQ=0,answers=new Array(5).fill(''),analysisResult=null,selectedTool=null,roiData=null,extraTags=[],lastWb=null,lastFilename='';
 
 function updateFlow(active){
-  for(let i=0;i<6;i++){
+  for(let i=0;i<7;i++){
     const d=document.getElementById('fd'+i),l=document.getElementById('fl'+i);
+    if(!d||!l)continue;
     d.className='fd'+(i<active?' done':i===active?' active':'');
     l.className='fl'+(i<active?' done':i===active?' active':'');
     d.textContent=i<active?'✓':i+1;
   }
 }
 function goScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+
+function showResult(){
+  goScreen('s-result');updateFlow(2);
+  const ar=analysisResult;
+  const toolInfo={
+    expense:{label:'経費精算チェックシート',icon:'🧾',badge:'badge-expense',color:'#e87c3a'},
+    reconcile:{label:'入金消込シート',icon:'💳',badge:'badge-reconcile',color:'#3a7ce8'},
+    entry:{label:'データ入力・転記シート',icon:'📋',badge:'badge-entry',color:'#3ac98a'},
+  };
+  const ti=toolInfo[ar.primary_tool]||toolInfo.entry;
+  document.getElementById('resultBadge').innerHTML=
+    `<div class="result-tool-badge ${ti.badge}">${ti.icon} ${ti.label} をおすすめします</div>`;
+  const scores=ar.scores||{expense:33,reconcile:33,entry:34};
+  const scoreKeys=[
+    {key:'expense',label:'経費精算',color:'#e87c3a'},
+    {key:'reconcile',label:'入金消込',color:'#3a7ce8'},
+    {key:'entry',label:'データ転記',color:'#3ac98a'},
+  ];
+  document.getElementById('resultScores').innerHTML=scoreKeys.map(sk=>`
+    <div class="result-sc">
+      <div class="result-sc-num" style="color:${sk.color}">${scores[sk.key]||0}</div>
+      <div class="result-sc-label">${sk.label}</div>
+      <div class="result-sc-bar"><div class="result-sc-fill" style="width:${scores[sk.key]||0}%;background:${sk.color}"></div></div>
+    </div>`).join('');
+  document.getElementById('resultReason').innerHTML=
+    `<strong>選定理由：</strong>${ar.reason||''}`;
+  document.getElementById('resultTasks').innerHTML=
+    (ar.key_tasks||[]).map(t=>`<div class="result-task-item"><span class="result-task-icon">▶</span>${t}</div>`).join('');
+}
+
+function goQuant(){
+  document.getElementById('q-tool').value=selectedTool;
+  goScreen('s-quant');updateFlow(3);
+}
 
 function showQ(i){
   const q=QS[i];
@@ -413,8 +484,7 @@ JSONのみで返答:
     analysisResult={primary_tool:'entry',scores:{expense:40,reconcile:30,entry:70},reason:'データ転記業務が多いと判断しました。',key_tasks:['データ転記','帳票入力','集計作業'],ocr_needed:false,summary:'定型的なデータ処理業務が中心の方です。'};
     selectedTool='entry';
   }
-  document.getElementById('q-tool').value=selectedTool;
-  goScreen('s-quant');updateFlow(2);
+  showResult();
 }
 
 function calcROI(){
@@ -462,11 +532,11 @@ function calcROI(){
     時給換算で <strong style="color:var(--green)">年間${(yearlyValue/10000).toFixed(1)}万円</strong> 相当の効果。ツール費用（¥9,800）の <strong style="color:var(--yellow)">${roiMultiple}倍</strong> の価値です。<br>
     <span style="color:var(--text3)">※ 回収期間の目安：約${paybackDays}日</span>
   `;
-  goScreen('s-roi');updateFlow(3);
+  goScreen('s-roi');updateFlow(4);
 }
 
 function goCustomize(){
-  goScreen('s-customize');updateFlow(4);
+  goScreen('s-customize');updateFlow(5);
   extraTags=[];
   const toolLabels={expense:'経費精算チェックシート',reconcile:'入金消込シート',entry:'データ入力・転記シート'};
   document.getElementById('customLabel').textContent=toolLabels[selectedTool]+' カスタマイズ';
@@ -632,7 +702,7 @@ function generateExcel(){
   lastWb=wb;
   XLSX.writeFile(wb,lastFilename);
 
-  goScreen('s-done');updateFlow(5);
+  goScreen('s-done');updateFlow(6);
   document.getElementById('doneTitle').textContent=`${dept}専用の${toolShort}シートが完成しました`;
   const roiLine=r.yearlyValue?`ROI試算では年間${(r.yearlyValue/10000).toFixed(1)}万円相当の効果。`:'';
   document.getElementById('doneDesc').textContent=`${analysisResult?.summary||''}${roiLine}ROI効果試算シートとAIプロンプトガイドも入っています。`;
