@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2436;--border:#2a3050;--accent:#e87c3a;--blue:#3a7ce8;--text:#e8eaf0;--text2:#8892aa;--text3:#5a6480;--green:#3ac98a;--yellow:#e8c33a;--red:#e85a5a;--radius:6px;}
+:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2436;--border:#2a3050;--accent:#e87c3a;--blue:#3a7ce8;--text:#f0f2f8;--text2:#c0c8dc;--text3:#8892aa;--green:#3ac98a;--yellow:#e8c33a;--red:#e85a5a;--radius:6px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 .header{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:100;}
@@ -361,11 +361,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="excelDesc"></div>
+      <div style="font-size:12px;color:var(--green);background:rgba(58,201,138,.08);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;" id="excelPromptNote" style="display:none;">
+        💡 このExcelファイルの最後の「README＆プロンプト」シートに、AIへの指示プロンプトとOCRプロンプトも入っています。
+      </div>
       <div class="output-steps">
         <div class="output-step"><span class="step-num">1</span>下のボタンでExcelをダウンロードしてください</div>
-        <div class="output-step"><span class="step-num">2</span>「README＆プロンプト」シートを開くと使い方とプロンプトが入っています</div>
+        <div class="output-step"><span class="step-num">2</span>「README＆プロンプト」シートを開くと使い方・AIプロンプト・OCRプロンプトが入っています</div>
         <div class="output-step"><span class="step-num">3</span>メインシートにそのまま入力を始めてください</div>
-        <div class="output-step"><span class="step-num">4</span>上のAIプロンプトで、さらにカスタマイズしたExcelも作れます</div>
+        <div class="output-step"><span class="step-num">4</span>上のAIプロンプトをChatGPT・Claude等に貼り付けると、さらにカスタマイズしたExcelも作れます</div>
       </div>
       <button class="btn-dl" id="btnDL">⬇ Excelをダウンロード</button>
       <div class="notice"><strong>⚠ Excelのダウンロードは PC（Windows・Mac）を推奨しています。</strong><br>スマートフォンからは上のプロンプトのコピーをご利用ください。</div>
@@ -374,6 +377,27 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
   <div style="margin-top:14px;text-align:center;">
     <button class="btn-s" onclick="restart()">最初からやり直す</button>
+  </div>
+</div>
+
+<!-- 課金モーダル -->
+<div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeModal()">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:440px;width:100%;animation:fadeIn .2s ease;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">DOWNLOAD</div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:10px;">Excelをダウンロードします</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:20px;" id="modalDesc"></div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:20px;">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">このExcelに含まれるもの：</div>
+      <div id="modalContents" style="font-size:12px;color:var(--text2);line-height:1.9;"></div>
+    </div>
+    <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:12px;margin-bottom:20px;font-size:12px;color:var(--text2);line-height:1.7;">
+      💳 <strong style="color:var(--accent);">このダウンロードは有料コンテンツです（¥9,800・買い切り）</strong><br>
+      購入後、何度でも再診断・再生成できます。更新料はありません。
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-s" onclick="closeModal()" style="flex:1">キャンセル</button>
+      <button class="btn-dl" onclick="execDownload()" style="flex:2;justify-content:center;">⬇ ダウンロードする</button>
+    </div>
   </div>
 </div>
 
@@ -785,7 +809,9 @@ function showOutput(){
   if(task.hasExcel&&task.excelFn){
     document.getElementById('excelDesc').textContent=task.excelDesc||'';
     document.getElementById('blockExcel').style.display='block';
-    document.getElementById('btnDL').onclick=()=>task.excelFn(ind,pos,task,ar);
+    document.getElementById('excelPromptNote').style.display='block';
+    // ダウンロードボタン → モーダルを開く
+    document.getElementById('btnDL').onclick=()=>openPayModal(task);
   }
 }
 
@@ -797,16 +823,41 @@ function doCopy(boxId,btnId){
   });
 }
 
-// ===== Excel生成（見栄え改善版） =====
-const C={
-  TITLE:'0F1B3A',HEADER:'1A2744',HEADER2:'2E4070',ACCENT:'E87C3A',
-  GREEN:'1A6B4A',GREEN_BG:'E8F8F1',RED_BG:'FDECEA',YELLOW_BG:'FFF8E1',
-  EVEN:'F5F7FC',ODD:'FFFFFF',LOCKED:'F0F2F8',INPUT:'FEFDF5',
-  BORDER:'C8D0E0',TEXT:'1A1A18',TEXT2:'5A6480',
-};
+// ===== 課金モーダル =====
+let currentTaskForDL=null;
+function openPayModal(task){
+  currentTaskForDL=task;
+  const sheetDescs={
+    expense:['経費入力チェックシート（自動判定・色分け）','規程設定シート（金額ルール変更可）','費目別集計シート（自動集計）','README＆プロンプトシート（AIプロンプト・OCRプロンプト付き）'],
+    reconcile:['請求データシート','入金データシート（銀行明細貼り付け用）','照合チェックシート（差異自動検出）','消込サマリーシート','README＆プロンプトシート（銀行明細OCRプロンプト付き）'],
+    invoice:['請求書テンプレート（合計・税額自動計算）','顧客マスターシート','発行履歴シート','README＆プロンプトシート'],
+    order:['受注管理シート','発注管理シート','README＆プロンプトシート'],
+    attendance:['勤怠集計シート（実働時間自動計算）','README＆プロンプトシート（OCRプロンプト付き）'],
+    stock:['在庫管理シート（発注点自動フラグ）','README＆プロンプトシート'],
+  };
+  document.getElementById('modalDesc').textContent=`${ind}・${pos} 向けの「${task.name}」Excelを生成してダウンロードします。`;
+  const sheets=sheetDescs[task.id]||['メインシート','README＆プロンプトシート'];
+  document.getElementById('modalContents').innerHTML=sheets.map(s=>`✅ ${s}`).join('<br>');
+  document.getElementById('payModal').style.display='flex';
+}
+function closeModal(){document.getElementById('payModal').style.display='none';}
+function execDownload(){
+  closeModal();
+  if(currentTaskForDL&&currentTaskForDL.excelFn){
+    currentTaskForDL.excelFn(ind,pos,currentTaskForDL,ar);
+  }
+}
 
-function styleSheet(ws,colWidths){
-  if(colWidths)ws['!cols']=colWidths.map(w=>({wch:w}));
+// ===== Excel生成ヘルパー =====
+// SheetJS community版でサポートされるスタイル要素を活用
+function applySheetStyle(ws, totalCols, titleRow, headerRow){
+  // タイトル行のマージ（テキスト切れを防ぐ）
+  if(!ws['!merges'])ws['!merges']=[];
+  ws['!merges'].push({s:{r:titleRow,c:0},e:{r:titleRow,c:totalCols-1}});
+  // 行の高さ
+  if(!ws['!rows'])ws['!rows']=[];
+  ws['!rows'][titleRow]={hpt:24};
+  if(headerRow!==undefined)ws['!rows'][headerRow]={hpt:22};
   return ws;
 }
 
@@ -856,8 +907,14 @@ function addReadme(wb,task,ind,pos,ar,promptTxt,ocrTxt){
   }
   rows.push(['【お問い合わせ】','','']);
   rows.push(['Glocal Lab. — 小規模事業所の幅広い分野のDXコンサル歴10年','','']);
+  rows.push(['','','']);
+  rows.push(['【表示の注意】','','']);
+  rows.push(['タイトル行の文字が途中で切れて見えない場合は、右隣のセルを選択してDeleteキーを押すと表示されます。','','']);
   const ws=XLSX.utils.aoa_to_sheet(rows);
   ws['!cols']=[{wch:28},{wch:22},{wch:44}];
+  // タイトル行マージ
+  if(!ws['!merges'])ws['!merges']=[];
+  ws['!merges'].push({s:{r:0,c:0},e:{r:0,c:2}});
   XLSX.utils.book_append_sheet(wb,ws,'README＆プロンプト');
 }
 
@@ -894,6 +951,8 @@ function genExpenseExcel(ind,pos,task,ar){
   s1.push(['OK件数',{f:`COUNTIF(L${S}:L${E},"OK")`},'','要確認件数',{f:`COUNTIF(L${S}:L${E},"要確認")`},'','NG件数',{f:`COUNTIF(L${S}:L${E},"NG")`},'','','','','','']);
   const ws1=XLSX.utils.aoa_to_sheet(s1);
   ws1['!cols']=[{wch:5},{wch:13},{wch:12},{wch:24},{wch:12},{wch:10},{wch:12},{wch:10},{wch:10},{wch:10},{wch:12},{wch:10},{wch:28},{wch:12}];
+  ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:13}},{s:{r:1,c:0},e:{r:1,c:13}}];
+  ws1['!rows']=[{hpt:22},{hpt:16},{hpt:14},{hpt:22},{hpt:14},{hpt:24}];
   XLSX.utils.book_append_sheet(wb,ws1,'経費入力チェック');
   // Sheet2
   const s2=[[`規程設定シート　${ind}`,'',''],
@@ -906,6 +965,7 @@ function genExpenseExcel(ind,pos,task,ar){
     ['【申請期限】日数',90,'90日を超えるとNG']];
   const ws2=XLSX.utils.aoa_to_sheet(s2);
   ws2['!cols']=[{wch:30},{wch:14},{wch:28}];
+  ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:2}},{s:{r:1,c:0},e:{r:1,c:2}}];
   XLSX.utils.book_append_sheet(wb,ws2,'規程設定');
   // Sheet3
   const rc=`'経費入力チェック'!C${S}:C${E}`,re=`'経費入力チェック'!E${S}:E${E}`,rl=`'経費入力チェック'!L${S}:L${E}`;
@@ -918,6 +978,7 @@ function genExpenseExcel(ind,pos,task,ar){
   s3.push(['合計',{f:`SUM(B5:B${sumR-1})`},{f:`SUM(C5:C${sumR-1})`},'',{f:`SUM(E5:E${sumR-1})`}]);
   const ws3=XLSX.utils.aoa_to_sheet(s3);
   ws3['!cols']=[{wch:14},{wch:16},{wch:10},{wch:14},{wch:10}];
+  ws3['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}},{s:{r:1,c:0},e:{r:1,c:4}}];
   XLSX.utils.book_append_sheet(wb,ws3,'費目別集計');
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),task.ocrText(ind));
   saveWb(wb,'経費精算チェックシート');
@@ -936,6 +997,7 @@ function genReconcileExcel(ind,pos,task,ar){
   s1.push(['未消込件数',{f:`COUNTIF(I${S}:I${E},"未消込")`},'','消込済件数',{f:`COUNTIF(I${S}:I${E},"消込済")`},'','','','']);
   const ws1=XLSX.utils.aoa_to_sheet(s1);
   ws1['!cols']=[{wch:5},{wch:13},{wch:24},{wch:16},{wch:14},{wch:12},{wch:12},{wch:14},{wch:12}];
+  ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:1,c:0},e:{r:1,c:8}}];
   XLSX.utils.book_append_sheet(wb,ws1,'請求データ');
   const s2=[[`入金消込シート｜入金データ（銀行明細）　${ind}`,...Array(5).fill('')],
     [`作成日: ${today}`,...Array(5).fill('')],Array(6).fill(''),Array(6).fill(''),Array(6).fill(''),
@@ -944,6 +1006,7 @@ function genReconcileExcel(ind,pos,task,ar){
   s2.push(['合計','','',{f:`SUM(D${S}:D${E})`},'','']);
   const ws2=XLSX.utils.aoa_to_sheet(s2);
   ws2['!cols']=[{wch:5},{wch:13},{wch:26},{wch:14},{wch:18},{wch:22}];
+  ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}}];
   XLSX.utils.book_append_sheet(wb,ws2,'入金データ');
   const s3=[[`照合チェック　${ind}`,...Array(10).fill('')],
     ['※請求書番号・得意先・金額・入金日を入力すると差異・期日・金額が自動判定されます。',...Array(10).fill('')],
@@ -956,6 +1019,7 @@ function genReconcileExcel(ind,pos,task,ar){
     {f:`IF(AND(D${r}=0,G${r}=0),"",IF(AND(I${r}="OK",J${r}="OK"),"消込完了",IF(OR(I${r}="遅延",J${r}="不足入金",J${r}="超過入金"),"要確認","未入金")))`}]);}
   const ws3=XLSX.utils.aoa_to_sheet(s3);
   ws3['!cols']=[{wch:5},{wch:16},{wch:22},{wch:14},{wch:12},{wch:12},{wch:14},{wch:12},{wch:10},{wch:10},{wch:10}];
+  ws3['!merges']=[{s:{r:0,c:0},e:{r:0,c:10}},{s:{r:1,c:0},e:{r:1,c:10}}];
   XLSX.utils.book_append_sheet(wb,ws3,'照合チェック');
   // サマリー
   const rk=`'照合チェック'!K${S}:K${E}`,rd=`'照合チェック'!D${S}:D${E}`,rg=`'照合チェック'!G${S}:G${E}`;
