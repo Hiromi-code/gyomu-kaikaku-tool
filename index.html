@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>業務改革ツール自動生成 | Glocal Lab.</title>
+<meta name="description" content="5つの質問に答えるだけで、AIがあなたの業務を分析。経費精算・入金消込・データ転記の専用Excelを自動生成します。診断・ROI試算まで完全無料。">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0f1117;--surface:#181c27;--surface2:#1e2436;--border:#2a3050;
+  --accent:#e87c3a;--blue:#3a7ce8;--text:#e8eaf0;--text2:#8892aa;--text3:#5a6480;
+  --green:#3ac98a;--yellow:#e8c33a;--red:#e85a5a;--radius:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ヘッダー */
+.header{border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:28px;height:28px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;border-radius:4px;}
+.logo-text{font-size:13px;font-weight:700;}
+.logo-sub{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;letter-spacing:.15em;}
+.pc-notice{font-size:10px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:20px;display:none;}
+
+/* フローバー */
+.flow-bar{display:flex;align-items:center;padding:10px 20px;background:var(--surface2);border-bottom:1px solid var(--border);overflow-x:auto;gap:0;-webkit-overflow-scrolling:touch;}
+.fs{display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.fd{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;color:var(--text3);flex-shrink:0;transition:all .3s;}
+.fd.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.fd.done{background:var(--green);border-color:var(--green);color:#fff;}
+.fl{font-size:9px;color:var(--text3);transition:color .3s;}
+.fl.active{color:var(--accent);}
+.fl.done{color:var(--green);}
+.fa{margin:0 5px;color:var(--border);font-size:9px;}
+
+.main{max-width:660px;margin:0 auto;padding:28px 16px;}
+.screen{display:none;}.screen.active{display:block;}
+
+/* カード */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;}
+.card-title{font-size:17px;font-weight:700;line-height:1.5;margin-bottom:5px;}
+.card-hint{font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:16px;}
+
+/* 進捗バー */
+.q-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+.q-bar{flex:1;height:2px;background:var(--border);border-radius:2px;}
+.q-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s;}
+.q-pt{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap;}
+
+/* 質問 */
+.q-ex{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;margin-bottom:10px;}
+.q-ex-l{font-size:9px;color:var(--text3);letter-spacing:.15em;font-family:'IBM Plex Mono',monospace;margin-bottom:3px;}
+.q-ex-t{font-size:11px;color:var(--text2);line-height:1.6;}
+.q-ta{width:100%;min-height:100px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:14px;line-height:1.8;resize:vertical;outline:none;transition:border-color .2s;}
+.q-ta:focus{border-color:var(--accent);}
+.q-ta::placeholder{color:var(--text3);font-size:12px;}
+
+/* ローディング */
+.loading-box{text-align:center;padding:50px 0;}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ls{font-size:11px;font-family:'IBM Plex Mono',monospace;padding:3px 0;}
+.ls.done{color:var(--green);}
+.ls.active{color:var(--accent);}
+.ls.wait{color:var(--text3);}
+
+/* スコア */
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.sc{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;}
+.sc-num{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:700;line-height:1;margin-bottom:3px;}
+.sc-label{font-size:10px;color:var(--text3);}
+.sc-bar{height:3px;background:var(--border);border-radius:2px;margin-top:7px;overflow:hidden;}
+.sc-bar-fill{height:100%;border-radius:2px;}
+
+/* 定量入力 */
+.quant-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.q-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;}
+.q-field label span{font-size:10px;color:var(--text3);font-weight:400;margin-left:4px;}
+.q-field select,.q-field input{width:100%;padding:9px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;outline:none;font-family:'Noto Sans JP',sans-serif;}
+.q-field select:focus,.q-field input:focus{border-color:var(--accent);}
+
+/* ROI */
+.roi-box{background:var(--surface2);border:1px solid var(--green);border-radius:var(--radius);padding:20px;margin-bottom:14px;}
+.roi-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green);letter-spacing:.2em;margin-bottom:14px;}
+.roi-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.roi-num-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;}
+.roi-num{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;line-height:1;margin-bottom:3px;}
+.roi-label{font-size:10px;color:var(--text3);}
+.roi-bar-section{margin-bottom:12px;}
+.roi-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px;}
+.roi-bar-bg{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.roi-bar-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+.roi-summary{font-size:12px;color:var(--text2);line-height:1.8;padding:12px;background:rgba(58,201,138,.06);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);}
+.roi-summary strong{color:var(--green);}
+
+/* カスタマイズフォーム */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.f-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;}
+.f-field input,.f-field select{width:100%;padding:8px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;outline:none;font-family:'Noto Sans JP',sans-serif;}
+.f-field input:focus,.f-field select:focus{border-color:var(--accent);}
+.f-field input::placeholder{color:var(--text3);font-size:12px;}
+.rule-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px;}
+.rule-hd{display:flex;justify-content:space-between;margin-bottom:7px;}
+.rule-title{font-size:11px;font-weight:700;color:var(--text2);}
+.rule-val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--accent);}
+.rule-row{display:flex;align-items:center;gap:8px;}
+input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:var(--border);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:var(--accent);border-radius:50%;cursor:pointer;}
+.rule-num{width:76px;padding:4px 7px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;text-align:right;outline:none;}
+.tag-area{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 11px;}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;min-height:22px;}
+.tag{display:flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(58,124,232,.12);color:var(--blue);border:1px solid rgba(58,124,232,.25);}
+.tag .rm{cursor:pointer;opacity:.6;font-size:12px;}
+.tag-row{display:flex;gap:6px;}
+.tag-row input{flex:1;padding:6px 9px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:12px;outline:none;font-family:'Noto Sans JP',sans-serif;}
+.tag-row input:focus{border-color:var(--blue);}
+.btn-tag{background:rgba(58,124,232,.15);color:var(--blue);border:1px solid rgba(58,124,232,.25);padding:6px 11px;border-radius:var(--radius);font-size:11px;font-weight:700;cursor:pointer;}
+
+/* ボタン */
+.btn-p{background:var(--accent);color:#fff;border:none;padding:11px 24px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;}
+.btn-p:hover{opacity:.85;transform:translateY(-1px);}
+.btn-p:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.btn-s{background:transparent;color:var(--text2);border:1px solid var(--border);padding:9px 18px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:13px;cursor:pointer;}
+.btn-s:hover{border-color:var(--text2);color:var(--text);}
+.btn-dl{background:var(--green);color:#0f1117;border:none;padding:15px 30px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:9px;transition:opacity .2s;margin:0 auto;}
+.btn-dl:hover{opacity:.88;}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:18px;}
+
+/* Excel注意書き */
+.excel-notice{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-top:12px;font-size:11px;color:var(--text3);line-height:1.6;}
+.excel-notice strong{color:var(--yellow);}
+
+/* 完了 */
+.done-box{text-align:center;padding:28px 0;}
+.done-icon{font-size:48px;margin-bottom:14px;}
+.done-title{font-size:20px;font-weight:700;margin-bottom:8px;}
+.done-desc{font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:22px;}
+.done-sheets{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:22px;text-align:left;}
+.ds{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px;}
+.ds-name{font-size:10px;font-weight:700;color:var(--accent);margin-bottom:2px;font-family:'IBM Plex Mono',monospace;}
+.ds-desc{font-size:11px;color:var(--text3);line-height:1.5;}
+
+/* エラーボックス */
+.error-box{background:rgba(232,90,90,.08);border:1px solid rgba(232,90,90,.25);border-radius:var(--radius);padding:14px;color:var(--red);font-size:12px;line-height:1.6;margin-top:14px;}
+
+/* レスポンシブ */
+@media(max-width:480px){
+  .quant-grid{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .score-grid{grid-template-columns:1fr 1fr 1fr;}
+  .roi-nums{grid-template-columns:1fr;}
+  .done-sheets{grid-template-columns:1fr;}
+  .pc-notice{display:inline-flex;}
+  .card{padding:16px;}
+  .main{padding:20px 12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">業</div>
+    <div>
+      <div class="logo-text">業務改革ツール自動生成</div>
+      <div class="logo-sub">Glocal Lab. — DIAGNOSE → ROI → EXCEL</div>
+    </div>
+  </div>
+  <div class="pc-notice">⚠ Excel生成はPCを推奨</div>
+</div>
+
+<div class="flow-bar" id="flowBar">
+  <div class="fs"><div class="fd active" id="fd0">1</div><span class="fl active" id="fl0">業務診断</span></div>
+  <div class="fa">▶</div>
+  <div class="fs"><div class="fd" id="fd1">2</div><span class="fl" id="fl1">AI分析</span></div>
+  <div class="fa">▶</div>
+  <div class="fs"><div class="fd" id="fd2">3</div><span class="fl" id="fl2">定量入力</span></div>
+  <div class="fa">▶</div>
+  <div class="fs"><div class="fd" id="fd3">4</div><span class="fl" id="fl3">ROI試算</span></div>
+  <div class="fa">▶</div>
+  <div class="fs"><div class="fd" id="fd4">5</div><span class="fl" id="fl4">カスタマイズ</span></div>
+  <div class="fa">▶</div>
+  <div class="fs"><div class="fd" id="fd5">6</div><span class="fl" id="fl5">生成・DL</span></div>
+</div>
+
+<div class="main">
+
+<!-- ① 業務診断 -->
+<div class="screen active" id="s-diag">
+  <div class="q-bar-wrap">
+    <div class="q-bar"><div class="q-bar-fill" id="qFill" style="width:0%"></div></div>
+    <div class="q-pt" id="qPt">1 / 5</div>
+  </div>
+  <div class="card">
+    <div class="card-label" id="qLabel">QUESTION 01</div>
+    <div class="card-title" id="qTitle"></div>
+    <div class="card-hint" id="qHint"></div>
+    <div class="q-ex"><div class="q-ex-l">記入例</div><div class="q-ex-t" id="qEx"></div></div>
+    <textarea class="q-ta" id="qAns" placeholder="ここに自由に書いてください（箇条書き・文章どちらでもOK）"></textarea>
+  </div>
+  <div class="nav">
+    <button class="btn-s" id="btnBack" onclick="prevQ()" style="visibility:hidden">← 戻る</button>
+    <button class="btn-p" onclick="nextQ()">次へ →</button>
+  </div>
+</div>
+
+<!-- ② AI分析中 -->
+<div class="screen" id="s-analyzing">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:6px">AIが業務を分析しています…</div>
+    <div style="font-size:12px;color:var(--text3)">最適なツールを選定中</div>
+    <div style="margin-top:18px;display:inline-block;text-align:left;">
+      <div class="ls done" id="ls1">✓ 回答を受け取りました</div>
+      <div class="ls active" id="ls2">▶ 業務パターンを分析中</div>
+      <div class="ls wait" id="ls3">　 対象業務を特定</div>
+      <div class="ls wait" id="ls4">　 定量データの準備</div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 定量入力 -->
+<div class="screen" id="s-quant">
+  <div class="card">
+    <div class="card-label">STEP 3｜定量データの入力</div>
+    <div class="card-title">現在の作業量を教えてください</div>
+    <div class="card-hint">この情報から「月に何時間削減できるか」「年間いくらの価値があるか」を自動計算します。</div>
+    <div style="margin-bottom:14px;">
+      <div class="q-field" style="margin-bottom:10px;">
+        <label>対象業務 <span>（AIの分析結果。変更できます）</span></label>
+        <select id="q-tool">
+          <option value="expense">経費精算チェック</option>
+          <option value="reconcile">入金消込</option>
+          <option value="entry">データ入力・転記</option>
+        </select>
+      </div>
+    </div>
+    <div class="quant-grid">
+      <div class="q-field">
+        <label>月の作業件数 <span>（件/月）</span></label>
+        <select id="q-count">
+          <option value="10">〜10件</option>
+          <option value="30" selected>10〜30件</option>
+          <option value="60">30〜60件</option>
+          <option value="100">60〜100件</option>
+          <option value="200">100件以上</option>
+        </select>
+      </div>
+      <div class="q-field">
+        <label>1件あたりの作業時間 <span>（分）</span></label>
+        <select id="q-time">
+          <option value="5">5分以内</option>
+          <option value="10">5〜10分</option>
+          <option value="20" selected>10〜20分</option>
+          <option value="30">20〜30分</option>
+          <option value="60">30分以上</option>
+        </select>
+      </div>
+      <div class="q-field">
+        <label>担当者の人数 <span>（人）</span></label>
+        <select id="q-staff">
+          <option value="1" selected>1人</option>
+          <option value="2">2人</option>
+          <option value="3">3〜5人</option>
+          <option value="7">6〜10人</option>
+          <option value="15">11人以上</option>
+        </select>
+      </div>
+      <div class="q-field">
+        <label>担当者の平均時給換算 <span>（円）</span></label>
+        <select id="q-wage">
+          <option value="2000">〜2,000円</option>
+          <option value="2500" selected>2,000〜3,000円</option>
+          <option value="3500">3,000〜4,000円</option>
+          <option value="5000">4,000円以上</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-s" onclick="goScreen('s-diag');updateFlow(0)">← 戻る</button>
+    <button class="btn-p" onclick="calcROI()">ROIを試算する →</button>
+  </div>
+</div>
+
+<!-- ④ ROI試算結果 -->
+<div class="screen" id="s-roi">
+  <div class="card">
+    <div class="card-label">STEP 4｜ROI試算結果</div>
+    <div class="card-title">このツールで得られる効果</div>
+    <div class="roi-box">
+      <div class="roi-title">ROI CALCULATION RESULT</div>
+      <div class="roi-nums" id="roiNums"></div>
+      <div class="roi-bar-section" id="roiBars"></div>
+      <div class="roi-summary" id="roiSummary"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);line-height:1.7;">
+      ※ 自動化率は業務種別・作業内容により異なります。この試算は参考値です。<br>
+      ※ 時間価値は入力された時給換算値をもとに算出しています。
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-s" onclick="goScreen('s-quant');updateFlow(2)">← 戻る</button>
+    <button class="btn-p" onclick="goCustomize()">この内容でExcelを作る →</button>
+  </div>
+</div>
+
+<!-- ⑤ カスタマイズ -->
+<div class="screen" id="s-customize">
+  <div class="card">
+    <div class="card-label" id="customLabel">STEP 5｜カスタマイズ</div>
+    <div class="card-title">あなたの職場に合わせて設定してください</div>
+    <div class="card-hint">入力した内容がそのままExcelに反映されます。</div>
+    <div id="customFields"></div>
+  </div>
+  <div class="excel-notice">
+    <strong>⚠ Excel生成について</strong><br>
+    ExcelのダウンロードはPC（Windows・Mac）でのご利用を推奨しています。スマートフォン・タブレットからは診断・ROI試算まで体験できます。
+  </div>
+  <div class="nav">
+    <button class="btn-s" onclick="goScreen('s-roi');updateFlow(3)">← 戻る</button>
+    <button class="btn-p" onclick="generateExcel()">Excelを生成する →</button>
+  </div>
+</div>
+
+<!-- ⑥ 完了 -->
+<div class="screen" id="s-done">
+  <div class="done-box">
+    <div class="done-icon">🎉</div>
+    <div class="done-title" id="doneTitle">専用Excelが完成しました</div>
+    <div class="done-desc" id="doneDesc"></div>
+    <div class="done-sheets" id="doneSheets"></div>
+    <button class="btn-dl" id="btnDL">⬇ Excelをダウンロード</button>
+    <div style="margin-top:14px;"><button class="btn-s" onclick="restart()">最初からやり直す</button></div>
+  </div>
+  <div id="errorBox"></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+const QS=[
+  {label:"QUESTION 01",title:"毎日やっていることを教えてください",hint:"朝一番に開くファイル、毎日必ずチェックするシステムや書類など。「当たり前すぎること」ほど書いてください。",ex:"受注メールの確認・返信、前日の実績をExcelに入力、在庫チェック、工場への連絡"},
+  {label:"QUESTION 02",title:"週次・月次でやるルーティンは？",hint:"毎週・毎月のタイミングが決まっている定期作業を書いてください。",ex:"週次：生産計画の更新、進捗報告書の作成。月次：月報集計、請求書の発行・照合"},
+  {label:"QUESTION 03",title:"誰かから頼まれてやることで多いものは？",hint:"上司・他部署・取引先などからの依頼でよくあるものを書いてください。",ex:"営業からの納期確認対応、上司から頼まれる資料修正、仕入先からの発注変更対応"},
+  {label:"QUESTION 04",title:"あなたが起点になって動かす仕事は？",hint:"指示されるのではなく、あなた自身が判断して動かしている仕事を書いてください。",ex:"リードタイムを見て発注量を判断する、品質トラブル時の関係部署調整"},
+  {label:"QUESTION 05",title:"「気づいたら時間が取られていた」仕事は？",hint:"ちょっとした対応のつもりが1〜2時間経っていた経験を書いてください。",ex:"Excelの数式修正、過去メールを探す、同じ内容を別々の帳票に転記していた"},
+];
+
+let curQ=0,answers=new Array(5).fill(''),analysisResult=null,selectedTool=null,roiData=null,extraTags=[],lastWb=null,lastFilename='';
+
+function updateFlow(active){
+  for(let i=0;i<6;i++){
+    const d=document.getElementById('fd'+i),l=document.getElementById('fl'+i);
+    d.className='fd'+(i<active?' done':i===active?' active':'');
+    l.className='fl'+(i<active?' done':i===active?' active':'');
+    d.textContent=i<active?'✓':i+1;
+  }
+}
+function goScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+
+function showQ(i){
+  const q=QS[i];
+  document.getElementById('qLabel').textContent=q.label;
+  document.getElementById('qTitle').textContent=q.title;
+  document.getElementById('qHint').textContent=q.hint;
+  document.getElementById('qEx').textContent=q.ex;
+  document.getElementById('qAns').value=answers[i]||'';
+  document.getElementById('qFill').style.width=((i+1)/5*100)+'%';
+  document.getElementById('qPt').textContent=(i+1)+' / 5';
+  document.getElementById('btnBack').style.visibility=i===0?'hidden':'visible';
+  updateFlow(0);
+}
+function nextQ(){
+  answers[curQ]=document.getElementById('qAns').value.trim();
+  if(curQ<4){curQ++;showQ(curQ);}else startAnalysis();
+}
+function prevQ(){
+  answers[curQ]=document.getElementById('qAns').value.trim();
+  if(curQ>0){curQ--;showQ(curQ);}
+}
+
+async function startAnalysis(){
+  goScreen('s-analyzing');updateFlow(1);
+  const setLS=(n)=>{['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(i<n){el.className='ls done';el.textContent=el.textContent.replace('▶','✓').replace('　','✓');}else if(i===n)el.className='ls active';else el.className='ls wait';});};
+  const prompt=`製造業・総務系デスクワーク担当者の業務回答を分析し、最適なツールを選定してください。
+
+【Q1】${answers[0]||'（未回答）'}
+【Q2】${answers[1]||'（未回答）'}
+【Q3】${answers[2]||'（未回答）'}
+【Q4】${answers[3]||'（未回答）'}
+【Q5】${answers[4]||'（未回答）'}
+
+ツール: expense=経費精算 / reconcile=入金消込 / entry=データ転記
+
+JSONのみで返答:
+{"primary_tool":"expense|reconcile|entry","scores":{"expense":0-100,"reconcile":0-100,"entry":0-100},"reason":"選定理由2文","key_tasks":["特徴的業務1","特徴的業務2","特徴的業務3"],"ocr_needed":true|false,"summary":"業務の特徴1文"}`;
+  try{
+    await new Promise(r=>setTimeout(r,500));setLS(1);
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content.map(i=>i.text||'').join('');
+    analysisResult=JSON.parse(text.replace(/```json|```/g,'').trim());
+    selectedTool=analysisResult.primary_tool;
+    await new Promise(r=>setTimeout(r,400));setLS(2);
+    await new Promise(r=>setTimeout(r,400));setLS(3);
+    await new Promise(r=>setTimeout(r,300));
+  }catch(e){
+    analysisResult={primary_tool:'entry',scores:{expense:40,reconcile:30,entry:70},reason:'データ転記業務が多いと判断しました。',key_tasks:['データ転記','帳票入力','集計作業'],ocr_needed:false,summary:'定型的なデータ処理業務が中心の方です。'};
+    selectedTool='entry';
+  }
+  document.getElementById('q-tool').value=selectedTool;
+  goScreen('s-quant');updateFlow(2);
+}
+
+function calcROI(){
+  const tool=document.getElementById('q-tool').value;
+  selectedTool=tool;
+  const count=parseInt(document.getElementById('q-count').value);
+  const time=parseInt(document.getElementById('q-time').value);
+  const staff=parseInt(document.getElementById('q-staff').value);
+  const wage=parseInt(document.getElementById('q-wage').value);
+  const autoRate={expense:0.65,reconcile:0.70,entry:0.60}[tool]||0.60;
+  const monthlyHours=(count*time*staff)/60;
+  const savedHoursMonth=monthlyHours*autoRate;
+  const savedHoursYear=savedHoursMonth*12;
+  const monthlyValue=savedHoursMonth*wage;
+  const yearlyValue=monthlyValue*12;
+  const toolCost=9800;
+  const roiMultiple=Math.round(yearlyValue/toolCost*10)/10;
+  const paybackDays=Math.ceil(toolCost/monthlyValue*30);
+  roiData={tool,count,time,staff,wage,autoRate,monthlyHours,savedHoursMonth,savedHoursYear,monthlyValue,yearlyValue,roiMultiple,paybackDays,toolCost};
+  const toolName={expense:'経費精算チェック',reconcile:'入金消込',entry:'データ入力・転記'}[tool];
+  const autoRatePct=Math.round(autoRate*100);
+  document.getElementById('roiNums').innerHTML=`
+    <div class="roi-num-card"><div class="roi-num" style="color:var(--accent)">${savedHoursMonth.toFixed(1)}<span style="font-size:12px">h</span></div><div class="roi-label">月間削減時間</div></div>
+    <div class="roi-num-card"><div class="roi-num" style="color:var(--green)">${(yearlyValue/10000).toFixed(1)}<span style="font-size:12px">万円</span></div><div class="roi-label">年間削減コスト</div></div>
+    <div class="roi-num-card"><div class="roi-num" style="color:var(--yellow)">${roiMultiple}<span style="font-size:12px">倍</span></div><div class="roi-label">ROI</div></div>
+  `;
+  document.getElementById('roiBars').innerHTML=`
+    <div class="roi-bar-label"><span>自動化対象率（${toolName}）</span><span>${autoRatePct}%</span></div>
+    <div class="roi-bar-bg"><div class="roi-bar-fill" style="width:${autoRatePct}%;background:var(--accent)"></div></div>
+    <div style="margin-top:10px"></div>
+    <div class="roi-bar-label"><span>現在の月間作業時間</span><span>${monthlyHours.toFixed(1)}時間/月</span></div>
+    <div class="roi-bar-bg" style="position:relative;height:10px;border-radius:4px;overflow:hidden;">
+      <div style="position:absolute;height:100%;width:${autoRatePct}%;background:var(--green);opacity:.8;"></div>
+      <div style="position:absolute;height:100%;width:${100-autoRatePct}%;left:${autoRatePct}%;background:var(--red);opacity:.35;"></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:5px;font-size:10px;color:var(--text3);">
+      <span style="color:var(--green)">■ 削減可能 ${savedHoursMonth.toFixed(1)}h</span>
+      <span style="color:var(--red)">■ 人が判断 ${(monthlyHours*(1-autoRate)).toFixed(1)}h</span>
+    </div>
+  `;
+  document.getElementById('roiSummary').innerHTML=`
+    <strong>【試算サマリー】</strong><br>
+    現在 <strong>${count}件/月 × ${time}分 × ${staff}人 = 月${monthlyHours.toFixed(1)}時間</strong> かけている業務のうち、<br>
+    ${toolName}シートで <strong style="color:var(--green)">月${savedHoursMonth.toFixed(1)}時間（年間${savedHoursYear.toFixed(0)}時間）</strong> の削減が見込めます。<br>
+    時給換算で <strong style="color:var(--green)">年間${(yearlyValue/10000).toFixed(1)}万円</strong> 相当の効果。ツール費用（¥9,800）の <strong style="color:var(--yellow)">${roiMultiple}倍</strong> の価値です。<br>
+    <span style="color:var(--text3)">※ 回収期間の目安：約${paybackDays}日</span>
+  `;
+  goScreen('s-roi');updateFlow(3);
+}
+
+function goCustomize(){
+  goScreen('s-customize');updateFlow(4);
+  extraTags=[];
+  const toolLabels={expense:'経費精算チェックシート',reconcile:'入金消込シート',entry:'データ入力・転記シート'};
+  document.getElementById('customLabel').textContent=toolLabels[selectedTool]+' カスタマイズ';
+  const fields=document.getElementById('customFields');
+  if(selectedTool==='expense'){
+    fields.innerHTML=`
+      <div class="form-grid">
+        <div class="f-field"><label>部署名</label><input id="c-dept" placeholder="総務部"></div>
+        <div class="f-field"><label>会社名（省略可）</label><input id="c-company" placeholder="株式会社〇〇"></div>
+      </div>
+      <div class="form-grid">
+        <div class="f-field"><label>申請者名（省略可）</label><input id="c-applicant" placeholder="山田 太郎"></div>
+        <div class="f-field"><label>明細行数</label><select id="c-rows"><option value="20">20行</option><option value="30" selected>30行</option><option value="50">50行</option></select></div>
+      </div>
+      <div class="rule-card"><div class="rule-hd"><span class="rule-title">【接待費】上限金額</span><span class="rule-val" id="rv-ent">¥5,000</span></div><div class="rule-row"><input type="range" id="rr-ent" min="1000" max="30000" step="500" value="5000" oninput="sr('ent',this.value)"><input type="number" class="rule-num" id="rn-ent" value="5000" oninput="srn('ent',this.value)"></div></div>
+      <div class="rule-card"><div class="rule-hd"><span class="rule-title">【宿泊費】上限金額</span><span class="rule-val" id="rv-hotel">¥15,000</span></div><div class="rule-row"><input type="range" id="rr-hotel" min="5000" max="50000" step="1000" value="15000" oninput="sr('hotel',this.value)"><input type="number" class="rule-num" id="rn-hotel" value="15000" oninput="srn('hotel',this.value)"></div></div>
+      <div class="rule-card"><div class="rule-hd"><span class="rule-title">【領収書不要】上限金額</span><span class="rule-val" id="rv-rcpt">¥3,000</span></div><div class="rule-row"><input type="range" id="rr-rcpt" min="0" max="10000" step="500" value="3000" oninput="sr('rcpt',this.value)"><input type="number" class="rule-num" id="rn-rcpt" value="3000" oninput="srn('rcpt',this.value)"></div></div>
+      <div style="margin-top:12px"><label style="font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px">追加費目（あれば）</label>
+      <div class="tag-area"><div class="tags" id="extraTagsEl"></div><div class="tag-row"><input id="tagInput" placeholder="例：駐車場代、書籍代" onkeydown="if(event.key==='Enter')addT()"><button class="btn-tag" onclick="addT()">＋</button></div></div></div>`;
+  }else if(selectedTool==='reconcile'){
+    fields.innerHTML=`
+      <div class="form-grid">
+        <div class="f-field"><label>部署名</label><input id="c-dept" placeholder="経理部"></div>
+        <div class="f-field"><label>会社名（省略可）</label><input id="c-company" placeholder="株式会社〇〇"></div>
+      </div>
+      <div class="form-grid">
+        <div class="f-field"><label>担当者名（省略可）</label><input id="c-manager" placeholder="山田 太郎"></div>
+        <div class="f-field"><label>データ行数</label><select id="c-rows"><option value="30">30行</option><option value="50" selected>50行</option><option value="100">100行</option></select></div>
+      </div>
+      <div class="form-grid">
+        <div class="f-field"><label>支払サイト</label><select id="c-payterm"><option>翌月末</option><option>翌月15日</option><option>翌々月末</option></select></div>
+        <div class="f-field"><label>通貨</label><select id="c-currency"><option value="円">円（JPY）</option><option value="USD">USD</option></select></div>
+      </div>
+      <div style="margin-top:4px"><label style="font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px">主要得意先（省略可）</label>
+      <div class="tag-area"><div class="tags" id="extraTagsEl"></div><div class="tag-row"><input id="tagInput" placeholder="例：山田商事、㈱田中製作所" onkeydown="if(event.key==='Enter')addT()"><button class="btn-tag" onclick="addT()">＋</button></div></div></div>`;
+  }else{
+    fields.innerHTML=`
+      <div class="form-grid">
+        <div class="f-field"><label>部署名</label><input id="c-dept" placeholder="製造企画部"></div>
+        <div class="f-field"><label>会社名（省略可）</label><input id="c-company" placeholder="株式会社〇〇"></div>
+      </div>
+      <div class="form-grid">
+        <div class="f-field"><label>シートの用途・名前</label><input id="c-sheetname" placeholder="例：発注データ入力"></div>
+        <div class="f-field"><label>入力行数</label><select id="c-rows"><option value="30">30行</option><option value="50" selected>50行</option><option value="100">100行</option></select></div>
+      </div>
+      <div><label style="font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px">入力項目（使うものを追加）</label>
+      <div class="tag-area"><div class="tags" id="extraTagsEl"></div><div class="tag-row"><input id="tagInput" placeholder="例：日付、取引先名、品番、数量、金額" onkeydown="if(event.key==='Enter')addT()"><button class="btn-tag" onclick="addT()">＋</button></div></div></div>`;
+  }
+}
+
+function sr(k,v){document.getElementById('rv-'+k).textContent='¥'+Number(v).toLocaleString();document.getElementById('rn-'+k).value=v;}
+function srn(k,v){document.getElementById('rv-'+k).textContent='¥'+Number(v).toLocaleString();document.getElementById('rr-'+k).value=v;}
+function addT(){const inp=document.getElementById('tagInput');const v=inp.value.trim();if(!v||extraTags.includes(v)){inp.value='';return;}extraTags.push(v);inp.value='';renderT();}
+function removeT(t){extraTags=extraTags.filter(x=>x!==t);renderT();}
+function renderT(){const el=document.getElementById('extraTagsEl');if(!el)return;el.innerHTML=extraTags.map(t=>`<div class="tag">${t}<span class="rm" onclick="removeT('${t.replace(/'/g,"\\'")}')">×</span></div>`).join('');}
+
+function generateExcel(){
+  const today=new Date();
+  const ds=`${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()}`;
+  const wb=XLSX.utils.book_new();
+  const dept=document.getElementById('c-dept')?.value||'総務部';
+  const company=document.getElementById('c-company')?.value||'';
+  const rows=parseInt(document.getElementById('c-rows')?.value||'50');
+  const title=`${company?company+'　':''}${dept}`;
+  const S=6,E=S+rows-1;
+  const r=roiData||{};
+
+  if(selectedTool==='expense'){
+    const applicant=document.getElementById('c-applicant')?.value||'';
+    const ent=parseInt(document.getElementById('rn-ent')?.value||5000);
+    const hotel=parseInt(document.getElementById('rn-hotel')?.value||15000);
+    const rcpt=parseInt(document.getElementById('rn-rcpt')?.value||3000);
+    const allCats=['交通費','宿泊費','会議費','接待費','消耗品費','通信費','研修費','その他',...extraTags];
+    const s1=[[`経費精算チェックシート｜${title}`,...Array(13).fill('')],[`作成日: ${ds}`,...Array(13).fill('')],Array(14).fill(''),['部署名',dept,'','申請者名',applicant,'','','申請日',ds,'','','','',''],Array(14).fill(''),['No.','日付','費目','摘要','金額（円）','添付書類','支払方法','日付\nチェック','金額\nチェック','添付\nチェック','規程\nチェック','総合判定','AIコメント','承認者確認']];
+    for(let i=0;i<rows;i++){const r2=S+i;s1.push([i+1,'','','','','','',{f:`IF(B${r2}="","",IF(B${r2}>$I$4,"NG：未来日付","OK"))`},{f:`IF(E${r2}="","",IF(AND(C${r2}="接待費",E${r2}>${ent}),"要確認：接待規程",IF(E${r2}>100000,"要確認：高額",IF(E${r2}<=0,"NG：金額エラー","OK"))))`},{f:`IF(F${r2}="","",IF(F${r2}="なし",IF(E${r2}>${rcpt},"NG：添付必須","要確認"),"OK"))`},{f:`IF(OR(C${r2}="",G${r2}=""),"",IF(AND(C${r2}="宿泊費",E${r2}>${hotel}),"要確認：宿泊上限超","OK"))`},{f:`IF(AND(B${r2}="",E${r2}=""),"",IF(OR(H${r2}="NG：未来日付",I${r2}="NG：金額エラー",J${r2}="NG：添付必須"),"NG",IF(OR(ISNUMBER(SEARCH("要確認",I${r2})),ISNUMBER(SEARCH("要確認",K${r2}))),"要確認","OK")))`},{f:`IF(L${r2}="","",IF(L${r2}="NG","【要差戻し】"&I${r2},IF(L${r2}="要確認","【要確認】"&I${r2},"承認可能")))`},'']);}
+    s1.push(['合計','','','',{f:`SUM(E${S}:E${E})`},'','','','','','','','','']);
+    s1.push(Array(14).fill(''));
+    s1.push(['判定サマリー','','','','','','','','','','','','','']);
+    s1.push(['OK件数',{f:`COUNTIF(L${S}:L${E},"OK")`},'','要確認件数',{f:`COUNTIF(L${S}:L${E},"要確認")`},'','NG件数',{f:`COUNTIF(L${S}:L${E},"NG")`},'','','','','','']);
+    const ws1=XLSX.utils.aoa_to_sheet(s1);ws1['!cols']=[{wch:5},{wch:13},{wch:14},{wch:26},{wch:12},{wch:10},{wch:12},{wch:10},{wch:10},{wch:10},{wch:14},{wch:10},{wch:32},{wch:14}];
+    XLSX.utils.book_append_sheet(wb,ws1,'経費入力チェック');
+    const s2=[[`規程設定｜${title}`,'',''],[`作成日: ${ds}`,'',''],Array(3).fill(''),['項目','設定値','備考'],['【接待費】上限（円）',ent,`${ent.toLocaleString()}円超で要確認`],['【宿泊費】上限（円）',hotel,`${hotel.toLocaleString()}円超で要確認`],['【領収書不要】上限（円）',rcpt,`${rcpt.toLocaleString()}円以下は不要`],['【高額確認】ライン（円）',100000,'10万円超は上長確認'],['【申請期限】日数',90,'90日超でNG']];
+    const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:26},{wch:14},{wch:30}];XLSX.utils.book_append_sheet(wb,ws2,'規程設定');
+    const rc=`'経費入力チェック'!C${S}:C${E}`,re=`'経費入力チェック'!E${S}:E${E}`,rl=`'経費入力チェック'!L${S}:L${E}`;
+    const s3=[[`費目別集計｜${title}`,...Array(4).fill('')],Array(5).fill(''),Array(5).fill(''),['費目','合計金額（円）','件数','平均単価（円）','NG件数']];
+    allCats.forEach((cat,i)=>{const rr=5+i;s3.push([cat,{f:`SUMIF(${rc},A${rr},${re})`},{f:`COUNTIF(${rc},A${rr})`},{f:`IFERROR(B${rr}/C${rr},"-")`},{f:`COUNTIFS(${rc},A${rr},${rl},"NG")`}]);});
+    const ws3=XLSX.utils.aoa_to_sheet(s3);ws3['!cols']=[{wch:16},{wch:16},{wch:10},{wch:14},{wch:10}];XLSX.utils.book_append_sheet(wb,ws3,'費目別集計');
+
+  }else if(selectedTool==='reconcile'){
+    const manager=document.getElementById('c-manager')?.value||'';
+    const payterm=document.getElementById('c-payterm')?.value||'翌月末';
+    const currency=document.getElementById('c-currency')?.value||'円';
+    const s1=[[`入金消込｜請求データ｜${title}`,...Array(9).fill('')],[`作成日: ${ds}　支払サイト: ${payterm}`,...Array(9).fill('')],Array(10).fill(''),['担当者名',manager,'','対象月','','','','','',''],Array(10).fill(''),['No.','請求日','得意先名','請求書番号',`請求金額（${currency}）`,'支払期日','入金予定日',`入金金額（${currency}）`,'消込状況','備考']];
+    for(let i=0;i<rows;i++)s1.push([i+1,'','','','','','','','','']);
+    s1.push(['合計','','','',{f:`SUM(E${S}:E${E})`},'','',{f:`SUM(H${S}:H${E})`},'','']);
+    const ws1=XLSX.utils.aoa_to_sheet(s1);ws1['!cols']=[{wch:5},{wch:13},{wch:26},{wch:18},{wch:16},{wch:13},{wch:13},{wch:16},{wch:12},{wch:22}];XLSX.utils.book_append_sheet(wb,ws1,'請求データ');
+    const s2=[[`入金データ（銀行明細）｜${title}`,...Array(6).fill('')],[`作成日: ${ds}`,...Array(6).fill('')],Array(7).fill(''),Array(7).fill(''),['No.','入金日','振込人名',`入金額（${currency}）`,'請求書番号（照合）','得意先名（照合）','備考']];
+    for(let i=0;i<rows;i++)s2.push([i+1,'','','','','','']);
+    s2.push(['合計','','',{f:`SUM(D${S}:D${E})`},'','','']);
+    const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:5},{wch:13},{wch:26},{wch:16},{wch:18},{wch:26},{wch:22}];XLSX.utils.book_append_sheet(wb,ws2,'入金データ');
+    const s3=[[`照合チェック｜${title}`,...Array(11).fill('')],Array(12).fill(''),Array(12).fill(''),Array(12).fill(''),['No.','請求書番号','得意先名','請求金額','支払期日','入金日','入金金額','差異','期日判定','金額判定','総合判定','コメント']];
+    for(let i=0;i<rows;i++){const r2=S+i;s3.push([i+1,'','','','','','',{f:`IF(OR(D${r2}=0,G${r2}=0),"",G${r2}-D${r2})`},{f:`IF(OR(E${r2}="",F${r2}=""),"",IF(F${r2}<=E${r2},"OK","遅延"))`},{f:`IF(OR(D${r2}=0,G${r2}=0),"",IF(H${r2}=0,"OK",IF(H${r2}>0,"超過入金","不足入金")))`},{f:`IF(AND(D${r2}=0,G${r2}=0),"",IF(AND(I${r2}="OK",J${r2}="OK"),"消込完了",IF(OR(I${r2}="遅延",J${r2}="不足入金",J${r2}="超過入金"),"要確認","未入金")))`},{f:`IF(K${r2}="","",IF(K${r2}="消込完了","消込完了",IF(K${r2}="未入金","入金データ未登録",IF(I${r2}="遅延","支払期日超過","金額差異あり"))))`}]);}
+    const ws3=XLSX.utils.aoa_to_sheet(s3);ws3['!cols']=[{wch:5},{wch:16},{wch:26},{wch:14},{wch:13},{wch:13},{wch:14},{wch:14},{wch:10},{wch:10},{wch:10},{wch:28}];XLSX.utils.book_append_sheet(wb,ws3,'照合チェック');
+    const rk=`'照合チェック'!K${S}:K${E}`,rd=`'照合チェック'!D${S}:D${E}`,rg=`'照合チェック'!G${S}:G${E}`;
+    const s4=[[`消込サマリー｜${title}`,...Array(4).fill('')],[`集計対象: 照合チェック（${rows}行）`,...Array(4).fill('')],Array(5).fill(''),['状態','件数',`請求金額合計（${currency}）`,`入金金額合計（${currency}）`,`差異（${currency}）`],['消込完了',{f:`COUNTIF(${rk},"消込完了")`},{f:`SUMIF(${rk},"消込完了",${rd})`},{f:`SUMIF(${rk},"消込完了",${rg})`},{f:`IFERROR(D5-C5,"-")`}],['要確認',{f:`COUNTIF(${rk},"要確認")`},{f:`SUMIF(${rk},"要確認",${rd})`},{f:`SUMIF(${rk},"要確認",${rg})`},{f:`IFERROR(D6-C6,"-")`}],['未入金',{f:`COUNTIF(${rk},"未入金")`},{f:`SUMIF(${rk},"未入金",${rd})`},{f:`SUMIF(${rk},"未入金",${rg})`},{f:`IFERROR(D7-C7,"-")`}],['合計',{f:'SUM(B5:B7)'},{f:'SUM(C5:C7)'},{f:'SUM(D5:D7)'},{f:'IFERROR(D8-C8,"-")'}]];
+    const ws4=XLSX.utils.aoa_to_sheet(s4);ws4['!cols']=[{wch:14},{wch:10},{wch:18},{wch:18},{wch:16}];XLSX.utils.book_append_sheet(wb,ws4,'消込サマリー');
+
+  }else{
+    const sheetname=document.getElementById('c-sheetname')?.value||'データ入力シート';
+    const allCols=extraTags.length>0?[...extraTags]:['日付','内容','数量','金額','担当者','備考'];
+    const s1=[[`${sheetname}｜${title}`,...Array(allCols.length-1).fill('')],[`作成日: ${ds}`,...Array(allCols.length-1).fill('')],Array(allCols.length+1).fill(''),['担当者名','',...Array(allCols.length-1).fill('')],Array(allCols.length+1).fill(''),['No.',...allCols]];
+    for(let i=0;i<rows;i++)s1.push([i+1,...Array(allCols.length).fill('')]);
+    const ws1=XLSX.utils.aoa_to_sheet(s1);ws1['!cols']=[{wch:5},...allCols.map(()=>({wch:16}))];XLSX.utils.book_append_sheet(wb,ws1,sheetname);
+    const numCols=allCols.filter(c=>c.includes('金額')||c.includes('数量')||c.includes('単価'));
+    const s2=[[`集計シート｜${title}`,...Array(3).fill('')],[`入力元：「${sheetname}」シート`,...Array(3).fill('')],Array(4).fill(''),['集計項目','件数','合計','備考']];
+    numCols.forEach((col,i)=>{const idx=allCols.indexOf(col);const letter=String.fromCharCode(66+idx);s2.push([col,{f:`COUNTA('${sheetname}'!A${S}:A${E})`},{f:`SUM('${sheetname}'!${letter}${S}:${letter}${E})`},'自動集計']);});
+    if(numCols.length===0)s2.push(['（数値項目を追加すると自動集計されます）','','','']);
+    const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:20},{wch:10},{wch:16},{wch:20}];XLSX.utils.book_append_sheet(wb,ws2,'集計シート');
+  }
+
+  // ROI試算シート
+  if(r.yearlyValue){
+    const toolName={expense:'経費精算チェック',reconcile:'入金消込',entry:'データ入力・転記'}[selectedTool];
+    const sROI=[[`ROI効果試算シート｜${title}`,'','',''],[`作成日: ${ds}　対象業務: ${toolName}`,'','',''],Array(4).fill(''),['【入力値（診断時の回答）】','','',''],['月の作業件数',r.count+'件','',''],['1件あたり作業時間',r.time+'分','',''],['担当者の人数',r.staff+'人','',''],['時給換算単価',r.wage+'円','',''],Array(4).fill(''),['【効果試算】','','',''],['現在の月間作業時間',r.monthlyHours.toFixed(1)+'時間','',''],['自動化対象率',Math.round(r.autoRate*100)+'%',`${toolName}の標準値`,''],['月間削減見込み時間',r.savedHoursMonth.toFixed(1)+'時間/月','',''],['年間削減見込み時間',r.savedHoursYear.toFixed(0)+'時間/年','',''],Array(4).fill(''),['【金銭的効果】','','',''],['月間削減コスト（概算）',Math.round(r.monthlyValue)+'円/月','時間×時給換算',''],['年間削減コスト（概算）',Math.round(r.yearlyValue)+'円/年','',''],['ツール費用',r.toolCost+'円','',''],['ROI倍率',r.roiMultiple+'倍','年間削減コスト÷ツール費用',''],['回収期間（目安）',r.paybackDays+'日','',''],Array(4).fill(''),['※ 自動化率は業務内容・習熟度により異なります。参考値としてご活用ください。','','','']];
+    const wsROI=XLSX.utils.aoa_to_sheet(sROI);wsROI['!cols']=[{wch:26},{wch:18},{wch:24},{wch:10}];XLSX.utils.book_append_sheet(wb,wsROI,'ROI効果試算');
+  }
+
+  // READMEシート
+  const ocrNeeded=analysisResult?.ocr_needed||(selectedTool==='expense'||selectedTool==='reconcile');
+  const toolName2={expense:'経費精算チェックシート',reconcile:'入金消込シート',entry:'データ入力・転記シート'}[selectedTool];
+  const sRM=[[`README＆AIプロンプトガイド｜${toolName2}｜${title}`,'',''],Array(3).fill(''),['【このファイルについて】','',''],['診断結果にもとづいて生成された、あなた専用のExcelファイルです。','',''],[`生成日: ${ds}　部署: ${dept}　ツール: ${toolName2}`,'',''],Array(3).fill(''),['【基本的な使い方】','',''],['1.','黄色いセルに入力してください',''],['2.','チェック列・集計列は自動計算されます（変更不要）',''],['3.','設定は「規程設定」シートで変更できます',''],Array(3).fill(''),['【AIプロンプト活用ガイド】','',''],['AIへの指示文（プロンプト）をそのままコピーして使えます。','',''],['無料のChatGPTやClaudeに貼り付けるだけで、写真から自動転記できます。','',''],Array(3).fill('')];
+  if(ocrNeeded){
+    if(selectedTool==='expense'){
+      sRM.push(['▼ 領収書・レシート用プロンプト（コピーして使用）','','']);
+      sRM.push(['---------- ここからコピー ----------','','']);
+      sRM.push(['添付の領収書・レシートから以下の項目を読み取り、表形式で出力してください。','','']);
+      sRM.push(['| 日付(YYYY/MM/DD) | 支払先・店名 | 金額(数字のみ) | 費目 | 支払方法 |','','']);
+      sRM.push(['費目の選択肢：交通費・宿泊費・会議費・接待費・消耗品費・通信費・研修費・その他','','']);
+      sRM.push(['支払方法の選択肢：現金・法人カード・立替','','']);
+      sRM.push(['読み取れない項目は「不明」と記載。金額はカンマ・円マーク不要。','','']);
+      sRM.push(['「経費入力チェック」シートのB〜G列にコピー＆ペーストできる形式で出力してください。','','']);
+      sRM.push(['---------- ここまでコピー ----------','','']);
+    }else if(selectedTool==='reconcile'){
+      sRM.push(['▼ 通帳・銀行明細用プロンプト（コピーして使用）','','']);
+      sRM.push(['---------- ここからコピー ----------','','']);
+      sRM.push(['添付の通帳または銀行の入金明細から全ての行を読み取り、表形式で出力してください。','','']);
+      sRM.push(['| 日付(YYYY/MM/DD) | 振込人名 | 入金額 | 出金額 | 残高 | 摘要 |','','']);
+      sRM.push(['金額はカンマ・円マーク不要で数字のみ。読み取れない項目は空欄。','','']);
+      sRM.push(['「入金データ」シートのB〜G列にコピー＆ペーストできる形式で出力してください。','','']);
+      sRM.push(['---------- ここまでコピー ----------','','']);
+    }
+    sRM.push(Array(3).fill(''));
+    sRM.push(['【プロンプト活用のポイント】','','']);
+    sRM.push(['・','写真は明るく、文字がはっきり読めるように撮影してください','']);
+    sRM.push(['・','複数枚まとめて送付できます（例：10枚の領収書を一括で）','']);
+    sRM.push(['・','読み取り結果は目視で確認してから貼り付けてください','']);
+    sRM.push(['・','社内の機密情報の取り扱いは社内のセキュリティポリシーに従ってください','']);
+  }
+  const wsRM=XLSX.utils.aoa_to_sheet(sRM);wsRM['!cols']=[{wch:6},{wch:60},{wch:30}];XLSX.utils.book_append_sheet(wb,wsRM,'README＆AIプロンプト');
+
+  const toolShort={expense:'経費精算',reconcile:'入金消込',entry:'データ転記'}[selectedTool];
+  lastFilename=`業務改革ツール_${toolShort}_${dept}_${ds.replace(/\//g,'-')}.xlsx`;
+  lastWb=wb;
+  XLSX.writeFile(wb,lastFilename);
+
+  goScreen('s-done');updateFlow(5);
+  document.getElementById('doneTitle').textContent=`${dept}専用の${toolShort}シートが完成しました`;
+  const roiLine=r.yearlyValue?`ROI試算では年間${(r.yearlyValue/10000).toFixed(1)}万円相当の効果。`:'';
+  document.getElementById('doneDesc').textContent=`${analysisResult?.summary||''}${roiLine}ROI効果試算シートとAIプロンプトガイドも入っています。`;
+
+  const sheetList=[
+    {name:'メインシート',desc:toolShort+'の入力・チェック'},
+    selectedTool==='expense'?{name:'規程設定',desc:'金額ルールの変更はここで'}:null,
+    selectedTool==='expense'?{name:'費目別集計',desc:'費目ごとの自動集計'}:null,
+    selectedTool==='reconcile'?{name:'入金データ',desc:'銀行明細の貼付用'}:null,
+    selectedTool==='reconcile'?{name:'照合チェック・サマリー',desc:'差異自動判定・月次確認'}:null,
+    selectedTool==='entry'?{name:'集計シート',desc:'数値の自動集計'}:null,
+    {name:'ROI効果試算',desc:`月${r.savedHoursMonth?.toFixed(1)||'?'}h削減・年${((r.yearlyValue||0)/10000).toFixed(1)}万円`},
+    {name:'README＆AIプロンプト',desc:'使い方＋AIへの指示文そのまま使える'},
+  ].filter(Boolean);
+  document.getElementById('doneSheets').innerHTML=sheetList.map(s=>`<div class="ds"><div class="ds-name">${s.name}</div><div class="ds-desc">${s.desc}</div></div>`).join('');
+  document.getElementById('btnDL').onclick=()=>XLSX.writeFile(lastWb,lastFilename);
+}
+
+function restart(){curQ=0;answers=new Array(5).fill('');analysisResult=null;selectedTool=null;roiData=null;extraTags=[];lastWb=null;showQ(0);goScreen('s-diag');updateFlow(0);}
+
+showQ(0);
+</script>
+</body>
+</html>
