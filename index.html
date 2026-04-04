@@ -56,16 +56,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .ls.active{color:var(--accent);}
 .ls.wait{color:var(--text3);}
 
-/* フローチャート */
-.flow-step-wrap{margin-bottom:0;}
-.flow-step{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;transition:border-color .2s;}
-.flow-step.auto-step{background:rgba(232,124,58,.04);}
-.flow-step.semi-step{background:rgba(232,195,58,.03);}
-.flow-step-num{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:#fff;padding:2px 8px;border-radius:3px;margin-bottom:6px;}
-.flow-step-text{font-size:13px;font-weight:600;color:var(--text);line-height:1.4;}
-.flow-step-note{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:11px;color:var(--text2);line-height:1.65;}
-.auto-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;margin-bottom:4px;}
-.flow-arrow{text-align:center;color:var(--border);padding:5px 0;font-size:13px;}
+/* バリデーション */
+.validate-issue{background:var(--surface2);border:1px solid var(--yellow);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;}
+.validate-issue-label{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--yellow);letter-spacing:.15em;margin-bottom:6px;}
+.validate-issue-text{font-size:13px;color:var(--text);line-height:1.7;margin-bottom:10px;}
+
+/* フローチャート - 画像スタイル */
+.fc-box-wrap{display:flex;flex-direction:column;align-items:center;gap:0;}
+.fc-box{width:100%;max-width:320px;border-radius:14px;padding:14px 18px;text-align:center;font-size:13px;font-weight:700;line-height:1.5;position:relative;}
+.fc-box.type-manual{background:#e87c3a;color:#fff;}
+.fc-box.type-semi{background:#e8c33a;color:#1a1200;}
+.fc-box.type-auto{background:#7c5cd8;color:#fff;}
+.fc-box.type-note{background:#e85a8a;color:#fff;}
+.fc-arrow{width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:14px solid rgba(232,124,58,.45);margin:4px 0;}
+.fc-note{width:100%;max-width:320px;margin-top:6px;padding:8px 12px;background:rgba(124,92,216,.12);border:1px solid rgba(124,92,216,.35);border-radius:var(--radius);font-size:11px;color:#b0a0e8;line-height:1.65;text-align:left;}
+.fc-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.fc-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);}
+.fc-legend-dot{width:12px;height:12px;border-radius:3px;}
 .score-big{text-align:center;padding:18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;}
 .score-num{font-family:'IBM Plex Mono',monospace;font-size:48px;font-weight:700;line-height:1;}
 .score-label{font-size:11px;color:var(--text3);margin-top:4px;}
@@ -182,7 +189,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="fa">▶</div>
   <div class="fs"><div class="fd" id="fd5">6</div><span class="fl" id="fl5">フロー確認</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd6">7</div><span class="fl" id="fl6">成果物</span></div>
+  <div class="fs"><div class="fd" id="fd6">7</div><span class="fl" id="fl6">ROI・成果物</span></div>
 </div>
 
 <div class="main">
@@ -269,6 +276,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="nav">
     <button class="btn-s" onclick="goS('s-pain');uf(2)">← 戻る</button>
     <button class="btn-p" id="btnSteps" onclick="startAnalysis()" disabled>AIに分析してもらう →</button>
+  </div>
+</div>
+
+<!-- ④-B バリデーション（入力確認） -->
+<div class="screen" id="s-validate">
+  <div class="card">
+    <div class="card-label">STEP 4｜入力内容の確認</div>
+    <div class="card-title">入力内容を確認させてください</div>
+    <div class="card-hint">より正確な診断のために、以下の点を確認・修正してください。</div>
+    <div id="validateIssues"></div>
+    <textarea class="q-ta" id="stepsAnsRevised" rows="6" placeholder="修正した手順をここに入力してください" oninput="chkRevised()" style="margin-top:4px;"></textarea>
+  </div>
+  <div class="nav">
+    <button class="btn-s" onclick="goS('s-steps');uf(3)">← 手順を書き直す</button>
+    <button class="btn-p" id="btnRevised" onclick="proceedAfterValidation()">この内容で分析する →</button>
   </div>
 </div>
 
@@ -565,16 +587,73 @@ function goSteps(){
 
 // ===== Q2-1: 手順 =====
 function chkSteps(){document.getElementById('btnSteps').disabled=document.getElementById('stepsAns').value.trim()=='';}
+function chkRevised(){document.getElementById('btnRevised').disabled=document.getElementById('stepsAnsRevised').value.trim()=='';}
 
-// ===== AI分析 =====
+// ===== ① バリデーション（不明ツール名・複数業務チェック） =====
 async function startAnalysis(){
   q2_1Steps=document.getElementById('stepsAns').value.trim();
   goS('s-analyzing');uf(4);
   const setLS=(n)=>{['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(i<n){el.className='ls done';el.textContent=el.textContent.replace('▶','✓').replace('　','✓');}else if(i===n)el.className='ls active';else el.className='ls wait';});};
+
+  // Step1: Pre-validation
+  setLS(0);
+  const validatePrompt=`以下の業務手順の入力をチェックしてください。
+
+【入力内容】
+${q2_1Steps}
+
+以下の問題がないか確認し、JSONのみで返してください：
+{"issues":[{"type":"multi_task","message":"複数の業務が混在している場合のメッセージ","suggestion":"対処の提案"},{"type":"unknown_tool","tool_name":"不明なツール名","message":"説明を求めるメッセージ"}],"is_valid":true}
+
+チェック項目：
+1. type="multi_task"：入力が「複数の異なる業務のリスト」になっていて、1つの業務の取り掛かりから完了までの手順になっていない場合。この場合is_valid=falseにしてmessageに「これは複数の業務が混在しています。この中で一番困っている業務を1つ選んで、その業務の取り掛かりから完了までの手順を教えてください」と書く
+2. type="unknown_tool"：業界一般に知られていない固有のシステム名・ツール名・専門用語が含まれる場合。messageに「○○とはどのようなシステムですか？AIが正しく判断できるよう、簡単に説明をお願いします」と書く
+・issuesは空配列でもOK
+・問題がなければis_valid=true、issues=[]`;
+
+  try{
+    await new Promise(r=>setTimeout(r,300));setLS(1);
+    const vres=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:validatePrompt}]})});
+    const vdata=await vres.json();
+    const vraw=vdata.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const vr=JSON.parse(vraw);
+    if(!vr.is_valid && vr.issues && vr.issues.length>0){
+      showValidation(vr.issues);
+      return;
+    }
+  }catch(e){/* バリデーション失敗時はそのまま続行 */}
+
+  await runAnalysis(q2_1Steps, setLS);
+}
+
+function showValidation(issues){
+  const container=document.getElementById('validateIssues');
+  container.innerHTML='';
+  issues.forEach(issue=>{
+    const div=document.createElement('div');
+    div.className='validate-issue';
+    div.innerHTML=`<div class="validate-issue-label">${issue.type==='multi_task'?'⚠ 複数業務が混在しています':'⚠ 不明なツール名が含まれています'}</div>
+      <div class="validate-issue-text">${issue.message}</div>
+      ${issue.suggestion?`<div style="font-size:11px;color:var(--text3);">${issue.suggestion}</div>`:''}`;
+    container.appendChild(div);
+  });
+  // 現在の入力をコピーして見やすくする
+  document.getElementById('stepsAnsRevised').value=q2_1Steps;
+  document.getElementById('btnRevised').disabled=false;
+  goS('s-validate');uf(3);
+}
+
+async function proceedAfterValidation(){
+  q2_1Steps=document.getElementById('stepsAnsRevised').value.trim();
+  goS('s-analyzing');uf(4);
+  const setLS=(n)=>{['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(i<n){el.className='ls done';el.textContent=el.textContent.replace('▶','✓').replace('　','✓');}else if(i===n)el.className='ls active';else el.className='ls wait';});};
+  await runAnalysis(q2_1Steps, setLS);
+}
+
+// ===== AI本分析 =====
+async function runAnalysis(steps, setLS){
   const ids=TOP10.map(t=>t.id).join('/');
   const goalsStr=q1Goals.join('、')||'未選択';
-
-  // Q1の目的に合わせたflavor指示
   let flavorInstr='';
   if(q1Goals.includes('自分の仕事を減らしたい'))flavorInstr+='どの工程をあなたでなくても良いか（手放せるか）を中心に。';
   if(q1Goals.includes('スタッフに任せる仕組みを作りたい'))flavorInstr+='属人化している工程・マニュアル化すれば任せられる工程を中心に。';
@@ -582,30 +661,29 @@ async function startAnalysis(){
   if(q1Goals.includes('AIやITツールの導入を検討している'))flavorInstr+='無料AIツール（Claude無料/Gemini無料/NotebookLM）で代替できる工程を明示して。';
   if(!flavorInstr)flavorInstr='改善効果が最大になる視点で。';
 
-  const prompt=`あなたは業務改善コンサルタントです。以下の業務を分析し、フローチャートを作成してください。
+  // ④ テンプレマッチ改善：困りごとの内容も強く反映させる
+  const matchPrompt=`業務名の候補：${ids}
+困りごと：${q2Pain}
+業務手順：${steps}
 
-【業界】${ind}
-【ポジション】${pos}
-【診断目的】${goalsStr}
-【最も困っていること】${q2Pain}
-【業務の手順（取り掛かりから完了まで）】${q2_1Steps}
-
-flavor指示：${flavorInstr}
+上記の業務内容を分析し、フローチャートを作成してください。
 
 回答はJSONのみで返してください（前後の文章不要）：
-{"steps":[{"step":1,"text":"ステップの内容","automation":"◎","note":"無料AIツールを使った具体的な自動化方法"}],"has_automation":true,"automation_count":2,"score":72,"matched_ids":["expense"],"priority_id":"expense","comment":"2〜3文のコメント","flavor_note":"診断目的に合わせた一言コメント"}
+{"steps":[{"step":1,"text":"ステップの内容","automation":"×","note":"","prompt_hint":""}],"has_automation":true,"automation_count":2,"score":72,"matched_ids":[],"priority_id":"","comment":"2〜3文のコメント","flavor_note":"診断目的に合わせた一言コメント"}
 
 ルール：
-・stepsは5〜9ステップに分解してください
-・automation：◎=今すぐ自動化できる、△=整理すれば自動化できる、×=人がやるべき
-・noteは◎△のステップのみ記載。必ず「無料の○○」「○○の無料枠」という表現で、有料ツール・有料プランは絶対に提案しない
+・stepsは入力された手順をそのまま忠実に分解してください（5〜10ステップ）
+・automation：◎=今すぐ無料AIツールで自動化できる、△=ルール化・整理すれば自動化できる、×=人の判断が必要
+・noteは◎△のステップのみ。「無料のClaude（claude.ai）」「無料のGemini（gemini.google.com）」「NotebookLM（完全無料）」のいずれかを使った具体的な方法を書く。有料ツール・有料プランは絶対に書かない
+・prompt_hint：◎△のステップのみ。ユーザーがそのままAIに貼れる具体的な指示文を書く（例：「以下のデータをアップロードして『〇〇のデータと△△のデータを照合して差異をまとめてください』と指示してください」）。×のステップは空文字
 ・has_automationは◎または△が1つ以上あればtrue
-・matched_idsは ${ids} から最大2件。has_automationがfalseなら[]
-・priority_idはmatched_idsの最優先1件。has_automationがfalseなら""`;
+・matched_ids：困りごとの内容と手順から、${ids} の中で最も当てはまるものを最大2件。専用システムや特殊業務で全く当てはまらない場合は[]
+・priority_idはmatched_idsの最優先1件。当てはまらない場合は""
+・flavor指示：${flavorInstr}`;
 
   try{
-    await new Promise(r=>setTimeout(r,500));setLS(1);
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+    await new Promise(r=>setTimeout(r,400));setLS(1);
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:matchPrompt}]})});
     const data=await res.json();
     const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
     ar=JSON.parse(raw);
@@ -613,19 +691,18 @@ flavor指示：${flavorInstr}
     await new Promise(r=>setTimeout(r,400));setLS(3);
     await new Promise(r=>setTimeout(r,300));
   }catch(e){
-    // フォールバック
     ar={steps:[
-      {step:1,text:'業務を開始する・情報を受け取る',automation:'×',note:''},
-      {step:2,text:'内容を確認・チェックする',automation:'△',note:'チェック項目をリスト化し、無料のClaudeで一次確認プロンプトを作れます'},
-      {step:3,text:'データを入力・転記する',automation:'◎',note:'無料のClaude/Geminiに内容をコピペするだけで表形式に整理できます'},
-      {step:4,text:'確認・承認を行う',automation:'×',note:''},
-      {step:5,text:'完了処理・記録をする',automation:'△',note:'定型の記録作業はテンプレート化することで時間を削減できます'},
-    ],has_automation:true,automation_count:2,score:65,matched_ids:['expense'],priority_id:'expense',comment:'入力・確認作業に自動化の余地が見られます。まずフロー全体を整理することで改善の糸口が見つかります。',flavor_note:'手順を見える化するだけで、改善の優先順位が明確になります。'};
+      {step:1,text:'業務を開始する・情報を受け取る',automation:'×',note:'',prompt_hint:''},
+      {step:2,text:'内容を確認・チェックする',automation:'△',note:'チェックリストを作成し、無料のClaudeで一次確認できます',prompt_hint:'チェックリストをコピーして「以下の項目について確認し、問題があるものを指摘してください」と貼り付けてください'},
+      {step:3,text:'データを入力・転記する',automation:'◎',note:'無料のClaude/Geminiにデータをコピペすると表形式に整理できます',prompt_hint:'元のデータをコピーして「以下のデータを表形式に整理してください。列：日付・内容・金額・担当者」と貼り付けてください'},
+      {step:4,text:'確認・承認を行う',automation:'×',note:'',prompt_hint:''},
+      {step:5,text:'完了処理・記録をする',automation:'△',note:'定型の記録はテンプレート化で時間削減できます',prompt_hint:'記録の内容をコピーして「以下の内容を報告書形式にまとめてください」と貼り付けてください'},
+    ],has_automation:true,automation_count:2,score:65,matched_ids:[],priority_id:'',comment:'入力・確認作業に改善の余地があります。まず一つの工程から手順を整理しましょう。',flavor_note:'手順を見える化することで、改善の優先順位が明確になります。'};
   }
   showFlowchart();
 }
 
-// ===== フローチャート表示 =====
+// ===== ③ フローチャート表示（画像スタイル） =====
 function showFlowchart(){
   goS('s-flowchart');uf(5);
   const score=ar.score||0;
@@ -635,43 +712,59 @@ function showFlowchart(){
   document.getElementById('fcBar').style.width=score+'%';
   document.getElementById('fcBar').style.background=color;
   document.getElementById('fcComment').textContent=ar.comment||'';
-  document.getElementById('fcFlavorNote').textContent=ar.flavor_note||'';
 
-  // フローチャート描画
+  // 凡例
+  const flavorEl=document.getElementById('fcFlavorNote');
+  flavorEl.innerHTML=`<div class="fc-legend">
+    <div class="fc-legend-item"><div class="fc-legend-dot" style="background:#e87c3a;"></div>人が行う工程</div>
+    <div class="fc-legend-item"><div class="fc-legend-dot" style="background:#e8c33a;"></div>整理すれば自動化できる</div>
+    <div class="fc-legend-item"><div class="fc-legend-dot" style="background:#7c5cd8;"></div>無料AIで今すぐ自動化できる</div>
+  </div>
+  <div style="font-size:11px;color:var(--text3);">${ar.flavor_note||''}</div>`;
+
+  // ③ フローチャート：画像スタイルの色付きボックス
   const container=document.getElementById('flowchartSteps');
   container.innerHTML='';
+  const wrap=document.createElement('div');
+  wrap.className='fc-box-wrap';
   const steps=ar.steps||[];
   steps.forEach((s,idx)=>{
     const isAuto=s.automation==='◎';
     const isSemi=s.automation==='△';
-    const borderColor=isAuto?'var(--accent)':isSemi?'var(--yellow)':'var(--border)';
-    const numBg=isAuto?'var(--accent)':isSemi?'var(--yellow)':'var(--text3)';
-    const wrap=document.createElement('div');
-    wrap.className='flow-step-wrap';
-    const badgeHtml=isAuto
-      ?`<span class="auto-badge" style="background:rgba(232,124,58,.15);color:var(--accent);">⚡ 今すぐ自動化できます</span>`
-      :isSemi?`<span class="auto-badge" style="background:rgba(232,195,58,.1);color:var(--yellow);">🔧 整理すれば自動化できます</span>`:'';
-    const noteHtml=(isAuto||isSemi)&&s.note?`<div class="flow-step-note">${badgeHtml}<br>${s.note}</div>`:
-      isAuto||isSemi?`<div class="flow-step-note">${badgeHtml}</div>`:'';
-    wrap.innerHTML=`
-      <div class="flow-step ${isAuto?'auto-step':isSemi?'semi-step':''}" style="border-color:${borderColor}">
-        <span class="flow-step-num" style="background:${numBg}">STEP ${s.step}</span>
-        <div class="flow-step-text">${s.text}</div>
-        ${noteHtml}
-      </div>
-      ${idx<steps.length-1?'<div class="flow-arrow">▼</div>':''}`;
-    container.appendChild(wrap);
+    const boxType=isAuto?'type-auto':isSemi?'type-semi':'type-manual';
+    const boxEl=document.createElement('div');
+    boxEl.className=`fc-box ${boxType}`;
+    boxEl.textContent=`${s.step}. ${s.text}`;
+    wrap.appendChild(boxEl);
+
+    // ⑤ prompt_hintがある場合はヒントボックスを表示
+    if((isAuto||isSemi) && (s.note||s.prompt_hint)){
+      const noteEl=document.createElement('div');
+      noteEl.className='fc-note';
+      let noteHtml='';
+      if(s.note)noteHtml+=`<div style="margin-bottom:${s.prompt_hint?'6px':'0'};">${isAuto?'⚡':'🔧'} ${s.note}</div>`;
+      if(s.prompt_hint)noteHtml+=`<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:6px 8px;margin-top:4px;"><div style="font-size:9px;letter-spacing:.1em;color:#9080c8;margin-bottom:3px;">▼ AIへの指示例（コピーして使えます）</div><div style="color:#c8bef8;">${s.prompt_hint}</div></div>`;
+      noteEl.innerHTML=noteHtml;
+      wrap.appendChild(noteEl);
+    }
+
+    if(idx<steps.length-1){
+      const arrow=document.createElement('div');
+      arrow.className='fc-arrow';
+      wrap.appendChild(arrow);
+    }
   });
+  container.appendChild(wrap);
 
   // 自動化サマリー
   const hasAuto=ar.has_automation;
   const count=ar.automation_count||0;
   const sumEl=document.getElementById('autoSummary');
   if(hasAuto){
-    sumEl.innerHTML=`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(232,124,58,.07);border:1px solid rgba(232,124,58,.2);border-radius:var(--radius);margin-top:4px;">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:var(--accent);">${count}</div>
+    sumEl.innerHTML=`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(124,92,216,.1);border:1px solid rgba(124,92,216,.3);border-radius:var(--radius);margin-top:4px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:#9d7fe8;">${count}</div>
       <div><div style="font-size:12px;font-weight:700;color:var(--text);">箇所に自動化の可能性があります</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">最も削減効果が大きい業務のテンプレを提供します</div></div></div>`;
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">紫のステップをクリックするとAIへの指示例が確認できます</div></div></div>`;
   }else{
     sumEl.innerHTML=`<div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-top:4px;font-size:12px;color:var(--text2);line-height:1.7;">
       <span style="color:var(--yellow);font-weight:700;">📋 現時点では自動化よりも、業務の見える化・マニュアル化が優先です。</span><br>まず手順をドキュメント化することで、改善の基盤ができます。</div>`;
@@ -679,8 +772,9 @@ function showFlowchart(){
 
   // 分岐CTA
   const ctaEl=document.getElementById('branchCta');
-  if(hasAuto){
-    const matched=(ar.matched_ids||[]).map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
+  const hasMatchedTemplate=ar.matched_ids && ar.matched_ids.length>0;
+  if(hasAuto && hasMatchedTemplate){
+    const matched=ar.matched_ids.map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
     buildSelectScreen(matched);
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
       <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
@@ -688,6 +782,15 @@ function showFlowchart(){
       <div class="branch-cta-desc">診断で特定した業務の専用Excelテンプレート・AIプロンプトを生成します。<br>削減効果が最大の業務に絞って1セット提供します。</div>
       <div class="price-badge">¥9,800（買い切り）</div><br>
       <button class="btn-p" onclick="openPayModal('auto')">テンプレ・プロンプトを取得する →</button>
+    </div>`;
+  }else if(hasAuto && !hasMatchedTemplate){
+    // 自動化ポイントはあるがテンプレが該当しない
+    ctaEl.innerHTML=`<div class="branch-cta" style="border-color:rgba(124,92,216,.5);">
+      <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:#9d7fe8;letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
+      <div class="branch-cta-title">業務フロー整理ガイドを取得する</div>
+      <div class="branch-cta-desc">上のフローチャートとAI活用ヒントをPowerPointにまとめます。<br>専用システムへの入力工程を整理し、人とAIの分担を明確にするたたき台として使えます。</div>
+      <div class="price-badge">¥9,800（買い切り）</div><br>
+      <button class="btn-p" style="background:#7c5cd8;" onclick="openPayModal('manual')">業務フロー整理ガイドを取得する →</button>
     </div>`;
   }else{
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--yellow);">
@@ -762,6 +865,7 @@ function closeModal(){document.getElementById('payModal').style.display='none';}
 async function execPayment(){
   closeModal();
   if(payRoute==='auto'){
+    // ⑥ ROI復活：自動化ルートはツール選択→ROI→成果物
     goS('s-select');uf(6);
   }else{
     await genManualPPTX();
