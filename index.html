@@ -7,6 +7,7 @@
 <meta name="description" content="業界・ポジションに合わせた診断で、AI半自動化しやすい業務を特定。専用プロンプト・Excelテンプレを生成します。">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundled.js"></script>
 <style>
 :root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2436;--border:#2a3050;--accent:#e87c3a;--blue:#3a7ce8;--text:#f0f2f8;--text2:#c0c8dc;--text3:#8892aa;--green:#3ac98a;--yellow:#e8c33a;--red:#e85a5a;--radius:6px;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -33,25 +34,20 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .card-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:7px;}
 .card-title{font-size:17px;font-weight:700;line-height:1.5;margin-bottom:5px;}
 .card-hint{font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px;}
-.q-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
-.q-bar{flex:1;height:2px;background:var(--border);border-radius:2px;}
-.q-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s;}
-.q-pt{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap;}
 .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
 .choice-grid.col3{grid-template-columns:1fr 1fr 1fr;}
 .choice-btn{padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-family:'Noto Sans JP',sans-serif;font-size:12px;cursor:pointer;text-align:left;transition:all .15s;line-height:1.4;}
 .choice-btn:hover{border-color:var(--accent);color:var(--text);}
 .choice-btn.selected{border-color:var(--accent);background:rgba(232,124,58,.1);color:var(--accent);font-weight:700;}
 .choice-btn.multi.selected{border-color:var(--blue);background:rgba(58,124,232,.1);color:var(--blue);font-weight:700;}
-.q-ex{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;margin-bottom:10px;}
-.q-ex-l{font-size:9px;color:var(--text3);letter-spacing:.15em;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
-.q-ex-t{font-size:11px;color:var(--text2);line-height:1.7;}
 .q-ta{width:100%;min-height:88px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.8;resize:vertical;outline:none;transition:border-color .2s;}
 .q-ta:focus{border-color:var(--accent);}
 .q-ta::placeholder{color:var(--text3);font-size:12px;}
 .q-input{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;margin-top:8px;}
 .q-input:focus{border-color:var(--accent);}
 .q-input::placeholder{color:var(--text3);}
+.context-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.7;}
+.context-label{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:4px;}
 .loading-box{text-align:center;padding:50px 0;}
 .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -60,26 +56,30 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .ls.active{color:var(--accent);}
 .ls.wait{color:var(--text3);}
 
-/* 診断結果カード */
+/* フローチャート */
+.flow-step-wrap{margin-bottom:0;}
+.flow-step{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;transition:border-color .2s;}
+.flow-step.auto-step{background:rgba(232,124,58,.04);}
+.flow-step.semi-step{background:rgba(232,195,58,.03);}
+.flow-step-num{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:#fff;padding:2px 8px;border-radius:3px;margin-bottom:6px;}
+.flow-step-text{font-size:13px;font-weight:600;color:var(--text);line-height:1.4;}
+.flow-step-note{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:11px;color:var(--text2);line-height:1.65;}
+.auto-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;margin-bottom:4px;}
+.flow-arrow{text-align:center;color:var(--border);padding:5px 0;font-size:13px;}
 .score-big{text-align:center;padding:18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;}
 .score-num{font-family:'IBM Plex Mono',monospace;font-size:48px;font-weight:700;line-height:1;}
 .score-label{font-size:11px;color:var(--text3);margin-top:4px;}
 .score-bar-wrap{height:7px;background:var(--border);border-radius:4px;margin:10px 0 4px;overflow:hidden;}
 .score-bar-fill{height:100%;border-radius:4px;transition:width 1.2s ease;}
+.auto-summary{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;}
+.auto-count{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;color:var(--accent);line-height:1;}
+.auto-count-label{font-size:11px;color:var(--text3);margin-top:2px;}
+.branch-cta{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;}
+.branch-cta-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.branch-cta-desc{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
+.price-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);background:rgba(232,124,58,.1);border:1px solid rgba(232,124,58,.25);padding:3px 10px;border-radius:4px;display:inline-block;margin-bottom:12px;}
 
-/* 業務カード（診断結果・説明のみ版） */
-.task-info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
-.task-info-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
-.priority-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(232,124,58,.1);border:1px solid rgba(232,124,58,.25);padding:2px 8px;border-radius:4px;}
-.task-info-name{font-size:14px;font-weight:700;}
-.task-mechanism{font-size:11px;color:var(--text3);line-height:1.65;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);}
-.task-mechanism strong{color:var(--text2);}
-.task-info-body{padding:14px 16px;}
-.can-title{font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px;}
-.cannot-title{font-size:11px;font-weight:700;color:var(--yellow);margin-bottom:6px;margin-top:10px;}
-.task-item{font-size:12px;color:var(--text2);line-height:1.75;padding:3px 0;display:flex;align-items:flex-start;gap:6px;}
-
-/* ツール選択カード */
+/* ツール選択 */
 .tool-select-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;cursor:pointer;transition:all .2s;}
 .tool-select-card:hover{border-color:var(--accent);}
 .tool-select-card.selected{border-color:var(--accent);background:rgba(232,124,58,.05);}
@@ -90,6 +90,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .chip-excel{background:rgba(58,201,138,.12);color:var(--green);border:1px solid rgba(58,201,138,.25);}
 .chip-prompt{background:rgba(58,124,232,.12);color:var(--blue);border:1px solid rgba(58,124,232,.25);}
 .chip-ocr{background:rgba(232,195,58,.12);color:var(--yellow);border:1px solid rgba(232,195,58,.25);}
+.task-info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.task-info-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.task-info-name{font-size:14px;font-weight:700;}
+.task-mechanism{font-size:11px;color:var(--text3);line-height:1.65;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.task-mechanism strong{color:var(--text2);}
+.task-info-body{padding:14px 16px;}
+.can-title{font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px;}
+.cannot-title{font-size:11px;font-weight:700;color:var(--yellow);margin-bottom:6px;margin-top:10px;}
+.task-item{font-size:12px;color:var(--text2);line-height:1.75;padding:3px 0;display:flex;align-items:flex-start;gap:6px;}
 
 /* ROI */
 .roi-box{background:var(--surface2);border:1px solid var(--green);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
@@ -100,14 +109,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .roi-l{font-size:10px;color:var(--text3);}
 .roi-summary{font-size:12px;color:var(--text2);line-height:1.8;padding:10px;background:rgba(58,201,138,.06);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);}
 .roi-summary strong{color:var(--green);}
-
-/* 定量入力 */
 .quant-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 .q-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;}
 .q-field label span{font-size:10px;color:var(--text3);font-weight:400;margin-left:4px;}
 .q-field select{width:100%;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;outline:none;font-family:'Noto Sans JP',sans-serif;}
 
-/* 成果物セクション */
+/* 成果物 */
 .output-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;}
 .output-block-header{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:10px;}
 .output-block-icon{font-size:18px;}
@@ -125,13 +132,20 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .btn-dl:hover{opacity:.88;}
 .notice{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:11px;color:var(--text3);line-height:1.6;margin-top:10px;}
 .notice strong{color:var(--yellow);}
-
 .btn-p{background:var(--accent);color:#fff;border:none;padding:11px 22px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;}
 .btn-p:hover{opacity:.85;transform:translateY(-1px);}
 .btn-p:disabled{opacity:.35;cursor:not-allowed;transform:none;}
 .btn-s{background:transparent;color:var(--text2);border:1px solid var(--border);padding:9px 16px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:13px;cursor:pointer;}
 .btn-s:hover{border-color:var(--text2);color:var(--text);}
 .nav{display:flex;justify-content:space-between;align-items:center;margin-top:16px;}
+
+/* マニュアル完了 */
+.done-box{background:var(--surface);border:1px solid var(--green);border-radius:var(--radius);padding:28px;text-align:center;}
+.done-icon{font-size:40px;margin-bottom:12px;}
+.done-title{font-size:18px;font-weight:700;margin-bottom:8px;}
+.done-desc{font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:18px;}
+.asset-note{background:rgba(58,201,138,.06);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:14px 16px;font-size:12px;color:var(--text2);line-height:1.85;text-align:left;margin-top:16px;}
+.asset-note strong{color:var(--green);}
 
 @media(max-width:480px){
   .choice-grid.col3{grid-template-columns:1fr 1fr;}
@@ -149,7 +163,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="logo-icon">業</div>
     <div>
       <div class="logo-text">業務自動化診断 | Glocal Lab.</div>
-      <div class="logo-sub">DIAGNOSE → SELECT → ROI → OUTPUT</div>
+      <div class="logo-sub">DIAGNOSE → VISUALIZE → AUTOMATE</div>
     </div>
   </div>
   <div class="pc-badge">⏱ 約5〜10分</div>
@@ -158,15 +172,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <div class="flow-bar">
   <div class="fs"><div class="fd active" id="fd0">1</div><span class="fl active" id="fl0">属性</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd1">2</div><span class="fl" id="fl1">業務診断</span></div>
+  <div class="fs"><div class="fd" id="fd1">2</div><span class="fl" id="fl1">目的</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd2">3</div><span class="fl" id="fl2">AI分析</span></div>
+  <div class="fs"><div class="fd" id="fd2">3</div><span class="fl" id="fl2">困りごと</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd3">4</div><span class="fl" id="fl3">診断結果</span></div>
+  <div class="fs"><div class="fd" id="fd3">4</div><span class="fl" id="fl3">手順</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd4">5</div><span class="fl" id="fl4">ツール選択</span></div>
+  <div class="fs"><div class="fd" id="fd4">5</div><span class="fl" id="fl4">AI分析</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd5">6</div><span class="fl" id="fl5">ROI試算</span></div>
+  <div class="fs"><div class="fd" id="fd5">6</div><span class="fl" id="fl5">フロー確認</span></div>
   <div class="fa">▶</div>
   <div class="fs"><div class="fd" id="fd6">7</div><span class="fl" id="fl6">成果物</span></div>
 </div>
@@ -178,7 +192,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="card">
     <div class="card-label">STEP 1｜あなたについて</div>
     <div class="card-title">まず業界とポジションを教えてください</div>
-    <div class="card-hint">回答に合わせて、次の質問の記入例が変わります。</div>
+    <div class="card-hint">回答に合わせて、次の質問の内容が変わります。</div>
     <div style="margin-bottom:18px;">
       <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">あなたの業界</div>
       <div class="choice-grid col3" id="industryGrid">
@@ -203,82 +217,123 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       </div>
     </div>
   </div>
-  <div class="nav"><span></span><button class="btn-p" id="btnA" onclick="startDiag()" disabled>次へ：業務診断 →</button></div>
+  <div class="nav"><span></span><button class="btn-p" id="btnA" onclick="goGoals()" disabled>次へ：目的を教えてください →</button></div>
 </div>
 
-<!-- ② 業務診断 -->
-<div class="screen" id="s-diag">
-  <div class="q-bar-wrap">
-    <div class="q-bar"><div class="q-bar-fill" id="qFill" style="width:0%"></div></div>
-    <div class="q-pt" id="qPt">Q1 / 5</div>
-  </div>
+<!-- ② 目的 Q1 -->
+<div class="screen" id="s-goals">
   <div class="card">
-    <div class="card-label" id="qLabel">QUESTION 01</div>
-    <div class="card-title" id="qTitle"></div>
-    <div class="card-hint" id="qHint"></div>
-    <div class="q-ex" id="qExWrap"><div class="q-ex-l">業界別の記入例</div><div class="q-ex-t" id="qEx"></div></div>
-    <div id="qChoiceArea"></div>
-    <textarea class="q-ta" id="qAns" placeholder="ここに自由に書いてください"></textarea>
+    <div class="card-label">STEP 2｜診断の目的</div>
+    <div class="card-title">この診断で知りたいことを教えてください</div>
+    <div class="card-hint">当てはまるものをすべて選んでください（複数選択OK）</div>
+    <div class="choice-grid" id="goalsGrid">
+      <button class="choice-btn multi" onclick="toggleGoal(this,'自分の仕事を減らしたい')">📉 自分の仕事を減らしたい</button>
+      <button class="choice-btn multi" onclick="toggleGoal(this,'自動化できる作業を見つけたい')">⚡ 自動化できる作業を見つけたい</button>
+      <button class="choice-btn multi" onclick="toggleGoal(this,'スタッフに任せる仕組みを作りたい')">👥 スタッフに任せる仕組みを作りたい</button>
+      <button class="choice-btn multi" onclick="toggleGoal(this,'業務を整理・見える化したい')">🗺 業務を整理・見える化したい</button>
+      <button class="choice-btn multi" onclick="toggleGoal(this,'AIやITツールの導入を検討している')">🤖 AIやITツールの導入を検討している</button>
+    </div>
   </div>
   <div class="nav">
-    <button class="btn-s" id="btnBack" onclick="prevQ()">← 戻る</button>
-    <button class="btn-p" id="btnNext" onclick="nextQ()">次へ →</button>
+    <button class="btn-s" onclick="goS('s-attr');uf(0)">← 戻る</button>
+    <button class="btn-p" id="btnGoals" onclick="goPain()" disabled>次へ →</button>
   </div>
 </div>
 
-<!-- ③ AI分析中 -->
+<!-- ③ 困りごと Q2 -->
+<div class="screen" id="s-pain">
+  <div class="card">
+    <div class="card-label">STEP 3｜困りごと</div>
+    <div class="card-title">今一番困っていることは何でしょうか？</div>
+    <div class="card-hint">業務の中で、「ここが大変・時間がかかる・なんとかしたい」と感じることを教えてください。</div>
+    <textarea class="q-ta" id="painAns" rows="4" placeholder="例：毎月の請求書の照合に時間がかかっている&#10;例：担当者が変わるたびに引き継ぎが大変&#10;例：同じ内容を何度も別のファイルに入力している" oninput="chkPain()"></textarea>
+  </div>
+  <div class="nav">
+    <button class="btn-s" onclick="goS('s-goals');uf(1)">← 戻る</button>
+    <button class="btn-p" id="btnPain" onclick="goSteps()" disabled>次へ →</button>
+  </div>
+</div>
+
+<!-- ④ 手順 Q2-1 -->
+<div class="screen" id="s-steps">
+  <div class="card">
+    <div class="card-label">STEP 4｜業務の手順</div>
+    <div class="card-title" id="stepsTitle">その業務について、手順を教えてください</div>
+    <div class="card-hint">取り掛かりから完了まで、できるだけ具体的に。「誰が・何を・どの順番で」書いていただけると精度が上がります。</div>
+    <div class="context-box" id="stepsContext">
+      <div class="context-label">FOCUS</div>
+      <div id="stepsContextText"></div>
+    </div>
+    <textarea class="q-ta" id="stepsAns" rows="6" placeholder="例：&#10;1. 仕入先からFAXで請求書が届く&#10;2. 金額・品目を確認してExcelに手入力する&#10;3. 上司にメールで確認を送る&#10;4. 承認後、会計ソフトに再入力する&#10;5. 振込処理をする" oninput="chkSteps()"></textarea>
+  </div>
+  <div class="nav">
+    <button class="btn-s" onclick="goS('s-pain');uf(2)">← 戻る</button>
+    <button class="btn-p" id="btnSteps" onclick="startAnalysis()" disabled>AIに分析してもらう →</button>
+  </div>
+</div>
+
+<!-- ⑤ AI分析中 -->
 <div class="screen" id="s-analyzing">
   <div class="loading-box">
     <div class="spinner"></div>
     <div style="font-size:16px;font-weight:700;margin-bottom:6px">AIが業務を分析しています…</div>
-    <div style="font-size:12px;color:var(--text3)">AI半自動化しやすい業務を特定中</div>
+    <div style="font-size:12px;color:var(--text3)">業務フローを整理・自動化ポイントを特定中</div>
     <div style="margin-top:18px;display:inline-block;text-align:left;">
       <div class="ls done" id="ls1">✓ 回答を受け取りました</div>
-      <div class="ls active" id="ls2">▶ くり返し・転記・確認作業を特定中</div>
-      <div class="ls wait" id="ls3">　 AI半自動化トップ10と照合</div>
-      <div class="ls wait" id="ls4">　 アドバイスを生成中</div>
+      <div class="ls active" id="ls2">▶ 業務フローを整理しています</div>
+      <div class="ls wait" id="ls3">　 自動化できる工程を特定中</div>
+      <div class="ls wait" id="ls4">　 フローチャートを作成中</div>
     </div>
   </div>
 </div>
 
-<!-- ④ 診断結果（説明のみ・ダウンロードなし） -->
-<div class="screen" id="s-result">
+<!-- ⑥ フローチャート（無料） -->
+<div class="screen" id="s-flowchart">
   <div class="card">
-    <div class="card-label">STEP 4｜AI診断結果</div>
-    <div class="card-title">あなたの業務 自動化診断が完了しました</div>
+    <div class="card-label">STEP 6｜AI診断結果（無料）</div>
+    <div class="card-title">あなたの業務フロー — 自動化診断</div>
     <div class="score-big">
-      <div class="score-num" id="scoreBig" style="color:var(--accent)">0</div>
+      <div class="score-num" id="fcScore" style="color:var(--accent)">0</div>
       <div class="score-label">自動化ポテンシャルスコア（100点満点）</div>
-      <div class="score-bar-wrap"><div class="score-bar-fill" id="scoreBar" style="width:0%;background:var(--accent)"></div></div>
+      <div class="score-bar-wrap"><div class="score-bar-fill" id="fcBar" style="width:0%;background:var(--accent)"></div></div>
     </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.85;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;" id="resultComment"></div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">次のページで、どのツールを使うか選んでいただきます。</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.85;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;" id="fcComment"></div>
   </div>
-  <div id="taskInfoCards"></div>
+
+  <!-- フローチャート本体 -->
+  <div class="card">
+    <div class="card-label">FLOWCHART</div>
+    <div id="fcFlavorNote" style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);"></div>
+    <div id="flowchartSteps"></div>
+    <div id="autoSummary" style="margin-top:14px;"></div>
+  </div>
+
+  <!-- 分岐CTA -->
+  <div id="branchCta"></div>
+
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-diag');uf(1)">← 戻る</button>
-    <button class="btn-p" onclick="goS('s-select');uf(4)">ツールを選ぶ →</button>
+    <button class="btn-s" onclick="goS('s-steps');uf(3)">← 手順を修正する</button>
   </div>
 </div>
 
-<!-- ⑤ ツール選択 -->
+<!-- ⑦-A ツール選択（自動化ルート） -->
 <div class="screen" id="s-select">
   <div class="card">
-    <div class="card-label">STEP 5｜ツール選択</div>
-    <div class="card-title" id="selectTitle">どちらのツールが今一番必要ですか？</div>
-    <div class="card-hint">診断結果から絞り込まれた候補です。1つ選んでください。その業務に特化したExcel・プロンプトを生成します。</div>
+    <div class="card-label">STEP 7｜ツール選択</div>
+    <div class="card-title" id="selectTitle">どの業務から始めますか？</div>
+    <div class="card-hint">診断結果から絞り込まれた候補です。1つ選んでください。専用のExcel・プロンプトを生成します。</div>
     <div id="toolSelectCards"></div>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-result');uf(3)">← 戻る</button>
-    <button class="btn-p" id="btnSelect" onclick="goS('s-roi');uf(5)" disabled>ROIを試算する →</button>
+    <button class="btn-s" onclick="goS('s-flowchart');uf(5)">← 戻る</button>
+    <button class="btn-p" id="btnSelect" onclick="goROI()" disabled>ROIを試算する →</button>
   </div>
 </div>
 
-<!-- ⑥ ROI試算 -->
+<!-- ⑦-A ROI試算 -->
 <div class="screen" id="s-roi">
   <div class="card">
-    <div class="card-label">STEP 6｜作業量の入力</div>
+    <div class="card-label">STEP 7｜作業量の入力</div>
     <div class="card-title">月に何時間削減できるか試算します</div>
     <div class="card-hint">選択した業務の現在の作業量を教えてください。</div>
     <div class="quant-grid">
@@ -298,12 +353,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-select');uf(4)">← 戻る</button>
+    <button class="btn-s" onclick="goS('s-select');uf(6)">← 戻る</button>
     <button class="btn-p" id="btnROI" onclick="calcROI()">試算する →</button>
   </div>
 </div>
 
-<!-- ⑦ 成果物（全部ここに） -->
+<!-- ⑦-A 成果物（自動化ルート） -->
 <div class="screen" id="s-output">
   <div class="card">
     <div class="card-label">STEP 7｜成果物</div>
@@ -315,15 +370,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="output-block" id="blockPrompt" style="display:none;">
     <div class="output-block-header">
       <span class="output-block-icon">📋</span>
-      <div>
-        <div class="output-block-title">AIプロンプト（Excel作成用）</div>
-      </div>
+      <div><div class="output-block-title">AIプロンプト（Excel作成用）</div></div>
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="promptDesc"></div>
       <div class="output-steps">
         <div class="output-step"><span class="step-num">1</span>下のプロンプトをコピーしてください</div>
-        <div class="output-step"><span class="step-num">2</span>ChatGPT・Claude・Geminiを開いて貼り付けてください</div>
+        <div class="output-step"><span class="step-num">2</span>無料のClaude（claude.ai）またはGemini（gemini.google.com）を開いて貼り付けてください</div>
         <div class="output-step"><span class="step-num">3</span>AIがあなたの業務専用のExcelを自動で作成します</div>
         <div class="output-step"><span class="step-num">4</span>生成されたExcelをダウンロードして使い始めてください</div>
       </div>
@@ -336,14 +389,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="output-block" id="blockOcr" style="display:none;">
     <div class="output-block-header">
       <span class="output-block-icon">📷</span>
-      <div>
-        <div class="output-block-title">OCR転記プロンプト（写真→データ変換用）</div>
-      </div>
+      <div><div class="output-block-title">OCR転記プロンプト（写真→データ変換用）</div></div>
     </div>
     <div class="output-block-body">
       <div class="output-steps">
         <div class="output-step"><span class="step-num">1</span>紙の書類や領収書の写真を撮影してください</div>
-        <div class="output-step"><span class="step-num">2</span>下のプロンプトをコピーし、ChatGPT・Claude・Geminiに写真と一緒に送ってください</div>
+        <div class="output-step"><span class="step-num">2</span>下のプロンプトをコピーし、無料のClaude（claude.ai）またはGemini（gemini.google.com）に写真と一緒に送ってください</div>
         <div class="output-step"><span class="step-num">3</span>AIが表形式で出力するので、Excelにコピー＆ペーストしてください</div>
       </div>
       <div class="prompt-box" id="ocrTxt"></div>
@@ -355,20 +406,17 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="output-block" id="blockExcel" style="display:none;">
     <div class="output-block-header">
       <span class="output-block-icon">📊</span>
-      <div>
-        <div class="output-block-title">Excelテンプレート（すぐ使える標準版）</div>
-      </div>
+      <div><div class="output-block-title">Excelテンプレート（すぐ使える標準版）</div></div>
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="excelDesc"></div>
-      <div style="font-size:12px;color:var(--green);background:rgba(58,201,138,.08);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;" id="excelPromptNote" style="display:none;">
+      <div style="font-size:12px;color:var(--green);background:rgba(58,201,138,.08);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;">
         💡 このExcelファイルの最後の「README＆プロンプト」シートに、AIへの指示プロンプトとOCRプロンプトも入っています。
       </div>
       <div class="output-steps">
         <div class="output-step"><span class="step-num">1</span>下のボタンでExcelをダウンロードしてください</div>
-        <div class="output-step"><span class="step-num">2</span>「README＆プロンプト」シートを開くと使い方・AIプロンプト・OCRプロンプトが入っています</div>
+        <div class="output-step"><span class="step-num">2</span>「README＆プロンプト」シートを開くと使い方・プロンプトが確認できます</div>
         <div class="output-step"><span class="step-num">3</span>メインシートにそのまま入力を始めてください</div>
-        <div class="output-step"><span class="step-num">4</span>上のAIプロンプトをChatGPT・Claude等に貼り付けると、さらにカスタマイズしたExcelも作れます</div>
       </div>
       <button class="btn-dl" id="btnDL">⬇ Excelをダウンロード</button>
       <div class="notice"><strong>⚠ Excelのダウンロードは PC（Windows・Mac）を推奨しています。</strong><br>スマートフォンからは上のプロンプトのコピーをご利用ください。</div>
@@ -380,23 +428,46 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
+<!-- ⑦-B マニュアルルート完了 -->
+<div class="screen" id="s-manual">
+  <div class="done-box">
+    <div class="done-icon">📋</div>
+    <div class="done-title">業務フロー整理ガイドが完成しました</div>
+    <div class="done-desc">PowerPointファイルのダウンロードが始まります。<br>開けない場合は下のボタンから再ダウンロードしてください。</div>
+    <button class="btn-dl" id="btnReDownload" style="margin:0 auto;display:inline-flex;">⬇ 再ダウンロード</button>
+    <div class="asset-note">
+      <strong>このたたき台を「資産」に変えるために：</strong><br><br>
+      このガイドは完成品ではありません。<br>
+      あなたが肉付けするほど、会社固有の資産になります。<br><br>
+      ① 各ステップを自分の言葉で書き直す<br>
+      ② 判断基準・グレーゾーンの扱いを追記する<br>
+      ③ スクリーンショットや図を貼り付ける<br>
+      ④ 担当者が変わるたびに更新する習慣をつける<br><br>
+      <strong>誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。</strong>
+    </div>
+  </div>
+  <div style="margin-top:14px;text-align:center;">
+    <button class="btn-s" onclick="restart()">最初からやり直す</button>
+  </div>
+</div>
+
 <!-- 課金モーダル -->
-<div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeModal()">
+<div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeModal()">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:440px;width:100%;animation:fadeIn .2s ease;">
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">DOWNLOAD</div>
-    <div style="font-size:17px;font-weight:700;margin-bottom:10px;">Excelをダウンロードします</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;" id="modalLabel">DOWNLOAD</div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:10px;" id="modalTitle">成果物を生成します</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:20px;" id="modalDesc"></div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:20px;">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">このExcelに含まれるもの：</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">含まれるもの：</div>
       <div id="modalContents" style="font-size:12px;color:var(--text2);line-height:1.9;"></div>
     </div>
     <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:12px;margin-bottom:20px;font-size:12px;color:var(--text2);line-height:1.7;">
-      💳 <strong style="color:var(--accent);">このダウンロードは有料コンテンツです（¥9,800・買い切り）</strong><br>
+      💳 <strong style="color:var(--accent);">このコンテンツは有料です（¥9,800・買い切り）</strong><br>
       購入後、何度でも再診断・再生成できます。更新料はありません。
     </div>
     <div style="display:flex;gap:10px;">
       <button class="btn-s" onclick="closeModal()" style="flex:1">キャンセル</button>
-      <button class="btn-dl" onclick="execDownload()" style="flex:2;justify-content:center;">⬇ ダウンロードする</button>
+      <button class="btn-dl" id="btnExec" onclick="execPayment()" style="flex:2;justify-content:center;">⬇ 生成する</button>
     </div>
   </div>
 </div>
@@ -404,6 +475,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 </div><!-- /main -->
 
 <script>
+// ===== データ =====
 const IND_EX={
   '製造・物流':'毎朝の生産実績入力、週次の在庫棚卸し確認、月末の出荷実績集計、仕入先への発注メール、納品書のファイリング',
   '医療・介護':'毎日の訪問記録入力、週次のシフト表作成、月末の請求書発行、利用者への連絡・リマインド、ケア記録の転記',
@@ -413,336 +485,231 @@ const IND_EX={
 };
 
 const TOP10=[
-  {id:'invoice',name:'請求書発行',mechanism:'顧客データからAIがドラフト作成、承認フローで自動送信',
-   canDo:['請求書テンプレート（Excel）','顧客データ差し込みプロンプト'],
-   cannotDo:['自動送信・会計ソフト連携はfreee/MFクラウドのAPI活用を推奨'],
-   hasExcel:true,hasPrompt:true,hasOcr:false,
-   promptText:(i,p)=>`以下の条件で請求書テンプレートExcelを作成してください。
-
-業界：${i}　ポジション：${p}
-
-■ Sheet1：請求書テンプレート
-・請求先会社名・担当者名・請求日・支払期限の入力欄
-・品目・数量・単価・小計を入力すると合計・税額・請求金額が自動計算
-・振込先情報の固定欄（銀行名・支店名・口座種別・口座番号・口座名義）
-・「発行済」「未払い」「入金確認済」のステータス管理欄
-
-■ Sheet2：顧客マスター
-・会社名・担当者名・メールアドレス・支払サイトを管理
-・請求書シートのプルダウンと連動
-
-■ Sheet3：発行履歴
-・請求日・請求先・金額・入金状況を一覧管理
-
-マクロ不使用・数式のみ・日本語で作成してください。`,
-   ocrText:null,
-   excelDesc:'請求書テンプレート・顧客マスター・発行履歴の3シート構成。入力すると合計・税額が自動計算されます。READMEシートに使い方とカスタマイズ用プロンプトが入っています。',
-   excelFn:genInvoiceExcel},
-
-  {id:'reconcile',name:'入金確認・消込',mechanism:'銀行データと請求データをAI照合、未消込を自動通知',
+  {id:'expense',name:'経費精算',mechanism:'OCRで領収書読み取り、規程チェック、一次振り分け',
+   canDo:['経費精算チェックシート（Excel）','領収書OCR転記プロンプト'],
+   cannotDo:['自動仕訳・会計ソフト連携は freee/MFクラウドの経費精算機能が最短経路'],
+   hasExcel:true,hasPrompt:true,hasOcr:true,
+   promptText:(i,p)=>`以下の条件で経費精算チェックシートExcelを作成してください。\n\n業界：${i}　ポジション：${p}\n\n■ Sheet1：経費入力チェック\n入力項目：日付・費目・摘要・金額・添付書類有無・支払方法・承認者\n・費目はドロップダウン（交通費/宿泊費/会議費/接待費/消耗品費/通信費/研修費/その他）\n・接待費が5,000円超で「要確認」フラグ\n・添付書類なしで3,000円超なら「NG：添付必須」\n・未来日付・90日超過は「NG」\n・NG行は赤、要確認行は黄で自動ハイライト\n・総合判定列に「OK/要確認/NG」を自動表示\n\n■ Sheet2：規程設定\n接待費上限・宿泊費上限・領収書不要ライン・申請期限日数を変更できるシート\n\n■ Sheet3：費目別集計\n費目ごとの合計金額・件数・NG件数を自動集計\n\nマクロ不使用・数式と条件付き書式のみ・日本語で作成してください。`,
+   ocrText:(i)=>`添付の領収書・レシート画像から以下の項目を読み取り、表形式で出力してください。\n\n【読み取り項目】\n| 日付(YYYY/MM/DD) | 支払先・店名 | 金額（数字のみ） | 費目 | 支払方法 |\n\n費目の選択肢：交通費・宿泊費・会議費・接待費・消耗品費・通信費・研修費・その他\n支払方法の選択肢：現金・法人カード・立替\n読み取れない項目は「不明」と記載、金額はカンマ・円マーク不要\n複数枚ある場合はまとめて1つの表にしてください\nExcelの「経費入力チェック」シートにコピー＆ペーストできる形式で出力してください`,
+   excelDesc:'経費入力チェック・規程設定・費目別集計の3シート構成。NG行は赤・要確認行は黄で自動ハイライトされます。',
+   excelFn:genExpenseExcel},
+  {id:'reconcile',name:'入金消込',mechanism:'銀行入金データと請求データの照合をルール化・半自動化',
    canDo:['入金消込チェックシート（Excel）','銀行明細OCR転記プロンプト'],
    cannotDo:['銀行API連携はネットバンキングのCSV出力→Excel取込で代替可能'],
    hasExcel:true,hasPrompt:true,hasOcr:true,
-   promptText:(i,p)=>`以下の条件で入金消込管理Excelを作成してください。
-
-業界：${i}
-
-■ Sheet1：請求データ
-入力項目：請求書番号・得意先名・請求金額・支払期日・消込状況（未消込/消込済/一部消込）
-・支払期日を過ぎた未消込請求を赤でハイライト
-・月次の未消込合計を自動集計
-
-■ Sheet2：入金データ
-入力項目：入金日・振込人名・入金金額・照合メモ
-
-■ Sheet3：照合チェック
-・請求金額と入金金額の差異を自動計算
-・差異がある場合「要確認」フラグを自動表示
-・「消込完了」「要確認」「未入金」で行全体を色分け
-
-マクロ不使用・数式と条件付き書式のみ・日本語で作成してください。`,
-   ocrText:(i)=>`添付の通帳または銀行の入金明細画像から全行を読み取り、表形式で出力してください。
-
-【読み取り項目】
-| 日付(YYYY/MM/DD) | 振込人名 | 入金額（数字のみ） | 出金額（数字のみ） | 残高（数字のみ） | 摘要 |
-
-・金額はカンマ・円マーク不要で数字のみ
-・読み取れない項目は空欄
-・複数枚ある場合は1つの表にまとめてください
-・Excelの「入金データ」シートにコピー＆ペーストできる形式にしてください`,
-   excelDesc:'請求データ・入金データ・照合チェックの3シート構成。差異・遅延が自動フラグ表示されます。READMEシートに使い方と銀行明細OCRプロンプトが入っています。',
+   promptText:(i,p)=>`以下の条件で入金消込管理Excelを作成してください。\n\n業界：${i}\n\n■ Sheet1：請求データ\n入力項目：請求書番号・得意先名・請求金額・支払期日・消込状況（未消込/消込済/一部消込）\n・支払期日を過ぎた未消込請求を赤でハイライト\n・月次の未消込合計を自動集計\n\n■ Sheet2：入金データ\n入力項目：入金日・振込人名・入金金額・照合メモ\n\n■ Sheet3：照合チェック\n・請求金額と入金金額の差異を自動計算\n・差異がある場合「要確認」フラグを自動表示\n・「消込完了」「要確認」「未入金」で行全体を色分け\n\nマクロ不使用・数式と条件付き書式のみ・日本語で作成してください。`,
+   ocrText:(i)=>`添付の通帳または銀行の入金明細画像から全行を読み取り、表形式で出力してください。\n\n【読み取り項目】\n| 日付(YYYY/MM/DD) | 振込人名 | 入金額（数字のみ） | 出金額（数字のみ） | 残高（数字のみ） | 摘要 |\n\n・金額はカンマ・円マーク不要で数字のみ\n・読み取れない項目は空欄\n・複数枚ある場合は1つの表にまとめてください\n・Excelの「入金データ」シートにコピー＆ペーストできる形式にしてください`,
+   excelDesc:'請求データ・入金データ・照合チェックの3シート構成。差異・遅延が自動フラグ表示されます。',
    excelFn:genReconcileExcel},
-
-  {id:'expense',name:'経費精算',mechanism:'OCRで領収書読み取り、規程チェック、自動仕訳',
-   canDo:['経費精算チェックシート（Excel）','領収書OCR転記プロンプト'],
-   cannotDo:['自動仕訳・会計ソフト連携はfreee/MFクラウドの経費精算機能が最短経路'],
-   hasExcel:true,hasPrompt:true,hasOcr:true,
-   promptText:(i,p)=>`以下の条件で経費精算チェックシートExcelを作成してください。
-
-業界：${i}　ポジション：${p}
-
-■ Sheet1：経費入力チェック
-入力項目：日付・費目・摘要・金額・添付書類有無・支払方法・承認者
-・費目はドロップダウン（交通費/宿泊費/会議費/接待費/消耗品費/通信費/研修費/その他）
-・接待費が5,000円超で「要確認」フラグ
-・添付書類なしで3,000円超なら「NG：添付必須」
-・未来日付・90日超過は「NG」
-・NG行は赤、要確認行は黄で自動ハイライト
-・総合判定列に「OK/要確認/NG」を自動表示
-
-■ Sheet2：規程設定
-接待費上限・宿泊費上限・領収書不要ライン・申請期限日数を変更できるシート
-
-■ Sheet3：費目別集計
-費目ごとの合計金額・件数・NG件数を自動集計
-
-マクロ不使用・数式と条件付き書式のみ・日本語で作成してください。`,
-   ocrText:(i)=>`添付の領収書・レシート画像から以下の項目を読み取り、表形式で出力してください。
-
-【読み取り項目】
-| 日付(YYYY/MM/DD) | 支払先・店名 | 金額（数字のみ） | 費目 | 支払方法 |
-
-費目の選択肢：交通費・宿泊費・会議費・接待費・消耗品費・通信費・研修費・その他
-支払方法の選択肢：現金・法人カード・立替
-読み取れない項目は「不明」と記載、金額はカンマ・円マーク不要
-複数枚ある場合はまとめて1つの表にしてください
-Excelの「経費入力チェック」シートにコピー＆ペーストできる形式で出力してください`,
-   excelDesc:'経費入力チェック・規程設定・費目別集計の3シート構成。NG行は赤・要確認行は黄で自動ハイライトされます。READMEシートに使い方と領収書OCRプロンプトが入っています。',
-   excelFn:genExpenseExcel},
-
-  {id:'journal',name:'仕訳入力・会計入力',mechanism:'AI-OCRで請求書から自動仕訳、会計ソフト連携',
-   canDo:['仕訳候補提示プロンプト（AIが仕訳案を提示）','請求書・領収書OCRプロンプト'],
-   cannotDo:['会計ソフトへの自動連携はfreee/弥生/MFクラウドのCSVインポート機能を活用','AI-OCR専用サービス（インフォマート等）との連携で完全自動化が可能'],
-   hasExcel:false,hasPrompt:true,hasOcr:true,
-   promptText:(i,p)=>`添付の請求書・領収書から仕訳候補を提示してください。
-
-業界：${i}
-
-【出力形式】
-| 日付 | 借方科目 | 借方金額 | 貸方科目 | 貸方金額 | 摘要 |
-
-・一般的な${i}の勘定科目を使ってください
-・消費税は税抜き処理で提示してください
-・不明な点は「要確認」と記載してください
-・出力後、会計ソフトのインポート用CSVに転記しやすい形式にしてください`,
-   ocrText:(i)=>`添付の請求書・納品書・領収書から以下の情報を読み取ってください。
-
-【読み取り項目】
-・発行日・発行元（会社名）・品目・数量・単価・小計・税額・合計金額・支払期日
-
-金額はカンマ・円マーク不要で数字のみ。読み取り後、仕訳候補も併せて提示してください。`,
-   excelDesc:null,excelFn:null},
-
-  {id:'email',name:'定型メール送信',mechanism:'AIで内容生成、テンプレートから自動作成（催促・お礼など）',
-   canDo:['シーン別定型メールプロンプト集'],
-   cannotDo:['自動送信はGmailのGoogle Apps Script（GAS）またはOutlookのPower Automateが有効'],
-   hasExcel:false,hasPrompt:true,hasOcr:false,
-   promptText:(i,p)=>`以下のシーン別に、${i}向けの定型メール文を作成してください。
-
-【シーン1：支払い催促メール】
-相手：取引先（支払期日超過）
-トーン：丁寧かつ明確
-含める内容：請求書番号・金額・支払期日・振込先
-
-【シーン2：注文確認メール】
-相手：仕入先または顧客
-含める内容：品目・数量・納期・担当者名
-
-【シーン3：納期遅延お詫びメール】
-相手：顧客
-トーン：誠実・簡潔
-含める内容：遅延理由・新しい納期・再発防止策
-
-各メールは件名・本文・署名欄の形式で作成してください。
-【会社名】【担当者名】【金額】などは括弧付きで穴埋め形式にしてください。`,
-   ocrText:null,excelDesc:null,excelFn:null},
-
-  {id:'order',name:'受注受付・発注処理',mechanism:'メール・フォームからAI抽出、在庫確認後自動承認',
-   canDo:['受注・発注管理シート（Excel）','受注メール情報抽出プロンプト'],
-   cannotDo:['在庫システムとの自動連携は基幹システムのAPI連携が必要','受注フォーム自動化はGoogleフォーム＋GASで低コスト構築可能'],
+  {id:'invoice',name:'請求書発行',mechanism:'顧客データからドラフト作成・発行履歴管理',
+   canDo:['請求書テンプレート（Excel）','顧客データ差し込みプロンプト'],
+   cannotDo:['自動送信・会計ソフト連携はfreee/MFクラウドのAPI活用を推奨'],
    hasExcel:true,hasPrompt:true,hasOcr:false,
-   promptText:(i,p)=>`以下のメール文から受注情報を抽出し、表形式で出力してください。
-
-（対象メールをここに貼り付けてください）
-
-【抽出項目】
-| 受注日 | 顧客名 | 品目・品番 | 数量 | 希望納期 | 特記事項 |
-
-抽出後、以下も確認してください：
-□ 在庫確認が必要か
-□ 納期に無理がないか
-□ 特殊対応が必要か
-
-Excelの受注管理シートにコピー＆ペーストできる形式にしてください。`,
+   promptText:(i,p)=>`以下の条件で請求書テンプレートExcelを作成してください。\n\n業界：${i}　ポジション：${p}\n\n■ Sheet1：請求書テンプレート\n・請求先会社名・担当者名・請求日・支払期限の入力欄\n・品目・数量・単価・小計を入力すると合計・税額・請求金額が自動計算\n・振込先情報の固定欄（銀行名・支店名・口座種別・口座番号・口座名義）\n・「発行済」「未払い」「入金確認済」のステータス管理欄\n\n■ Sheet2：顧客マスター\n・会社名・担当者名・メールアドレス・支払サイトを管理\n\n■ Sheet3：発行履歴\n・請求日・請求先・金額・入金状況を一覧管理\n\nマクロ不使用・数式のみ・日本語で作成してください。`,
    ocrText:null,
-   excelDesc:'受注管理・発注管理の2シート構成。ステータス管理・集計が自動化されています。',
-   excelFn:genOrderExcel},
-
-  {id:'attendance',name:'勤怠確認・締め処理',mechanism:'タイムカードOCRやアプリ連携で自動集計、異常検知',
-   canDo:['勤怠集計シート（Excel）','タイムカードOCRプロンプト'],
-   cannotDo:['勤怠アプリ（KING OF TIME・ジョブカン等）との連携で完全自動化が可能'],
-   hasExcel:true,hasPrompt:false,hasOcr:true,
-   promptText:null,
-   ocrText:(i)=>`添付のタイムカードまたは出勤簿の画像から勤怠情報を読み取り、表形式で出力してください。
-
-【読み取り項目】
-| 氏名 | 日付 | 出勤時刻 | 退勤時刻 | 休憩時間（分） | 実働時間 | 備考 |
-
-・実働時間は退勤−出勤−休憩で計算してください
-・読み取れない項目は「要確認」と記載
-・月間の合計実働時間も計算してください`,
-   excelDesc:'勤怠入力シートと月次集計の構成。実働時間・残業時間が自動計算されます。',
-   excelFn:genAttendanceExcel},
-
-  {id:'stock',name:'備品・消耗品の補充管理',mechanism:'在庫スキャン＋AI予測で自動発注提案',
+   excelDesc:'請求書テンプレート・顧客マスター・発行履歴の3シート構成。入力すると合計・税額が自動計算されます。',
+   excelFn:genInvoiceExcel},
+  {id:'email',name:'定型メール作成',mechanism:'シーン別テンプレート化・AIでドラフト生成',
+   canDo:['シーン別定型メールプロンプト集（無料AIで即生成）'],
+   cannotDo:['自動送信はGmailのフィルタ機能またはOutlookのルール設定で代替可能'],
+   hasExcel:false,hasPrompt:true,hasOcr:false,
+   promptText:(i,p)=>`以下のシーン別に、${i}向けの定型メール文を作成してください。\n\n【シーン1：支払い催促メール】\n相手：取引先（支払期日超過）\nトーン：丁寧かつ明確\n含める内容：請求書番号・金額・支払期日・振込先\n\n【シーン2：注文確認メール】\n相手：仕入先または顧客\n含める内容：品目・数量・納期・担当者名\n\n【シーン3：納期遅延お詫びメール】\n相手：顧客\nトーン：誠実・簡潔\n含める内容：遅延理由・新しい納期・再発防止策\n\n各メールは件名・本文・署名欄の形式で作成してください。\n【会社名】【担当者名】【金額】などは括弧付きで穴埋め形式にしてください。`,
+   ocrText:null,excelDesc:null,excelFn:null},
+  {id:'stock',name:'在庫・備品管理',mechanism:'在庫数が発注点を下回ったら自動フラグ・発注メール生成',
    canDo:['在庫管理・発注管理シート（Excel）','発注メール作成プロンプト'],
    cannotDo:['バーコードスキャン連携・自動発注はスマレジ等のPOSシステムか専用アプリが必要'],
    hasExcel:true,hasPrompt:true,hasOcr:false,
-   promptText:(i,p)=>`以下の在庫リストをもとに発注が必要な品目を特定し、発注メールの文案を作成してください。
-
-（在庫リストをここに貼り付けてください）
-例：品目名・現在庫数・発注点・発注先
-
-【判断基準】
-・現在庫が発注点を下回っている品目を発注対象としてください
-・発注数量は通常発注量の提案も含めてください
-
-【出力】
-1. 発注が必要な品目一覧（表形式）
-2. 各仕入先への発注メール文案`,
+   promptText:(i,p)=>`以下の在庫リストをもとに発注が必要な品目を特定し、発注メールの文案を作成してください。\n\n（在庫リストをここに貼り付けてください）\n例：品目名・現在庫数・発注点・発注先\n\n【判断基準】\n・現在庫が発注点を下回っている品目を発注対象としてください\n・発注数量は通常発注量の提案も含めてください\n\n【出力】\n1. 発注が必要な品目一覧（表形式）\n2. 各仕入先への発注メール文案`,
    ocrText:null,
    excelDesc:'在庫管理シート。現在庫が発注点を下回ると「★発注必要」が自動表示されます。',
    excelFn:genStockExcel},
 ];
 
-const QS=[
-  {label:'QUESTION 01',title:'毎日・毎週・毎月、決まった手順でくり返している作業を教えてください',hint:'「いつも同じやり方でやっている」ものが対象です。思い浮かぶものをすべて書いてください。',showEx:true,choice:null,ph:'思い浮かぶものをすべて書いてください'},
-  {label:'QUESTION 02',title:'紙・メール・別のファイルを見ながら、別の場所に書き写す作業はありますか？',hint:'どんな情報を、どこからどこへ転記していますか？',showEx:false,choice:null,ph:'例：FAXの内容をExcelに転記、通帳を見ながら台帳に入力'},
-  {label:'QUESTION 03',title:'ミスが怖くて何度も見直す作業、または抜け漏れが起きやすい作業はありますか？',hint:'チェックや確認に時間がかかっている作業を教えてください。',showEx:false,choice:null,ph:'例：請求書の金額確認、送付前のチェック'},
-  {label:'QUESTION 04',title:'あなたが休んだとき、誰かが困る作業はありますか？',hint:'その作業の手順書・マニュアルはありますか？',showEx:false,choice:'single',choices:['手順書がある','自分の頭の中にだけある','引き継いだことがない','特にない'],ph:'どんな作業が属人化していますか？（省略可）'},
-  {label:'QUESTION 05',title:'この診断で一番知りたいことは何ですか？',hint:'当てはまるものをすべて選んでください。',showEx:false,choice:'multi',choices:['自分の仕事を減らしたい','自動化できる作業を見つけたい','スタッフに任せる仕組みを作りたい','業務を整理・見える化したい','AIやITツールの導入を検討している'],ph:'その他にあれば補足してください（省略可）'},
-];
+// ===== 状態変数 =====
+let ind='',pos='';
+let q1Goals=[];
+let q2Pain='';
+let q2_1Steps='';
+let ar=null;
+let selectedToolId=null;
+let payRoute=''; // 'auto' or 'manual'
 
-let ind='',pos='',curQ=0,ans=new Array(5).fill(''),multi=[],single='',ar=null,selectedToolId=null;
-
+// ===== ユーティリティ =====
 function uf(a){for(let i=0;i<7;i++){const d=document.getElementById('fd'+i),l=document.getElementById('fl'+i);if(!d||!l)continue;d.className='fd'+(i<a?' done':i===a?' active':'');l.className='fl'+(i<a?' done':i===a?' active':'');d.textContent=i<a?'✓':i+1;}}
 function goS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
 
+// ===== Q0: 属性 =====
 function selInd(btn,v){document.querySelectorAll('#industryGrid .choice-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');ind=v;document.getElementById('otherWrap').style.display=v==='その他'?'block':'none';chkAttr();}
 function selPos(btn,v){document.querySelectorAll('#posGrid .choice-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');pos=v;chkAttr();}
 function chkAttr(){const ok=ind!==''&&(ind!=='その他'||document.getElementById('otherInput').value.trim()!=='');document.getElementById('btnA').disabled=!(ok&&pos!=='');}
+function goGoals(){if(ind==='その他'){const v=document.getElementById('otherInput').value.trim();if(v)ind=v;}goS('s-goals');uf(1);}
 
-function startDiag(){if(ind==='その他'){const v=document.getElementById('otherInput').value.trim();if(v)ind=v;}curQ=0;ans=new Array(5).fill('');showQ(0);goS('s-diag');uf(1);}
+// ===== Q1: 目的 =====
+function toggleGoal(btn,v){
+  btn.classList.toggle('selected');
+  if(btn.classList.contains('selected')){if(!q1Goals.includes(v))q1Goals.push(v);}
+  else q1Goals=q1Goals.filter(x=>x!==v);
+  document.getElementById('btnGoals').disabled=q1Goals.length===0;
+}
+function goPain(){goS('s-pain');uf(2);}
 
-function showQ(i){
-  const q=QS[i];multi=[];single='';
-  document.getElementById('qLabel').textContent=q.label;
-  document.getElementById('qTitle').textContent=q.title;
-  document.getElementById('qHint').textContent=q.hint;
-  const ex=document.getElementById('qExWrap');
-  if(q.showEx){document.getElementById('qEx').textContent=IND_EX[ind]||'定期的に行っている書類作成、データ入力・集計作業、確認・チェック作業、メールのやり取りなど';ex.style.display='block';}
-  else ex.style.display='none';
-  const ca=document.getElementById('qChoiceArea');ca.innerHTML='';
-  const ta=document.getElementById('qAns');ta.value=ans[i]||'';ta.placeholder=q.ph||'ここに自由に書いてください';ta.style.marginTop=q.choice?'10px':'0';
-  if(q.choice==='single'){const g=document.createElement('div');g.className='choice-grid';q.choices.forEach(c=>{const b=document.createElement('button');b.className='choice-btn';b.textContent=c;b.onclick=()=>{document.querySelectorAll('#qChoiceArea .choice-btn').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');single=c;};g.appendChild(b);});ca.appendChild(g);}
-  else if(q.choice==='multi'){const g=document.createElement('div');g.className='choice-grid';q.choices.forEach(c=>{const b=document.createElement('button');b.className='choice-btn multi';b.textContent=c;b.onclick=()=>{b.classList.toggle('selected');if(b.classList.contains('selected')){if(!multi.includes(c))multi.push(c);}else multi=multi.filter(x=>x!==c);};g.appendChild(b);});ca.appendChild(g);}
-  document.getElementById('qFill').style.width=((i+1)/5*100)+'%';
-  document.getElementById('qPt').textContent='Q'+(i+1)+' / 5';
-  document.getElementById('btnBack').style.visibility=i===0?'hidden':'visible';
-  document.getElementById('btnNext').textContent=i===4?'AIに分析してもらう →':'次へ →';
+// ===== Q2: 困りごと =====
+function chkPain(){document.getElementById('btnPain').disabled=document.getElementById('painAns').value.trim()==='';
+}
+function goSteps(){
+  q2Pain=document.getElementById('painAns').value.trim();
+  document.getElementById('stepsContextText').textContent=q2Pain;
+  document.getElementById('stepsTitle').textContent='その業務の手順を教えてください';
+  goS('s-steps');uf(3);
 }
 
-function nextQ(){
-  const ta=document.getElementById('qAns').value.trim();const q=QS[curQ];let combined='';
-  if(q.choice==='single'&&single)combined=`【選択】${single}　`;
-  if(q.choice==='multi'&&multi.length>0)combined=`【選択】${multi.join('、')}　`;
-  ans[curQ]=combined+ta;
-  if(curQ<4){curQ++;showQ(curQ);}else startAnalysis();
-}
-function prevQ(){ans[curQ]=document.getElementById('qAns').value.trim();if(curQ>0){curQ--;showQ(curQ);}else{goS('s-attr');uf(0);}}
+// ===== Q2-1: 手順 =====
+function chkSteps(){document.getElementById('btnSteps').disabled=document.getElementById('stepsAns').value.trim()=='';}
 
+// ===== AI分析 =====
 async function startAnalysis(){
-  goS('s-analyzing');uf(2);
+  q2_1Steps=document.getElementById('stepsAns').value.trim();
+  goS('s-analyzing');uf(4);
   const setLS=(n)=>{['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(i<n){el.className='ls done';el.textContent=el.textContent.replace('▶','✓').replace('　','✓');}else if(i===n)el.className='ls active';else el.className='ls wait';});};
   const ids=TOP10.map(t=>t.id).join('/');
-  const prompt=`あなたは業務改善コンサルタントです。以下の回答者の業務を分析してください。
+  const goalsStr=q1Goals.join('、')||'未選択';
 
-【業界】${ind}【ポジション】${pos}
-【Q1: くり返し作業】${ans[0]||'未回答'}
-【Q2: 転記・入力作業】${ans[1]||'未回答'}
-【Q3: チェック・確認作業】${ans[2]||'未回答'}
-【Q4: 属人化】${ans[3]||'未回答'}
-【Q5: 診断の目的】${ans[4]||'未回答'}
+  // Q1の目的に合わせたflavor指示
+  let flavorInstr='';
+  if(q1Goals.includes('自分の仕事を減らしたい'))flavorInstr+='どの工程をあなたでなくても良いか（手放せるか）を中心に。';
+  if(q1Goals.includes('スタッフに任せる仕組みを作りたい'))flavorInstr+='属人化している工程・マニュアル化すれば任せられる工程を中心に。';
+  if(q1Goals.includes('業務を整理・見える化したい'))flavorInstr+='フロー全体のムダ・重複・順番の非効率を指摘する視点で。';
+  if(q1Goals.includes('AIやITツールの導入を検討している'))flavorInstr+='無料AIツール（Claude無料/Gemini無料/NotebookLM）で代替できる工程を明示して。';
+  if(!flavorInstr)flavorInstr='改善効果が最大になる視点で。';
 
-AI半自動化しやすい業務ID一覧：${ids}
+  const prompt=`あなたは業務改善コンサルタントです。以下の業務を分析し、フローチャートを作成してください。
 
-該当するIDをスコア順に最大3件返してください。JSONのみで返答：
-{"score":0-100,"matched_ids":["最優先ID","次ID"],"comment":"診断コメント2〜3文","priority_id":"最優先ID"}`;
+【業界】${ind}
+【ポジション】${pos}
+【診断目的】${goalsStr}
+【最も困っていること】${q2Pain}
+【業務の手順（取り掛かりから完了まで）】${q2_1Steps}
+
+flavor指示：${flavorInstr}
+
+回答はJSONのみで返してください（前後の文章不要）：
+{"steps":[{"step":1,"text":"ステップの内容","automation":"◎","note":"無料AIツールを使った具体的な自動化方法"}],"has_automation":true,"automation_count":2,"score":72,"matched_ids":["expense"],"priority_id":"expense","comment":"2〜3文のコメント","flavor_note":"診断目的に合わせた一言コメント"}
+
+ルール：
+・stepsは5〜9ステップに分解してください
+・automation：◎=今すぐ自動化できる、△=整理すれば自動化できる、×=人がやるべき
+・noteは◎△のステップのみ記載。必ず「無料の○○」「○○の無料枠」という表現で、有料ツール・有料プランは絶対に提案しない
+・has_automationは◎または△が1つ以上あればtrue
+・matched_idsは ${ids} から最大2件。has_automationがfalseなら[]
+・priority_idはmatched_idsの最優先1件。has_automationがfalseなら""`;
+
   try{
     await new Promise(r=>setTimeout(r,500));setLS(1);
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
-    ar=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    ar=JSON.parse(raw);
     await new Promise(r=>setTimeout(r,400));setLS(2);
     await new Promise(r=>setTimeout(r,400));setLS(3);
     await new Promise(r=>setTimeout(r,300));
   }catch(e){
-    ar={score:65,matched_ids:['expense','reconcile'],comment:'経費精算と入金消込に関連する作業が多く見られます。これらはAI半自動化の効果が高い業務です。',priority_id:'expense'};
+    // フォールバック
+    ar={steps:[
+      {step:1,text:'業務を開始する・情報を受け取る',automation:'×',note:''},
+      {step:2,text:'内容を確認・チェックする',automation:'△',note:'チェック項目をリスト化し、無料のClaudeで一次確認プロンプトを作れます'},
+      {step:3,text:'データを入力・転記する',automation:'◎',note:'無料のClaude/Geminiに内容をコピペするだけで表形式に整理できます'},
+      {step:4,text:'確認・承認を行う',automation:'×',note:''},
+      {step:5,text:'完了処理・記録をする',automation:'△',note:'定型の記録作業はテンプレート化することで時間を削減できます'},
+    ],has_automation:true,automation_count:2,score:65,matched_ids:['expense'],priority_id:'expense',comment:'入力・確認作業に自動化の余地が見られます。まずフロー全体を整理することで改善の糸口が見つかります。',flavor_note:'手順を見える化するだけで、改善の優先順位が明確になります。'};
   }
-  showResult();
+  showFlowchart();
 }
 
-function showResult(){
-  goS('s-result');uf(3);
+// ===== フローチャート表示 =====
+function showFlowchart(){
+  goS('s-flowchart');uf(5);
   const score=ar.score||0;
-  document.getElementById('scoreBig').textContent=score;
-  const color=score>=70?'var(--green)':score>=40?'var(--yellow)':'var(--red)';
-  document.getElementById('scoreBig').style.color=color;
-  document.getElementById('scoreBar').style.width=score+'%';
-  document.getElementById('scoreBar').style.background=color;
-  document.getElementById('resultComment').textContent=ar.comment||'';
+  document.getElementById('fcScore').textContent=score;
+  const color=score>=70?'var(--green)':score>=40?'var(--yellow)':'var(--accent)';
+  document.getElementById('fcScore').style.color=color;
+  document.getElementById('fcBar').style.width=score+'%';
+  document.getElementById('fcBar').style.background=color;
+  document.getElementById('fcComment').textContent=ar.comment||'';
+  document.getElementById('fcFlavorNote').textContent=ar.flavor_note||'';
 
-  const matched=(ar.matched_ids||[]).map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
-  const tasks=matched.length>0?matched:[TOP10[2]];
-
-  // 診断結果カード（説明のみ）
-  const container=document.getElementById('taskInfoCards');
+  // フローチャート描画
+  const container=document.getElementById('flowchartSteps');
   container.innerHTML='';
-  tasks.forEach((task,idx)=>{
-    const isPri=task.id===ar.priority_id;
-    const card=document.createElement('div');
-    card.className='task-info-card';
-    if(isPri)card.style.border='1px solid var(--accent)';
-    const priLabel=isPri?`<span style="font-size:10px;background:rgba(232,124,58,.15);color:var(--accent);padding:2px 8px;border-radius:20px;font-weight:700;margin-left:6px;">★ 最優先</span>`:'';
-    const canItems=task.canDo.map(c=>`<div class="task-item"><span style="color:var(--green)">✅</span>${c}</div>`).join('');
-    const cantItems=task.cannotDo.map(c=>`<div class="task-item"><span style="color:var(--yellow)">💡</span>${c}</div>`).join('');
-    card.innerHTML=`
-      <div class="task-info-header">
-        <span class="priority-badge">優先度${idx===0?'①':idx===1?'②':'③'}</span>
-        <span class="task-info-name">${task.name}${priLabel}</span>
+  const steps=ar.steps||[];
+  steps.forEach((s,idx)=>{
+    const isAuto=s.automation==='◎';
+    const isSemi=s.automation==='△';
+    const borderColor=isAuto?'var(--accent)':isSemi?'var(--yellow)':'var(--border)';
+    const numBg=isAuto?'var(--accent)':isSemi?'var(--yellow)':'var(--text3)';
+    const wrap=document.createElement('div');
+    wrap.className='flow-step-wrap';
+    const badgeHtml=isAuto
+      ?`<span class="auto-badge" style="background:rgba(232,124,58,.15);color:var(--accent);">⚡ 今すぐ自動化できます</span>`
+      :isSemi?`<span class="auto-badge" style="background:rgba(232,195,58,.1);color:var(--yellow);">🔧 整理すれば自動化できます</span>`:'';
+    const noteHtml=(isAuto||isSemi)&&s.note?`<div class="flow-step-note">${badgeHtml}<br>${s.note}</div>`:
+      isAuto||isSemi?`<div class="flow-step-note">${badgeHtml}</div>`:'';
+    wrap.innerHTML=`
+      <div class="flow-step ${isAuto?'auto-step':isSemi?'semi-step':''}" style="border-color:${borderColor}">
+        <span class="flow-step-num" style="background:${numBg}">STEP ${s.step}</span>
+        <div class="flow-step-text">${s.text}</div>
+        ${noteHtml}
       </div>
-      <div class="task-mechanism"><strong>AI活用の仕組み例：</strong>${task.mechanism}</div>
-      <div class="task-info-body">
-        <div class="can-title">✅ このツールでできること</div>${canItems}
-        <div class="cannot-title">💡 アドバイス（このツール外）</div>${cantItems}
-      </div>`;
-    container.appendChild(card);
+      ${idx<steps.length-1?'<div class="flow-arrow">▼</div>':''}`;
+    container.appendChild(wrap);
   });
 
-  // ツール選択画面を準備
-  buildSelectScreen(tasks);
+  // 自動化サマリー
+  const hasAuto=ar.has_automation;
+  const count=ar.automation_count||0;
+  const sumEl=document.getElementById('autoSummary');
+  if(hasAuto){
+    sumEl.innerHTML=`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(232,124,58,.07);border:1px solid rgba(232,124,58,.2);border-radius:var(--radius);margin-top:4px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:var(--accent);">${count}</div>
+      <div><div style="font-size:12px;font-weight:700;color:var(--text);">箇所に自動化の可能性があります</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">最も削減効果が大きい業務のテンプレを提供します</div></div></div>`;
+  }else{
+    sumEl.innerHTML=`<div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-top:4px;font-size:12px;color:var(--text2);line-height:1.7;">
+      <span style="color:var(--yellow);font-weight:700;">📋 現時点では自動化よりも、業務の見える化・マニュアル化が優先です。</span><br>まず手順をドキュメント化することで、改善の基盤ができます。</div>`;
+  }
+
+  // 分岐CTA
+  const ctaEl=document.getElementById('branchCta');
+  if(hasAuto){
+    const matched=(ar.matched_ids||[]).map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
+    buildSelectScreen(matched);
+    ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
+      <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
+      <div class="branch-cta-title">テンプレ・プロンプトを取得する</div>
+      <div class="branch-cta-desc">診断で特定した業務の専用Excelテンプレート・AIプロンプトを生成します。<br>削減効果が最大の業務に絞って1セット提供します。</div>
+      <div class="price-badge">¥9,800（買い切り）</div><br>
+      <button class="btn-p" onclick="openPayModal('auto')">テンプレ・プロンプトを取得する →</button>
+    </div>`;
+  }else{
+    ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--yellow);">
+      <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--yellow);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
+      <div class="branch-cta-title">業務マニュアルのたたき台を作成する</div>
+      <div class="branch-cta-desc">今回入力いただいた手順をもとに、PowerPointのたたき台を生成します。<br>肉付けしながら育てていくことで、会社の資産になります。</div>
+      <div class="price-badge">¥9,800（買い切り）</div><br>
+      <button class="btn-p" style="background:var(--yellow);color:#0f1117;" onclick="openPayModal('manual')">マニュアルたたき台を作成する →</button>
+    </div>`;
+  }
 }
 
+// ===== ツール選択画面の準備 =====
 function buildSelectScreen(tasks){
   const container=document.getElementById('toolSelectCards');
   container.innerHTML='';
   selectedToolId=null;
   document.getElementById('btnSelect').disabled=true;
   const title=tasks.length>1
-    ?`「${tasks.map(t=>t.name).join('」か「')}」\nどちらが今一番必要ですか？`
-    :`「${tasks[0].name}」を使いますか？`;
-  document.getElementById('selectTitle').textContent=title.replace('\n',' ');
-
+    ?`「${tasks.map(t=>t.name).join('」か「')}」どちらが今一番必要ですか？`
+    :tasks.length===1?`「${tasks[0].name}」の専用ツールを生成します`:'自動化ツールを選択してください';
+  document.getElementById('selectTitle').textContent=title;
   tasks.forEach(task=>{
     const card=document.createElement('div');
     card.className='tool-select-card';
@@ -750,20 +717,59 @@ function buildSelectScreen(tasks){
     if(task.hasExcel)chips.push('<span class="tool-chip chip-excel">📊 Excel</span>');
     if(task.hasPrompt)chips.push('<span class="tool-chip chip-prompt">📋 プロンプト</span>');
     if(task.hasOcr)chips.push('<span class="tool-chip chip-ocr">📷 OCR</span>');
-    card.innerHTML=`
-      <div class="tool-select-title">${task.name}</div>
+    card.innerHTML=`<div class="tool-select-title">${task.name}</div>
       <div class="tool-select-desc">${task.mechanism}</div>
       <div class="tool-select-items">${chips.join('')}</div>`;
     card.onclick=()=>{
       document.querySelectorAll('.tool-select-card').forEach(c=>c.classList.remove('selected'));
-      card.classList.add('selected');
-      selectedToolId=task.id;
+      card.classList.add('selected');selectedToolId=task.id;
       document.getElementById('btnSelect').disabled=false;
     };
     container.appendChild(card);
+    // 1件なら自動選択
+    if(tasks.length===1){card.click();}
   });
 }
 
+function goROI(){goS('s-roi');uf(6);}
+
+// ===== 課金モーダル =====
+function openPayModal(route){
+  payRoute=route;
+  const modal=document.getElementById('payModal');
+  if(route==='auto'){
+    const matched=(ar.matched_ids||[]).map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
+    const main=matched.find(t=>t.id===ar.priority_id)||matched[0]||TOP10[0];
+    document.getElementById('modalLabel').textContent='DOWNLOAD';
+    document.getElementById('modalTitle').textContent='テンプレ・プロンプトを取得する';
+    document.getElementById('modalDesc').textContent=`${ind}・${pos} 向けの「${main.name}」専用ツールセットを生成します。`;
+    const items=['📊 Excelテンプレート（すぐ使える標準版）','📋 AI活用プロンプト（無料Claude/Geminiで動作）','📖 使い方・READMEシート付き'];
+    if(main.hasOcr)items.splice(1,0,'📷 OCR転記プロンプト');
+    document.getElementById('modalContents').innerHTML=items.map(s=>`✅ ${s}`).join('<br>');
+  }else{
+    document.getElementById('modalLabel').textContent='GENERATE';
+    document.getElementById('modalTitle').textContent='マニュアルたたき台を生成する';
+    document.getElementById('modalDesc').textContent=`入力いただいた業務手順をもとに、PowerPointのたたき台を生成・ダウンロードします。`;
+    document.getElementById('modalContents').innerHTML=[
+      '📋 業務フロー整理スライド（6枚）',
+      '✏️ たたき台の使い方・肉付けガイド',
+      '🔄 なぜ継続更新が必要かの説明ページ',
+    ].map(s=>`✅ ${s}`).join('<br>');
+  }
+  modal.style.display='flex';
+}
+function closeModal(){document.getElementById('payModal').style.display='none';}
+async function execPayment(){
+  closeModal();
+  if(payRoute==='auto'){
+    goS('s-select');uf(6);
+  }else{
+    await genManualPPTX();
+    goS('s-manual');uf(6);
+  }
+}
+
+// ===== ROI試算 =====
 function calcROI(){
   const count=parseInt(document.getElementById('qCount').value);
   const time=parseInt(document.getElementById('qTime').value);
@@ -785,33 +791,25 @@ function calcROI(){
   btn.onclick=showOutput;
 }
 
+// ===== 成果物表示（自動化ルート） =====
 function showOutput(){
-  const task=TOP10.find(t=>t.id===selectedToolId)||TOP10[2];
+  const task=TOP10.find(t=>t.id===selectedToolId)||TOP10[0];
   goS('s-output');uf(6);
   document.getElementById('outTitle').textContent=`${task.name} の成果物が完成しました`;
-  document.getElementById('outDesc').textContent=`${ind}・${pos} 向けの「${task.name}」ツールです。プロンプト・OCRプロンプト・Excelの3点セットをご用意しています。それぞれの使い方は各ブロックに記載しています。`;
-
-  // プロンプト
+  document.getElementById('outDesc').textContent=`${ind}・${pos} 向けの「${task.name}」ツールセットです。`;
   if(task.hasPrompt&&task.promptText){
-    const pt=task.promptText(ind,pos);
-    document.getElementById('promptDesc').textContent=`このプロンプトをChatGPT・Claude・Geminiに貼り付けると、${ind}向けの「${task.name}」専用Excelを自動で作成してくれます。下のExcelテンプレートをさらにカスタマイズしたい場合にも使えます。`;
-    document.getElementById('promptTxt').textContent=pt;
+    document.getElementById('promptDesc').textContent=`このプロンプトを無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けると、${ind}向けの「${task.name}」専用Excelを自動で作成してくれます。`;
+    document.getElementById('promptTxt').textContent=task.promptText(ind,pos);
     document.getElementById('blockPrompt').style.display='block';
   }
-
-  // OCR
   if(task.hasOcr&&task.ocrText){
     document.getElementById('ocrTxt').textContent=task.ocrText(ind);
     document.getElementById('blockOcr').style.display='block';
   }
-
-  // Excel
   if(task.hasExcel&&task.excelFn){
     document.getElementById('excelDesc').textContent=task.excelDesc||'';
     document.getElementById('blockExcel').style.display='block';
-    document.getElementById('excelPromptNote').style.display='block';
-    // ダウンロードボタン → モーダルを開く
-    document.getElementById('btnDL').onclick=()=>openPayModal(task);
+    document.getElementById('btnDL').onclick=()=>task.excelFn(ind,pos,task,ar);
   }
 }
 
@@ -823,73 +821,116 @@ function doCopy(boxId,btnId){
   });
 }
 
-// ===== 課金モーダル =====
-let currentTaskForDL=null;
-function openPayModal(task){
-  currentTaskForDL=task;
-  const sheetDescs={
-    expense:['経費入力チェックシート（自動判定・色分け）','規程設定シート（金額ルール変更可）','費目別集計シート（自動集計）','README＆プロンプトシート（AIプロンプト・OCRプロンプト付き）'],
-    reconcile:['請求データシート','入金データシート（銀行明細貼り付け用）','照合チェックシート（差異自動検出）','消込サマリーシート','README＆プロンプトシート（銀行明細OCRプロンプト付き）'],
-    invoice:['請求書テンプレート（合計・税額自動計算）','顧客マスターシート','発行履歴シート','README＆プロンプトシート'],
-    order:['受注管理シート','発注管理シート','README＆プロンプトシート'],
-    attendance:['勤怠集計シート（実働時間自動計算）','README＆プロンプトシート（OCRプロンプト付き）'],
-    stock:['在庫管理シート（発注点自動フラグ）','README＆プロンプトシート'],
-  };
-  document.getElementById('modalDesc').textContent=`${ind}・${pos} 向けの「${task.name}」Excelを生成してダウンロードします。`;
-  const sheets=sheetDescs[task.id]||['メインシート','README＆プロンプトシート'];
-  document.getElementById('modalContents').innerHTML=sheets.map(s=>`✅ ${s}`).join('<br>');
-  document.getElementById('payModal').style.display='flex';
-}
-function closeModal(){document.getElementById('payModal').style.display='none';}
-function execDownload(){
-  closeModal();
-  if(currentTaskForDL&&currentTaskForDL.excelFn){
-    currentTaskForDL.excelFn(ind,pos,currentTaskForDL,ar);
+// ===== PPTX生成（マニュアルルート） =====
+async function genManualPPTX(){
+  try{
+    const pptx=new PptxGenJS();
+    const bg='0f1117',surface='181c27',accent='e87c3a',text='f0f2f8',text3='8892aa',green='3ac98a';
+
+    // Slide 1: Cover
+    const s1=pptx.addSlide();
+    s1.background={color:bg};
+    s1.addShape(pptx.ShapeType.rect,{x:0,y:2.4,w:10,h:0.05,fill:{color:accent},line:{color:accent}});
+    s1.addText('業務フロー整理ガイド',{x:0.5,y:0.6,w:9,h:1.2,fontSize:30,bold:true,color:text,align:'center'});
+    s1.addText(`${ind} / ${pos}`,{x:0.5,y:1.8,w:9,h:0.5,fontSize:14,color:accent,align:'center'});
+    s1.addText('このたたき台を育てて、会社の資産にしてください',{x:0.5,y:2.7,w:9,h:0.5,fontSize:11,color:text3,align:'center'});
+    s1.addText(`作成日：${new Date().toLocaleDateString('ja-JP')}`,{x:0.5,y:4.8,w:9,h:0.4,fontSize:10,color:text3,align:'center'});
+
+    // Slide 2: 課題・困りごと
+    const s2=pptx.addSlide();
+    s2.background={color:surface};
+    s2.addText('課題・困りごと',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    s2.addShape(pptx.ShapeType.rect,{x:0.4,y:0.85,w:0.05,h:3.5,fill:{color:accent},line:{color:accent}});
+    s2.addText(q2Pain,{x:0.65,y:0.9,w:8.7,h:3.4,fontSize:13,color:text,valign:'top',wrap:true});
+
+    // Slide 3: 現状の業務フロー
+    const rawSteps=q2_1Steps.split(/\n/).filter(s=>s.trim()).slice(0,9);
+    const s3=pptx.addSlide();
+    s3.background={color:surface};
+    s3.addText('現状の業務フロー（たたき台）',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    s3.addText('※ ステップを確認し、抜け・漏れがあれば追記してください',{x:0.4,y:0.85,w:9,h:0.35,fontSize:10,color:text3,italic:true});
+    rawSteps.forEach((step,i)=>{
+      const y=1.25+i*0.44;
+      s3.addShape(pptx.ShapeType.rect,{x:0.4,y:y+0.04,w:0.3,h:0.3,fill:{color:accent},line:{color:accent},rounding:true});
+      s3.addText(`${i+1}`,{x:0.4,y:y+0.04,w:0.3,h:0.3,fontSize:10,bold:true,color:'ffffff',align:'center',valign:'middle'});
+      s3.addText(step.trim().replace(/^[\d\.\-\s]+/,''),{x:0.85,y:y,w:8.6,h:0.42,fontSize:12,color:text,valign:'middle'});
+    });
+
+    // Slide 4: 整理のポイント（AIの分析から）
+    const autoSteps=(ar.steps||[]).filter(s=>s.automation==='◎'||s.automation==='△');
+    const s4=pptx.addSlide();
+    s4.background={color:surface};
+    s4.addText('整理・改善のポイント',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    if(autoSteps.length>0){
+      s4.addText('以下の工程に改善の余地があります。まず整理から始めましょう。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
+      autoSteps.slice(0,5).forEach((step,i)=>{
+        const y=1.3+i*0.62;
+        const lcolor=step.automation==='◎'?accent:'e8c33a';
+        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.52,fill:{color:'1e2436'},line:{color:lcolor,pt:1}});
+        s4.addText(`STEP ${step.step}  ${step.text}`,{x:0.55,y:y+0.05,w:8.6,h:0.25,fontSize:11,bold:true,color:text});
+        if(step.note)s4.addText(`→ ${step.note}`,{x:0.55,y:y+0.28,w:8.6,h:0.2,fontSize:10,color:lcolor});
+      });
+    }else{
+      s4.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text,wrap:true});
+    }
+
+    // Slide 5: たたき台の使い方
+    const s5=pptx.addSlide();
+    s5.background={color:surface};
+    s5.addText('このたたき台の使い方',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    const tips=[
+      ['① 各ステップを自分の言葉で書き直す','実際の作業と合っているか確認しながら修正する'],
+      ['② 判断基準（OK/NG）を書き足す','「こういう時はこうする」を具体的に記載する'],
+      ['③ 例外パターンを追記する','イレギュラーな対応もここに記録する'],
+      ['④ スクリーンショット・画像を貼り付ける','見て分かる資料にする'],
+      ['⑤ 定期的に見直す','業務が変わったら更新する習慣をつける'],
+    ];
+    tips.forEach(([title,sub],i)=>{
+      const y=0.98+i*0.72;
+      s5.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:0.35,h:0.35,fill:{color:accent},line:{color:accent}});
+      s5.addText(`${i+1}`,{x:0.4,y:y,w:0.35,h:0.35,fontSize:11,bold:true,color:'ffffff',align:'center',valign:'middle'});
+      s5.addText(title,{x:0.9,y:y,w:8.4,h:0.28,fontSize:12,bold:true,color:text});
+      s5.addText(sub,{x:0.9,y:y+0.28,w:8.4,h:0.22,fontSize:10,color:text3});
+    });
+
+    // Slide 6: なぜ継続更新が必要か
+    const s6=pptx.addSlide();
+    s6.background={color:bg};
+    s6.addText('なぜ継続ブラッシュアップが必要か',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    const reasons=[
+      {icon:'🔄',title:'業務は変わり続ける',body:'ルール・ツール・担当者が変わるたびに手順も変わります'},
+      {icon:'🧠',title:'頭の中は消える',body:'熟練者の「カン・経験」は記録しなければ次に伝わりません'},
+      {icon:'🏗',title:'たたき台が資産になる',body:'更新し続けることで、会社固有の知識が蓄積されます'},
+    ];
+    reasons.forEach((r,i)=>{
+      const y=1.0+i*1.2;
+      s6.addText(r.icon,{x:0.4,y:y,w:0.6,h:0.6,fontSize:22,align:'center'});
+      s6.addText(r.title,{x:1.1,y:y,w:8.2,h:0.35,fontSize:13,bold:true,color:text});
+      s6.addText(r.body,{x:1.1,y:y+0.33,w:8.2,h:0.35,fontSize:11,color:text3});
+    });
+    s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:green,align:'center',wrap:true});
+
+    const fname=`業務フロー整理ガイド_${ind}.pptx`;
+    await pptx.writeFile({fileName:fname});
+    document.getElementById('btnReDownload').onclick=()=>pptx.writeFile({fileName:fname});
+  }catch(e){
+    console.error('PPTX生成エラー:',e);
+    alert('ファイル生成中にエラーが発生しました。ページを再読み込みして再試行してください。');
   }
 }
 
 // ===== Excel生成ヘルパー =====
-// SheetJS community版でサポートされるスタイル要素を活用
-function applySheetStyle(ws, totalCols, titleRow, headerRow){
-  // タイトル行のマージ（テキスト切れを防ぐ）
-  if(!ws['!merges'])ws['!merges']=[];
-  ws['!merges'].push({s:{r:titleRow,c:0},e:{r:titleRow,c:totalCols-1}});
-  // 行の高さ
-  if(!ws['!rows'])ws['!rows']=[];
-  ws['!rows'][titleRow]={hpt:24};
-  if(headerRow!==undefined)ws['!rows'][headerRow]={hpt:22};
-  return ws;
-}
-
 function addReadme(wb,task,ind,pos,ar,promptTxt,ocrTxt){
-  const today=new Date();
-  const ds=today.toLocaleDateString('ja-JP');
+  const today=new Date().toLocaleDateString('ja-JP');
   const rows=[
     [`README＆プロンプトガイド｜${task.name}｜${ind}・${pos}`,'',''],
-    [`診断日: ${ds}　自動化スコア: ${ar?.score||0}点`,'',''],
+    [`診断日: ${today}　自動化スコア: ${ar?.score||0}点`,'',''],
     ['','',''],
-    ['【このファイルについて】','',''],
-    ['業務自動化診断の結果に基づいて生成された専用Excelファイルです。','',''],
-    [`対象業務：${task.name}　業界：${ind}　ポジション：${pos}`,'',''],
+    ['【AIプロンプトの使い方】','',''],
+    ['以下のプロンプトを 無料のClaude（claude.ai）または Gemini（gemini.google.com）にコピーして貼り付けてください。','',''],
+    ['有料プランは不要です。無料枠で動作します。','',''],
     ['','',''],
-    ['【各シートの使い方】','',''],
-    ['シート名','内容','使い方'],
   ];
-  // シート説明
-  const sheetDescs={
-    expense:[['経費入力チェック','日常の経費精算入力','日付・費目・金額・添付有無を入力。NGは赤・要確認は黄で自動表示'],['規程設定','会社の経費規程を設定','接待費上限・宿泊費上限などを自社規程に合わせて変更'],['費目別集計','費目ごとの自動集計','入力データが自動的に集計されます']],
-    reconcile:[['請求データ','請求書の一覧管理','請求書番号・金額・支払期日を入力'],['入金データ','銀行明細の貼り付け','銀行のCSVや手入力で入金情報を登録'],['照合チェック','差異の自動検出','請求と入金を照合し差異・遅延を自動フラグ表示']],
-    invoice:[['請求書','請求書の作成','品目・数量・単価を入力すると合計が自動計算'],['顧客マスター','得意先情報の管理','会社名・連絡先・支払サイトを登録'],['発行履歴','請求書の発行記録','発行日・金額・入金状況を一覧管理']],
-    order:[['受注管理','受注情報の管理','受注日・顧客名・品目・数量・納期を入力'],['発注管理','発注情報の管理','仕入先・品目・数量・確認状況を管理']],
-    attendance:[['勤怠シート','勤怠の記録・集計','出勤・退勤時刻を入力すると実働時間が自動計算']],
-    stock:[['在庫管理','在庫の管理','品目・現在庫数を入力すると発注点を下回ると自動表示']],
-  };
-  (sheetDescs[task.id]||[]).forEach(r=>rows.push(r));
-  rows.push(['','','']);
-  rows.push(['【AIプロンプトの使い方】','','']);
-  rows.push(['以下のプロンプトをChatGPT・Claude・Geminiにコピーして貼り付けてください。','','']);
-  rows.push(['このExcelをさらにあなたの業務に合わせてカスタマイズしたい場合にも使えます。','','']);
-  rows.push(['','','']);
   if(promptTxt){
     rows.push(['■ Excel作成プロンプト','','']);
     rows.push(['---------- ここからコピー ----------','','']);
@@ -898,37 +939,24 @@ function addReadme(wb,task,ind,pos,ar,promptTxt,ocrTxt){
     rows.push(['','','']);
   }
   if(ocrTxt){
-    rows.push(['■ OCR転記プロンプト（紙・写真からの転記用）','','']);
-    rows.push(['写真と一緒にChatGPT・Claude・Geminiへこのプロンプトをコピーするとデータを抽出してくれます。','','']);
+    rows.push(['■ OCR転記プロンプト（紙・写真→表形式）','','']);
+    rows.push(['無料のClaude（claude.ai）またはGemini（gemini.google.com）に写真と一緒に送ってください。','','']);
     rows.push(['---------- ここからコピー ----------','','']);
     rows.push([ocrTxt,'','']);
     rows.push(['---------- ここまでコピー ----------','','']);
-    rows.push(['','','']);
   }
-  rows.push(['【お問い合わせ】','','']);
-  rows.push(['Glocal Lab. — 小規模事業所の幅広い分野のDXコンサル歴10年','','']);
-  rows.push(['','','']);
-  rows.push(['【表示の注意】','','']);
-  rows.push(['タイトル行の文字が途中で切れて見えない場合は、右隣のセルを選択してDeleteキーを押すと表示されます。','','']);
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:28},{wch:22},{wch:44}];
-  // タイトル行マージ
-  if(!ws['!merges'])ws['!merges']=[];
-  ws['!merges'].push({s:{r:0,c:0},e:{r:0,c:2}});
+  ws['!cols']=[{wch:60},{wch:20},{wch:20}];
   XLSX.utils.book_append_sheet(wb,ws,'README＆プロンプト');
 }
 
 function saveWb(wb,name){
-  const today=new Date();
-  const ds=`${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
-  XLSX.writeFile(wb,`${name}_${ds}.xlsx`);
+  XLSX.writeFile(wb,`${name}_${ind}.xlsx`);
 }
 
 function genExpenseExcel(ind,pos,task,ar){
-  const wb=XLSX.utils.book_new();
-  const S=6,rows=30,E=S+rows-1;
+  const wb=XLSX.utils.book_new();const S=7,rows=30,E=S+rows-1;
   const today=new Date().toLocaleDateString('ja-JP');
-  // Sheet1
   const s1=[[`経費精算チェックシート　${ind}`,...Array(13).fill('')],
     [`作成日: ${today}`,...Array(13).fill('')],Array(14).fill(''),
     ['部署名','','','申請者名','','','','申請日','','','','','',''],
@@ -937,48 +965,35 @@ function genExpenseExcel(ind,pos,task,ar){
   for(let i=0;i<rows;i++){
     const r=S+i;
     s1.push([i+1,'','','','','','',
-      {f:`IF(B${r}="","",IF(B${r}>$I$4,"NG：未来日付","OK"))`},
+      {f:`IF(B${r}="","",IF(B${r}>TODAY(),"NG：未来日付","OK"))`},
       {f:`IF(E${r}="","",IF(AND(C${r}="接待費",E${r}>5000),"要確認：接待規程",IF(E${r}>100000,"要確認：高額",IF(E${r}<=0,"NG：金額エラー","OK"))))`},
       {f:`IF(F${r}="","",IF(F${r}="なし",IF(E${r}>3000,"NG：添付必須","要確認"),"OK"))`},
       {f:`IF(OR(C${r}="",G${r}=""),"",IF(AND(C${r}="宿泊費",E${r}>15000),"要確認：宿泊上限超","OK"))`},
       {f:`IF(AND(B${r}="",E${r}=""),"",IF(OR(H${r}="NG：未来日付",I${r}="NG：金額エラー",J${r}="NG：添付必須"),"NG",IF(OR(ISNUMBER(SEARCH("要確認",I${r})),ISNUMBER(SEARCH("要確認",K${r}))),"要確認","OK")))`},
       {f:`IF(L${r}="","",IF(L${r}="NG","【要差戻し】"&I${r},IF(L${r}="要確認","【要確認】","承認可能")))`},
-      '']);
-  }
+      '']);}
   s1.push(['合計','','','',{f:`SUM(E${S}:E${E})`},'','','','','','','','','']);
-  s1.push(Array(14).fill(''));
-  s1.push(['判定サマリー','','','','','','','','','','','','','']);
-  s1.push(['OK件数',{f:`COUNTIF(L${S}:L${E},"OK")`},'','要確認件数',{f:`COUNTIF(L${S}:L${E},"要確認")`},'','NG件数',{f:`COUNTIF(L${S}:L${E},"NG")`},'','','','','','']);
   const ws1=XLSX.utils.aoa_to_sheet(s1);
   ws1['!cols']=[{wch:5},{wch:13},{wch:12},{wch:24},{wch:12},{wch:10},{wch:12},{wch:10},{wch:10},{wch:10},{wch:12},{wch:10},{wch:28},{wch:12}];
   ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:13}},{s:{r:1,c:0},e:{r:1,c:13}}];
-  ws1['!rows']=[{hpt:22},{hpt:16},{hpt:14},{hpt:22},{hpt:14},{hpt:24}];
   XLSX.utils.book_append_sheet(wb,ws1,'経費入力チェック');
-  // Sheet2
   const s2=[[`規程設定シート　${ind}`,'',''],
-    ['※ここの値を変えると「経費入力チェック」シートの判定基準が変わります。','',''],
+    ['※ここの値を変えると「経費入力チェック」の判定基準が変わります。','',''],
     Array(3).fill(''),['項目','設定値','備考'],
-    ['【接待費】上限金額（円）',5000,'5,000円を超えると「要確認」'],
-    ['【宿泊費】上限金額（円）',15000,'15,000円を超えると「要確認」'],
+    ['【接待費】上限金額（円）',5000,'5,000円超で「要確認」'],
+    ['【宿泊費】上限金額（円）',15000,'15,000円超で「要確認」'],
     ['【領収書不要】上限金額（円）',3000,'3,000円以下は添付なしでも可'],
-    ['【高額確認】ライン（円）',100000,'10万円超は上長確認'],
-    ['【申請期限】日数',90,'90日を超えるとNG']];
-  const ws2=XLSX.utils.aoa_to_sheet(s2);
-  ws2['!cols']=[{wch:30},{wch:14},{wch:28}];
-  ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:2}},{s:{r:1,c:0},e:{r:1,c:2}}];
+    ['【高額確認】ライン（円）',100000,'10万円超は要確認'],
+    ['【申請期限】日数',90,'90日超でNG']];
+  const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:30},{wch:14},{wch:28}];
   XLSX.utils.book_append_sheet(wb,ws2,'規程設定');
-  // Sheet3
   const rc=`'経費入力チェック'!C${S}:C${E}`,re=`'経費入力チェック'!E${S}:E${E}`,rl=`'経費入力チェック'!L${S}:L${E}`;
   const cats=['交通費','宿泊費','会議費','接待費','消耗品費','通信費','研修費','その他'];
   const s3=[[`費目別集計　${ind}`,...Array(4).fill('')],
-    ['※「経費入力チェック」シートへの入力が自動集計されます。',...Array(4).fill('')],
+    ['※「経費入力チェック」への入力が自動集計されます。',...Array(4).fill('')],
     Array(5).fill(''),['費目','合計金額（円）','件数','平均単価（円）','NG件数']];
   cats.forEach((cat,i)=>{const r=5+i;s3.push([cat,{f:`SUMIF(${rc},A${r},${re})`},{f:`COUNTIF(${rc},A${r})`},{f:`IFERROR(B${r}/C${r},"-")`},{f:`COUNTIFS(${rc},A${r},${rl},"NG")`}]);});
-  const sumR=5+cats.length;
-  s3.push(['合計',{f:`SUM(B5:B${sumR-1})`},{f:`SUM(C5:C${sumR-1})`},'',{f:`SUM(E5:E${sumR-1})`}]);
-  const ws3=XLSX.utils.aoa_to_sheet(s3);
-  ws3['!cols']=[{wch:14},{wch:16},{wch:10},{wch:14},{wch:10}];
-  ws3['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}},{s:{r:1,c:0},e:{r:1,c:4}}];
+  const ws3=XLSX.utils.aoa_to_sheet(s3);ws3['!cols']=[{wch:14},{wch:16},{wch:10},{wch:14},{wch:10}];
   XLSX.utils.book_append_sheet(wb,ws3,'費目別集計');
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),task.ocrText(ind));
   saveWb(wb,'経費精算チェックシート');
@@ -993,7 +1008,6 @@ function genReconcileExcel(ind,pos,task,ar){
     ['No.','請求日','得意先名','請求書番号','請求金額（円）','支払期日','入金予定日','入金金額（円）','消込状況']];
   for(let i=0;i<rows;i++)s1.push([i+1,'','','','','','','','']);
   s1.push(['合計','','','',{f:`SUM(E${S}:E${E})`},'','',{f:`SUM(H${S}:H${E})`},'']);
-  s1.push(Array(9).fill(''));
   s1.push(['未消込件数',{f:`COUNTIF(I${S}:I${E},"未消込")`},'','消込済件数',{f:`COUNTIF(I${S}:I${E},"消込済")`},'','','','']);
   const ws1=XLSX.utils.aoa_to_sheet(s1);
   ws1['!cols']=[{wch:5},{wch:13},{wch:24},{wch:16},{wch:14},{wch:12},{wch:12},{wch:14},{wch:12}];
@@ -1004,9 +1018,7 @@ function genReconcileExcel(ind,pos,task,ar){
     ['No.','入金日','振込人名','入金額（円）','請求書番号（照合）','備考']];
   for(let i=0;i<rows;i++)s2.push([i+1,'','','','','']);
   s2.push(['合計','','',{f:`SUM(D${S}:D${E})`},'','']);
-  const ws2=XLSX.utils.aoa_to_sheet(s2);
-  ws2['!cols']=[{wch:5},{wch:13},{wch:26},{wch:14},{wch:18},{wch:22}];
-  ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}}];
+  const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:5},{wch:13},{wch:26},{wch:14},{wch:18},{wch:22}];
   XLSX.utils.book_append_sheet(wb,ws2,'入金データ');
   const s3=[[`照合チェック　${ind}`,...Array(10).fill('')],
     ['※請求書番号・得意先・金額・入金日を入力すると差異・期日・金額が自動判定されます。',...Array(10).fill('')],
@@ -1019,19 +1031,7 @@ function genReconcileExcel(ind,pos,task,ar){
     {f:`IF(AND(D${r}=0,G${r}=0),"",IF(AND(I${r}="OK",J${r}="OK"),"消込完了",IF(OR(I${r}="遅延",J${r}="不足入金",J${r}="超過入金"),"要確認","未入金")))`}]);}
   const ws3=XLSX.utils.aoa_to_sheet(s3);
   ws3['!cols']=[{wch:5},{wch:16},{wch:22},{wch:14},{wch:12},{wch:12},{wch:14},{wch:12},{wch:10},{wch:10},{wch:10}];
-  ws3['!merges']=[{s:{r:0,c:0},e:{r:0,c:10}},{s:{r:1,c:0},e:{r:1,c:10}}];
   XLSX.utils.book_append_sheet(wb,ws3,'照合チェック');
-  // サマリー
-  const rk=`'照合チェック'!K${S}:K${E}`,rd=`'照合チェック'!D${S}:D${E}`,rg=`'照合チェック'!G${S}:G${E}`;
-  const s4=[[`消込サマリー　${ind}`,...Array(4).fill('')],
-    ['状態','件数','請求金額合計（円）','入金金額合計（円）','差異（円）'],
-    ['消込完了',{f:`COUNTIF(${rk},"消込完了")`},{f:`SUMIF(${rk},"消込完了",${rd})`},{f:`SUMIF(${rk},"消込完了",${rg})`},{f:`IFERROR(D3-C3,"-")`}],
-    ['要確認',{f:`COUNTIF(${rk},"要確認")`},{f:`SUMIF(${rk},"要確認",${rd})`},{f:`SUMIF(${rk},"要確認",${rg})`},{f:`IFERROR(D4-C4,"-")`}],
-    ['未入金',{f:`COUNTIF(${rk},"未入金")`},{f:`SUMIF(${rk},"未入金",${rd})`},{f:`SUMIF(${rk},"未入金",${rg})`},{f:`IFERROR(D5-C5,"-")`}],
-    ['合計',{f:'SUM(B3:B5)'},{f:'SUM(C3:C5)'},{f:'SUM(D3:D5)'},{f:'IFERROR(D6-C6,"-")'}]];
-  const ws4=XLSX.utils.aoa_to_sheet(s4);
-  ws4['!cols']=[{wch:14},{wch:10},{wch:18},{wch:18},{wch:14}];
-  XLSX.utils.book_append_sheet(wb,ws4,'消込サマリー');
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),task.ocrText(ind));
   saveWb(wb,'入金消込シート');
 }
@@ -1048,10 +1048,8 @@ function genInvoiceExcel(ind,pos,task,ar){
   s1.push(['','','','消費税（10%）',{f:`ROUND(E${E+1}*0.1,0)`},'']);
   s1.push(['','','','合計金額',{f:`E${E+1}+E${E+2}`},'']);
   s1.push(Array(6).fill(''));
-  s1.push(['振込先','','','','','']);
-  s1.push(['銀行名：　　　支店名：　　　口座種別：普通　口座番号：　　　　口座名義：','','','','','']);
-  const ws1=XLSX.utils.aoa_to_sheet(s1);
-  ws1['!cols']=[{wch:28},{wch:8},{wch:8},{wch:14},{wch:14},{wch:14}];
+  s1.push(['振込先：銀行名　支店名　口座種別：普通　口座番号　口座名義','','','','','']);
+  const ws1=XLSX.utils.aoa_to_sheet(s1);ws1['!cols']=[{wch:28},{wch:8},{wch:8},{wch:14},{wch:14},{wch:14}];
   XLSX.utils.book_append_sheet(wb,ws1,'請求書');
   const s2=[['顧客マスター','','','',''],['会社名','担当者名','メールアドレス','支払サイト','備考'],...Array(20).fill(['','','','',''])];
   const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:24},{wch:16},{wch:28},{wch:12},{wch:20}];
@@ -1061,41 +1059,6 @@ function genInvoiceExcel(ind,pos,task,ar){
   XLSX.utils.book_append_sheet(wb,ws3,'発行履歴');
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),null);
   saveWb(wb,'請求書テンプレート');
-}
-
-function genOrderExcel(ind,pos,task,ar){
-  const wb=XLSX.utils.book_new();const S=6,rows=30,E=S+rows-1;
-  const today=new Date().toLocaleDateString('ja-JP');
-  const s1=[[`受注管理シート　${ind}`,...Array(7).fill('')],[`作成日: ${today}`,...Array(7).fill('')],
-    Array(8).fill(''),Array(8).fill(''),Array(8).fill(''),
-    ['No.','受注日','顧客名','品目・品番','数量','希望納期','ステータス','備考']];
-  for(let i=0;i<rows;i++)s1.push([i+1,'','','','','','','']);
-  s1.push(['合計件数',{f:`COUNTA(A${S}:A${E})`},'','','','','','']);
-  const ws1=XLSX.utils.aoa_to_sheet(s1);ws1['!cols']=[{wch:5},{wch:12},{wch:22},{wch:20},{wch:8},{wch:12},{wch:12},{wch:20}];
-  XLSX.utils.book_append_sheet(wb,ws1,'受注管理');
-  const s2=[[`発注管理シート　${ind}`,...Array(6).fill('')],[`作成日: ${today}`,...Array(6).fill('')],
-    Array(7).fill(''),Array(7).fill(''),Array(7).fill(''),
-    ['No.','発注日','仕入先名','品目・品番','発注数量','希望納期','確認状況']];
-  for(let i=0;i<rows;i++)s2.push([i+1,'','','','','','']);
-  const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:5},{wch:12},{wch:22},{wch:20},{wch:10},{wch:12},{wch:12}];
-  XLSX.utils.book_append_sheet(wb,ws2,'発注管理');
-  addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),null);
-  saveWb(wb,'受注発注管理シート');
-}
-
-function genAttendanceExcel(ind,pos,task,ar){
-  const wb=XLSX.utils.book_new();const S=6,rows=31,E=S+rows-1;
-  const today=new Date().toLocaleDateString('ja-JP');
-  const s1=[[`勤怠集計シート　${ind}`,...Array(7).fill('')],
-    ['対象月','','担当者名','','','','',''],
-    [`作成日: ${today}`,...Array(7).fill('')],Array(8).fill(''),Array(8).fill(''),
-    ['日付','曜日','氏名','出勤時刻','退勤時刻','休憩（分）','実働（時間）','備考']];
-  for(let i=0;i<rows;i++){const r=S+i;s1.push(['','','','','',60,{f:`IF(AND(D${r}<>"",E${r}<>""),ROUND((E${r}-D${r})*24-F${r}/60,2),"")`},'']);}
-  s1.push(['合計','','','','','',{f:`SUM(G${S}:G${E})`},'']);
-  const ws1=XLSX.utils.aoa_to_sheet(s1);ws1['!cols']=[{wch:10},{wch:6},{wch:14},{wch:10},{wch:10},{wch:10},{wch:12},{wch:16}];
-  XLSX.utils.book_append_sheet(wb,ws1,'勤怠シート');
-  addReadme(wb,task,ind,pos,ar,null,task.ocrText(ind));
-  saveWb(wb,'勤怠集計シート');
 }
 
 function genStockExcel(ind,pos,task,ar){
@@ -1111,12 +1074,18 @@ function genStockExcel(ind,pos,task,ar){
   saveWb(wb,'在庫発注管理シート');
 }
 
+// ===== リセット =====
 function restart(){
-  ind='';pos='';curQ=0;ans=new Array(5).fill('');multi=[];single='';ar=null;selectedToolId=null;
+  ind='';pos='';q1Goals=[];q2Pain='';q2_1Steps='';ar=null;selectedToolId=null;payRoute='';
   document.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('otherInput').value='';
   document.getElementById('otherWrap').style.display='none';
   document.getElementById('btnA').disabled=true;
+  document.getElementById('btnGoals').disabled=true;
+  document.getElementById('btnPain').disabled=true;
+  document.getElementById('btnSteps').disabled=true;
+  document.getElementById('painAns').value='';
+  document.getElementById('stepsAns').value='';
   document.getElementById('btnROI').textContent='試算する →';
   document.getElementById('btnROI').onclick=calcROI;
   document.getElementById('roiBox').style.display='none';
