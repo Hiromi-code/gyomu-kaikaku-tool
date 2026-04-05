@@ -592,6 +592,20 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 </div><!-- /main -->
 
 <script>
+// ===== APIキー設定（本番ではサーバー経由に変更すること） =====
+const ANTHROPIC_API_KEY = 'YOUR_API_KEY_HERE'; // ← ここにAPIキーを設定
+
+// ===== フォールバックマッチング（AI失敗時・matched_ids空時の補完） =====
+function fallbackMatch(pain, steps){
+  const text = (pain + ' ' + steps);
+  if(/チェック|確認|照合|突合|チェックリスト|精算|領収/.test(text)) return ['expense'];
+  if(/請求|入金|消込|売掛/.test(text)) return ['reconcile'];
+  if(/請求書|発行|見積/.test(text)) return ['invoice'];
+  if(/メール|返信|通知|連絡/.test(text)) return ['email'];
+  if(/在庫|発注|棚卸|補充/.test(text)) return ['stock'];
+  return [];
+}
+
 // ===== データ =====
 const IND_EX={
   '製造・物流':'毎朝の生産実績入力、週次の在庫棚卸し確認、月末の出荷実績集計、仕入先への発注メール、納品書のファイリング',
@@ -710,7 +724,7 @@ ${q2_1Steps}
 
   try{
     await new Promise(r=>setTimeout(r,300));setLS(1);
-    const vres=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:validatePrompt}]})});
+    const vres=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:validatePrompt}]})});
     const vdata=await vres.json();
     const vraw=vdata.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
     const vr=JSON.parse(vraw);
@@ -789,21 +803,25 @@ async function runAnalysis(steps, setLS){
 
   try{
     await new Promise(r=>setTimeout(r,400));setLS(1);
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:matchPrompt}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:matchPrompt}]})});
+    if(!res.ok){throw new Error('APIレスポンスエラー: '+res.status);}
     const data=await res.json();
+    if(!data||!data.content||data.content.length===0){throw new Error('APIレスポンス不正: contentなし');}
     const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
-    ar=JSON.parse(raw);
+    try{ar=JSON.parse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
+    // matched_idsが空の場合はフォールバックマッチングで補完
+    if(!ar.matched_ids||ar.matched_ids.length===0){
+      ar.matched_ids=fallbackMatch(q2Pain,steps);
+      if(ar.matched_ids.length>0)ar.priority_id=ar.matched_ids[0];
+    }
     await new Promise(r=>setTimeout(r,400));setLS(2);
     await new Promise(r=>setTimeout(r,400));setLS(3);
     await new Promise(r=>setTimeout(r,300));
   }catch(e){
-    ar={steps:[
-      {step:1,text:'業務を開始する・情報を受け取る',automation:'×',note:'',prompt_hint:''},
-      {step:2,text:'内容を確認・チェックする',automation:'△',note:'チェックリストを作成し、無料のClaudeで一次確認できます',prompt_hint:'チェックリストをコピーして「以下の項目について確認し、問題があるものを指摘してください」と貼り付けてください'},
-      {step:3,text:'データを入力・転記する',automation:'◎',note:'無料のClaude/Geminiにデータをコピペすると表形式に整理できます',prompt_hint:'元のデータをコピーして「以下のデータを表形式に整理してください。列：日付・内容・金額・担当者」と貼り付けてください'},
-      {step:4,text:'確認・承認を行う',automation:'×',note:'',prompt_hint:''},
-      {step:5,text:'完了処理・記録をする',automation:'△',note:'定型の記録はテンプレート化で時間削減できます',prompt_hint:'記録の内容をコピーして「以下の内容を報告書形式にまとめてください」と貼り付けてください'},
-    ],has_automation:true,automation_count:2,score:65,matched_ids:[],priority_id:'',comment:'入力・確認作業に改善の余地があります。まず一つの工程から手順を整理しましょう。',flavor_note:'手順を見える化することで、改善の優先順位が明確になります。'};
+    console.error('AI分析エラー:', e);
+    alert('AI分析に失敗しました。入力内容を確認して再度お試しください。\n\nエラー詳細: '+e.message);
+    goS('s-steps');uf(3);
+    return;
   }
   showFlowchart();
 }
@@ -870,7 +888,7 @@ function showFlowchart(){
     sumEl.innerHTML=`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(124,92,216,.1);border:1px solid rgba(124,92,216,.3);border-radius:var(--radius);margin-top:4px;">
       <div style="font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:#9d7fe8;">${count}</div>
       <div><div style="font-size:12px;font-weight:700;color:var(--text);">箇所に自動化の可能性があります</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">紫のステップをクリックするとAIへの指示例が確認できます</div></div></div>`;
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">下にAIの指示例が表示されます</div></div></div>`;
   }else{
     sumEl.innerHTML=`<div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-top:4px;font-size:12px;color:var(--text2);line-height:1.7;">
       <span style="color:var(--yellow);font-weight:700;">📋 現時点では自動化よりも、業務の見える化・マニュアル化が優先です。</span><br>まず手順をドキュメント化することで、改善の基盤ができます。</div>`;
@@ -1030,8 +1048,12 @@ async function execPayment(){
   if(payRoute==='auto'){
     showActualOutput();
   }else{
-    await genManualPPTX();
-    goS('s-manual');uf(9);
+    const success=await genManualPPTX();
+    if(success){
+      goS('s-manual');uf(9);
+    }else{
+      alert('ファイル生成に失敗しました。入力内容を確認して再度お試しください。');
+    }
   }
 }
 
@@ -1066,8 +1088,15 @@ function showPreview(){
 
   if(payRoute==='manual'){
     document.getElementById('outTitle').textContent='生成されるガイドの内容を確認してください';
-    document.getElementById('outDesc').textContent=`${ind}・${pos} 向けの業務フロー整理ガイド（PowerPoint）が生成されます。`;
+    const previewLines=q2_1Steps.split('\n').filter(s=>s.trim()).slice(0,5);
+    const previewHtml=previewLines.map((l,i)=>`<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${l.trim().replace(/^[\d\.\-\s]+/,'')}`).join('<br>');
+    document.getElementById('outDesc').innerHTML=`${ind}・${pos} 向けの業務フロー整理ガイド（PowerPoint）が生成されます。<br><br>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-top:8px;">
+        <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">入力された手順（スライドに反映されます）</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.9;">${previewHtml}${q2_1Steps.split('\n').filter(s=>s.trim()).length>5?'<br><span style="color:var(--text3);">…他 '+(q2_1Steps.split('\n').filter(s=>s.trim()).length-5)+'ステップ</span>':''}</div>
+      </div>`;
     document.getElementById('blockPPTX').style.display='block';
+    console.log('manual生成データ', {pain: q2Pain, steps: q2_1Steps, reason: selectedReason});
     return;
   }
 
@@ -1129,8 +1158,7 @@ function doCopy(boxId,btnId){
 // ===== PPTX生成（マニュアルルート） =====
 async function genManualPPTX(){
   try{
-    const pptx=new PptxGenJS();
-    const bg='0f1117',surface='181c27',accent='e87c3a',text='f0f2f8',text3='8892aa',green='3ac98a';
+    const pptx=new PptxGenJS();    const bg='0f1117',surface='181c27',accent='e87c3a',text='f0f2f8',text3='8892aa',green='3ac98a';
 
     // Slide 1: Cover
     const s1=pptx.addSlide();
@@ -1218,13 +1246,15 @@ async function genManualPPTX(){
     const fname=`業務フロー整理ガイド_${ind}.pptx`;
     await pptx.writeFile({fileName:fname});
     // 再ダウンロードボタン：同じpptxインスタンスを再利用
+    document.getElementById('btnReDownload').style.display='block';
     document.getElementById('btnReDownload').onclick=async()=>{
       try{await pptx.writeFile({fileName:fname});}
       catch(e){alert('再ダウンロードに失敗しました。ページを再読み込みして再試行してください。');}
     };
+    return true;
   }catch(e){
-    console.error('PPTX生成エラー:',e);
-    alert('ファイル生成中にエラーが発生しました。ページを再読み込みして再試行してください。');
+    console.error('PPTX生成エラー:', e);
+    return false;
   }
 }
 
