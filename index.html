@@ -189,7 +189,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="fa">▶</div>
   <div class="fs"><div class="fd" id="fd5">6</div><span class="fl" id="fl5">フロー確認</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd6">7</div><span class="fl" id="fl6">ROI・成果物</span></div>
+  <div class="fs"><div class="fd" id="fd6">7</div><span class="fl" id="fl6">候補選択</span></div>
+  <div class="fa">▶</div>
+  <div class="fs"><div class="fd" id="fd7">8</div><span class="fl" id="fl7">ROI</span></div>
+  <div class="fa">▶</div>
+  <div class="fs"><div class="fd" id="fd8">9</div><span class="fl" id="fl8">プレビュー</span></div>
 </div>
 
 <div class="main">
@@ -341,10 +345,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <!-- ⑦-A ツール選択（自動化ルート） -->
 <div class="screen" id="s-select">
   <div class="card">
-    <div class="card-label">STEP 7｜ツール選択</div>
+    <div class="card-label">STEP 7｜候補選択</div>
     <div class="card-title" id="selectTitle">どの業務から始めますか？</div>
-    <div class="card-hint">診断結果から絞り込まれた候補です。1つ選んでください。専用のExcel・プロンプトを生成します。</div>
+    <div class="card-hint" id="selectHint">診断結果から絞り込まれた候補です。1つ選んでください。</div>
     <div id="toolSelectCards"></div>
+  </div>
+  <!-- 選択理由（カード選択後に表示） -->
+  <div class="card" id="reasonBlock" style="display:none;">
+    <div class="card-label">STEP 7｜選択理由</div>
+    <div class="card-title">この業務から始める理由を選んでください</div>
+    <div class="card-hint">後半の生成内容がより的確になります。</div>
+    <div class="choice-grid" id="reasonGrid">
+      <button class="choice-btn" onclick="selReason(this,'いちばん時間を取られている')">⏱ いちばん時間を取られている</button>
+      <button class="choice-btn" onclick="selReason(this,'ミスが起きやすい')">⚠ ミスが起きやすい</button>
+      <button class="choice-btn" onclick="selReason(this,'人に任せられるようにしたい')">👥 人に任せられるようにしたい</button>
+      <button class="choice-btn" onclick="selReason(this,'すぐ着手できそう')">⚡ すぐ着手できそう</button>
+      <button class="choice-btn" onclick="selReason(this,'売上・請求に直結している')">💰 売上・請求に直結している</button>
+    </div>
   </div>
   <div class="nav">
     <button class="btn-s" onclick="goS('s-flowchart');uf(5)">← 戻る</button>
@@ -355,9 +372,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <!-- ⑦-A ROI試算 -->
 <div class="screen" id="s-roi">
   <div class="card">
-    <div class="card-label">STEP 7｜作業量の入力</div>
-    <div class="card-title">月に何時間削減できるか試算します</div>
-    <div class="card-hint">選択した業務の現在の作業量を教えてください。</div>
+    <div class="card-label">STEP 8｜効果試算</div>
+    <div class="card-title">選んだ業務を改善した場合の効果を試算します</div>
+    <div id="roiContext" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:13px;line-height:1.85;display:none;">
+      <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">YOUR SELECTION</div>
+      <div id="roiContextContent"></div>
+    </div>
+    <div class="card-hint">現在の作業量を入力してください。</div>
     <div class="quant-grid">
       <div class="q-field"><label>月の作業件数 <span>（件/月）</span></label>
         <select id="qCount"><option value="10">〜10件</option><option value="30" selected>10〜30件</option><option value="60">30〜60件</option><option value="100">60〜100件</option><option value="200">100件以上</option></select></div>
@@ -380,15 +401,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
-<!-- ⑦-A 成果物（自動化ルート） -->
+<!-- ⑨ 成果物プレビュー（課金前確認） -->
 <div class="screen" id="s-output">
   <div class="card">
-    <div class="card-label">STEP 7｜成果物</div>
-    <div class="card-title" id="outTitle">あなた専用の成果物が完成しました</div>
+    <div class="card-label">STEP 9｜生成内容の確認</div>
+    <div class="card-title" id="outTitle">この内容で生成されます</div>
     <div style="font-size:12px;color:var(--text2);line-height:1.8;" id="outDesc"></div>
   </div>
 
-  <!-- プロンプト -->
+  <!-- プロンプトプレビュー -->
   <div class="output-block" id="blockPrompt" style="display:none;">
     <div class="output-block-header">
       <span class="output-block-icon">📋</span>
@@ -396,19 +417,92 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="promptDesc"></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">▼ プレビュー（冒頭のみ）</div>
+      <div class="prompt-box" id="promptTxt" style="opacity:.7;"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">※ 全文は購入後に表示・コピーできます</div>
+    </div>
+  </div>
+
+  <!-- OCRプレビュー -->
+  <div class="output-block" id="blockOcr" style="display:none;">
+    <div class="output-block-header">
+      <span class="output-block-icon">📷</span>
+      <div><div class="output-block-title">OCR転記プロンプト（写真→データ変換用）</div></div>
+    </div>
+    <div class="output-block-body">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">▼ プレビュー（冒頭のみ）</div>
+      <div class="prompt-box" id="ocrTxt" style="opacity:.7;"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">※ 全文は購入後に表示・コピーできます</div>
+    </div>
+  </div>
+
+  <!-- Excel含まれる項目一覧 -->
+  <div class="output-block" id="blockExcel" style="display:none;">
+    <div class="output-block-header">
+      <span class="output-block-icon">📊</span>
+      <div><div class="output-block-title">Excelテンプレート（含まれる項目）</div></div>
+    </div>
+    <div class="output-block-body">
+      <div class="output-desc" id="excelDesc"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">✅ ダウンロードは購入後に可能になります</div>
+    </div>
+  </div>
+
+  <!-- PPTXプレビュー（マニュアルルート） -->
+  <div class="output-block" id="blockPPTX" style="display:none;">
+    <div class="output-block-header">
+      <span class="output-block-icon">📋</span>
+      <div><div class="output-block-title">業務フロー整理ガイド（PowerPoint）</div></div>
+    </div>
+    <div class="output-block-body">
+      <div class="output-desc">入力いただいた手順と診断結果をもとにPowerPointを生成します。</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド1：表紙（業種・ポジション）</div>
+        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド2：課題・困りごと</div>
+        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド3：現状の業務フロー（たたき台）</div>
+        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド4：整理・改善のポイント</div>
+        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド5：このたたき台の使い方</div>
+        <div style="font-size:12px;color:var(--text2);padding:6px 0;">📌 スライド6：なぜ継続更新が必要か</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);">✅ 購入後すぐにダウンロードが始まります</div>
+    </div>
+  </div>
+
+  <div class="nav" style="margin-top:16px;">
+    <button class="btn-s" onclick="goS('s-select');uf(6)">戻って選び直す</button>
+    <button class="btn-p" onclick="openPayModal()">この内容で生成する →</button>
+  </div>
+</div>
+
+<!-- ⑩ ダウンロード画面（課金後・自動化ルート） -->
+<div class="screen" id="s-download">
+  <div class="card">
+    <div class="card-label">COMPLETE</div>
+    <div class="card-title" id="dlTitle">あなた専用の成果物が完成しました</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.8;" id="dlDesc"></div>
+  </div>
+
+  <!-- プロンプト（フル） -->
+  <div class="output-block" id="dlBlockPrompt" style="display:none;">
+    <div class="output-block-header">
+      <span class="output-block-icon">📋</span>
+      <div><div class="output-block-title">AIプロンプト（Excel作成用）</div></div>
+    </div>
+    <div class="output-block-body">
+      <div class="output-desc" id="dlPromptDesc"></div>
       <div class="output-steps">
         <div class="output-step"><span class="step-num">1</span>下のプロンプトをコピーしてください</div>
         <div class="output-step"><span class="step-num">2</span>無料のClaude（claude.ai）またはGemini（gemini.google.com）を開いて貼り付けてください</div>
         <div class="output-step"><span class="step-num">3</span>AIがあなたの業務専用のExcelを自動で作成します</div>
         <div class="output-step"><span class="step-num">4</span>生成されたExcelをダウンロードして使い始めてください</div>
       </div>
-      <div class="prompt-box" id="promptTxt"></div>
-      <button class="btn-copy" id="btnCopyP" onclick="doCopy('promptTxt','btnCopyP')">📋 プロンプトをコピー</button>
+      <div class="prompt-box" id="dlPromptTxt"></div>
+      <button class="btn-copy" id="btnCopyP" onclick="doCopy('dlPromptTxt','btnCopyP')">📋 プロンプトをコピー</button>
     </div>
   </div>
 
-  <!-- OCRプロンプト -->
-  <div class="output-block" id="blockOcr" style="display:none;">
+  <!-- OCR（フル） -->
+  <div class="output-block" id="dlBlockOcr" style="display:none;">
     <div class="output-block-header">
       <span class="output-block-icon">📷</span>
       <div><div class="output-block-title">OCR転記プロンプト（写真→データ変換用）</div></div>
@@ -419,19 +513,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         <div class="output-step"><span class="step-num">2</span>下のプロンプトをコピーし、無料のClaude（claude.ai）またはGemini（gemini.google.com）に写真と一緒に送ってください</div>
         <div class="output-step"><span class="step-num">3</span>AIが表形式で出力するので、Excelにコピー＆ペーストしてください</div>
       </div>
-      <div class="prompt-box" id="ocrTxt"></div>
-      <button class="btn-copy" id="btnCopyO" onclick="doCopy('ocrTxt','btnCopyO')">📷 OCRプロンプトをコピー</button>
+      <div class="prompt-box" id="dlOcrTxt"></div>
+      <button class="btn-copy" id="btnCopyO" onclick="doCopy('dlOcrTxt','btnCopyO')">📷 OCRプロンプトをコピー</button>
     </div>
   </div>
 
   <!-- Excelダウンロード -->
-  <div class="output-block" id="blockExcel" style="display:none;">
+  <div class="output-block" id="dlBlockExcel" style="display:none;">
     <div class="output-block-header">
       <span class="output-block-icon">📊</span>
       <div><div class="output-block-title">Excelテンプレート（すぐ使える標準版）</div></div>
     </div>
     <div class="output-block-body">
-      <div class="output-desc" id="excelDesc"></div>
+      <div class="output-desc" id="dlExcelDesc"></div>
       <div style="font-size:12px;color:var(--green);background:rgba(58,201,138,.08);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;">
         💡 このExcelファイルの最後の「README＆プロンプト」シートに、AIへの指示プロンプトとOCRプロンプトも入っています。
       </div>
@@ -473,12 +567,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
-<!-- 課金モーダル -->
+<!-- 課金モーダル（最終確認） -->
 <div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeModal()">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:440px;width:100%;animation:fadeIn .2s ease;">
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;" id="modalLabel">DOWNLOAD</div>
-    <div style="font-size:17px;font-weight:700;margin-bottom:10px;" id="modalTitle">成果物を生成します</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:20px;" id="modalDesc"></div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">CONFIRM</div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:14px;">この内容で成果物を生成しますか？</div>
+    <!-- 選択内容のサマリー -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:2;" id="modalSelections"></div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:20px;">
       <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">含まれるもの：</div>
       <div id="modalContents" style="font-size:12px;color:var(--text2);line-height:1.9;"></div>
@@ -554,10 +649,12 @@ let q2Pain='';
 let q2_1Steps='';
 let ar=null;
 let selectedToolId=null;
+let selectedReason='';
 let payRoute=''; // 'auto' or 'manual'
+let roiMonthlyHours=0;
 
 // ===== ユーティリティ =====
-function uf(a){for(let i=0;i<7;i++){const d=document.getElementById('fd'+i),l=document.getElementById('fl'+i);if(!d||!l)continue;d.className='fd'+(i<a?' done':i===a?' active':'');l.className='fl'+(i<a?' done':i===a?' active':'');d.textContent=i<a?'✓':i+1;}}
+function uf(a){for(let i=0;i<9;i++){const d=document.getElementById('fd'+i),l=document.getElementById('fl'+i);if(!d||!l)continue;d.className='fd'+(i<a?' done':i===a?' active':'');l.className='fl'+(i<a?' done':i===a?' active':'');d.textContent=i<a?'✓':i+1;}}
 function goS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
 
 // ===== Q0: 属性 =====
@@ -770,7 +867,7 @@ function showFlowchart(){
       <span style="color:var(--yellow);font-weight:700;">📋 現時点では自動化よりも、業務の見える化・マニュアル化が優先です。</span><br>まず手順をドキュメント化することで、改善の基盤ができます。</div>`;
   }
 
-  // 分岐CTA
+  // 分岐CTA（ここでは売らない。「次に何を選ぶか考える」画面へ誘導）
   const ctaEl=document.getElementById('branchCta');
   const hasMatchedTemplate=ar.matched_ids && ar.matched_ids.length>0;
   if(hasAuto && hasMatchedTemplate){
@@ -778,27 +875,25 @@ function showFlowchart(){
     buildSelectScreen(matched);
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
       <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
-      <div class="branch-cta-title">テンプレ・プロンプトを取得する</div>
-      <div class="branch-cta-desc">診断で特定した業務の専用Excelテンプレート・AIプロンプトを生成します。<br>削減効果が最大の業務に絞って1セット提供します。</div>
-      <div class="price-badge">¥9,800（買い切り）</div><br>
-      <button class="btn-p" onclick="openPayModal('auto')">テンプレ・プロンプトを取得する →</button>
+      <div class="branch-cta-title">まず1つ、着手する業務を選びます</div>
+      <div class="branch-cta-desc">診断で見つかった候補の中から、今いちばん取り組むものを1つ選んでください。</div>
+      <button class="btn-p" onclick="goSelectBeforePay()">候補を選ぶ →</button>
     </div>`;
   }else if(hasAuto && !hasMatchedTemplate){
-    // 自動化ポイントはあるがテンプレが該当しない
+    buildManualSelectScreen();
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:rgba(124,92,216,.5);">
       <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:#9d7fe8;letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
-      <div class="branch-cta-title">業務フロー整理ガイドを取得する</div>
-      <div class="branch-cta-desc">上のフローチャートとAI活用ヒントをPowerPointにまとめます。<br>専用システムへの入力工程を整理し、人とAIの分担を明確にするたたき台として使えます。</div>
-      <div class="price-badge">¥9,800（買い切り）</div><br>
-      <button class="btn-p" style="background:#7c5cd8;" onclick="openPayModal('manual')">業務フロー整理ガイドを取得する →</button>
+      <div class="branch-cta-title">まず整理から始める範囲を選びます</div>
+      <div class="branch-cta-desc">いきなり自動化せず、手順の見える化から始める業務を1つ決めてください。</div>
+      <button class="btn-p" style="background:#7c5cd8;" onclick="goManualChoiceBeforePay()">候補を選ぶ →</button>
     </div>`;
   }else{
+    buildManualSelectScreen();
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--yellow);">
       <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--yellow);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
-      <div class="branch-cta-title">業務マニュアルのたたき台を作成する</div>
-      <div class="branch-cta-desc">今回入力いただいた手順をもとに、PowerPointのたたき台を生成します。<br>肉付けしながら育てていくことで、会社の資産になります。</div>
-      <div class="price-badge">¥9,800（買い切り）</div><br>
-      <button class="btn-p" style="background:var(--yellow);color:#0f1117;" onclick="openPayModal('manual')">マニュアルたたき台を作成する →</button>
+      <div class="branch-cta-title">まず整理から始める範囲を選びます</div>
+      <div class="branch-cta-desc">いきなり自動化せず、手順の見える化から始める業務を1つ決めてください。</div>
+      <button class="btn-p" style="background:var(--yellow);color:#0f1117;" onclick="goManualChoiceBeforePay()">候補を選ぶ →</button>
     </div>`;
   }
 }
@@ -807,69 +902,127 @@ function showFlowchart(){
 function buildSelectScreen(tasks){
   const container=document.getElementById('toolSelectCards');
   container.innerHTML='';
-  selectedToolId=null;
+  selectedToolId=null;selectedReason='';
   document.getElementById('btnSelect').disabled=true;
-  const title=tasks.length>1
-    ?`「${tasks.map(t=>t.name).join('」か「')}」どちらが今一番必要ですか？`
-    :tasks.length===1?`「${tasks[0].name}」の専用ツールを生成します`:'自動化ツールを選択してください';
-  document.getElementById('selectTitle').textContent=title;
+  document.getElementById('reasonBlock').style.display='none';
+  document.querySelectorAll('#reasonGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('selectTitle').textContent=
+    tasks.length>1?`「${tasks.map(t=>t.name).join('」か「')}」どちらから始めますか？`
+    :tasks.length===1?`「${tasks[0].name}」から始めてみましょう`:'業務を選んでください';
+  document.getElementById('selectHint').textContent='診断結果から絞り込まれた候補です。1つ選んでください。';
   tasks.forEach(task=>{
     const card=document.createElement('div');
     card.className='tool-select-card';
+    const isRec=task.id===ar.priority_id;
     const chips=[];
     if(task.hasExcel)chips.push('<span class="tool-chip chip-excel">📊 Excel</span>');
     if(task.hasPrompt)chips.push('<span class="tool-chip chip-prompt">📋 プロンプト</span>');
     if(task.hasOcr)chips.push('<span class="tool-chip chip-ocr">📷 OCR</span>');
-    card.innerHTML=`<div class="tool-select-title">${task.name}</div>
-      <div class="tool-select-desc">${task.mechanism}</div>
-      <div class="tool-select-items">${chips.join('')}</div>`;
+    card.innerHTML=`<div class="tool-select-title">${task.name}
+      ${isRec?'<span style="font-size:10px;background:rgba(232,124,58,.15);color:var(--accent);padding:2px 9px;border-radius:10px;margin-left:6px;font-weight:700;">⭐ AIのおすすめ</span>':''}
+    </div>
+    <div class="tool-select-desc">${task.mechanism}</div>
+    <div class="tool-select-items">${chips.join('')}</div>`;
     card.onclick=()=>{
       document.querySelectorAll('.tool-select-card').forEach(c=>c.classList.remove('selected'));
       card.classList.add('selected');selectedToolId=task.id;
-      document.getElementById('btnSelect').disabled=false;
+      document.getElementById('reasonBlock').style.display='block';
+      document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
+      checkSelectReady();
     };
     container.appendChild(card);
-    // 1件なら自動選択
     if(tasks.length===1){card.click();}
   });
 }
 
-function goROI(){goS('s-roi');uf(6);}
+function buildManualSelectScreen(){
+  const container=document.getElementById('toolSelectCards');
+  container.innerHTML='';
+  selectedToolId=null;selectedReason='';
+  document.getElementById('btnSelect').disabled=true;
+  document.getElementById('reasonBlock').style.display='none';
+  document.querySelectorAll('#reasonGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('selectTitle').textContent='整理から始める業務を1つ選んでください';
+  document.getElementById('selectHint').textContent='フローチャートで確認した工程の中から、まず手順を整理する業務を1つ決めてください。';
+  const steps=(ar.steps||[]).filter(s=>s.automation!=='◎').slice(0,4);
+  const items=steps.length>0?steps:[{step:1,text:'業務フロー全体',note:'手順全体を見える化・整理します'}];
+  items.forEach(step=>{
+    const card=document.createElement('div');
+    card.className='tool-select-card';
+    card.innerHTML=`<div class="tool-select-title">STEP ${step.step}：${step.text}</div>
+      <div class="tool-select-desc">${step.note||'手順の見える化・整理が必要な工程です'}</div>`;
+    card.onclick=()=>{
+      document.querySelectorAll('.tool-select-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');selectedToolId='manual_'+step.step;
+      document.getElementById('reasonBlock').style.display='block';
+      document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
+      checkSelectReady();
+    };
+    container.appendChild(card);
+  });
+}
+
+function goSelectBeforePay(){payRoute='auto';goS('s-select');uf(6);}
+function goManualChoiceBeforePay(){payRoute='manual';goS('s-select');uf(6);}
+
+function selReason(btn,v){
+  document.querySelectorAll('#reasonGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedReason=v;
+  checkSelectReady();
+}
+
+function checkSelectReady(){
+  document.getElementById('btnSelect').disabled=!(selectedToolId&&selectedReason);
+}
+
+function goROI(){
+  // ROIコンテキスト表示
+  const task=payRoute==='auto'?TOP10.find(t=>t.id===selectedToolId):null;
+  const taskName=task?task.name:selectedToolId?selectedToolId.replace('manual_','STEP ')+'の整理':'選択した業務';
+  const ctx=document.getElementById('roiContext');
+  const ctxContent=document.getElementById('roiContextContent');
+  ctxContent.innerHTML=`<span style="color:var(--text3);">選んだ業務：</span><strong>${taskName}</strong><br>
+    <span style="color:var(--text3);">選んだ理由：</span><strong>${selectedReason}</strong>`;
+  ctx.style.display='block';
+  // ボタンをリセット
+  const btn=document.getElementById('btnROI');
+  btn.textContent='試算する →';
+  btn.onclick=calcROI;
+  document.getElementById('roiBox').style.display='none';
+  goS('s-roi');uf(7);
+}
 
 // ===== 課金モーダル =====
-function openPayModal(route){
-  payRoute=route;
-  const modal=document.getElementById('payModal');
-  if(route==='auto'){
-    const matched=(ar.matched_ids||[]).map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
-    const main=matched.find(t=>t.id===ar.priority_id)||matched[0]||TOP10[0];
-    document.getElementById('modalLabel').textContent='DOWNLOAD';
-    document.getElementById('modalTitle').textContent='テンプレ・プロンプトを取得する';
-    document.getElementById('modalDesc').textContent=`${ind}・${pos} 向けの「${main.name}」専用ツールセットを生成します。`;
+function openPayModal(){
+  const task=payRoute==='auto'?TOP10.find(t=>t.id===selectedToolId):null;
+  const taskName=task?task.name:selectedToolId?selectedToolId.replace('manual_','STEP ')+'の整理':'選択した業務';
+  // 選択内容サマリー
+  let selHtml=`<div>📌 選んだ業務：<strong>${taskName}</strong></div>`;
+  if(selectedReason)selHtml+=`<div>📌 選んだ理由：<strong>${selectedReason}</strong></div>`;
+  if(roiMonthlyHours>0)selHtml+=`<div>📌 想定削減：<strong>月 ${roiMonthlyHours} 時間</strong></div>`;
+  document.getElementById('modalSelections').innerHTML=selHtml;
+  // 含まれるもの
+  if(payRoute==='auto'&&task){
     const items=['📊 Excelテンプレート（すぐ使える標準版）','📋 AI活用プロンプト（無料Claude/Geminiで動作）','📖 使い方・READMEシート付き'];
-    if(main.hasOcr)items.splice(1,0,'📷 OCR転記プロンプト');
+    if(task.hasOcr)items.splice(1,0,'📷 OCR転記プロンプト');
     document.getElementById('modalContents').innerHTML=items.map(s=>`✅ ${s}`).join('<br>');
   }else{
-    document.getElementById('modalLabel').textContent='GENERATE';
-    document.getElementById('modalTitle').textContent='マニュアルたたき台を生成する';
-    document.getElementById('modalDesc').textContent=`入力いただいた業務手順をもとに、PowerPointのたたき台を生成・ダウンロードします。`;
     document.getElementById('modalContents').innerHTML=[
-      '📋 業務フロー整理スライド（6枚）',
-      '✏️ たたき台の使い方・肉付けガイド',
-      '🔄 なぜ継続更新が必要かの説明ページ',
+      '📋 業務フロー整理スライド（6枚）','✏️ たたき台の使い方・肉付けガイド','🔄 なぜ継続更新が必要かの説明ページ'
     ].map(s=>`✅ ${s}`).join('<br>');
   }
-  modal.style.display='flex';
+  document.getElementById('payModal').style.display='flex';
 }
 function closeModal(){document.getElementById('payModal').style.display='none';}
+
 async function execPayment(){
   closeModal();
   if(payRoute==='auto'){
-    // ⑥ ROI復活：自動化ルートはツール選択→ROI→成果物
-    goS('s-select');uf(6);
+    showActualOutput();
   }else{
     await genManualPPTX();
-    goS('s-manual');uf(6);
+    goS('s-manual');uf(9);
   }
 }
 
@@ -884,6 +1037,7 @@ function calcROI(){
   const sm=mh*autoRate;const sy=sm*12;
   const mv=sm*wage;const yv=mv*12;
   const roi=Math.round(yv/9800*10)/10;
+  roiMonthlyHours=sm.toFixed(1);
   document.getElementById('roiNums').innerHTML=`
     <div class="roi-nc"><div class="roi-n" style="color:var(--accent)">${sm.toFixed(1)}<span style="font-size:10px">h</span></div><div class="roi-l">月間削減時間</div></div>
     <div class="roi-nc"><div class="roi-n" style="color:var(--green)">${(yv/10000).toFixed(1)}<span style="font-size:10px">万円</span></div><div class="roi-l">年間削減コスト</div></div>
@@ -891,28 +1045,66 @@ function calcROI(){
   document.getElementById('roiSum').innerHTML=`現在 <strong>${count}件×${time}分×${staff}人＝月${mh.toFixed(1)}時間</strong> の作業のうち、<strong style="color:var(--green)">月${sm.toFixed(1)}時間（年間${sy.toFixed(0)}時間）</strong> の削減が見込めます。年間 <strong style="color:var(--green)">${(yv/10000).toFixed(1)}万円</strong> 相当・ROI <strong style="color:var(--yellow)">${roi}倍</strong>。`;
   document.getElementById('roiBox').style.display='block';
   const btn=document.getElementById('btnROI');
-  btn.textContent='成果物を受け取る →';
-  btn.onclick=showOutput;
+  btn.textContent='成果物の内容を確認する →';
+  btn.onclick=showPreview;
 }
 
-// ===== 成果物表示（自動化ルート） =====
-function showOutput(){
+// ===== 成果物プレビュー表示（課金前） =====
+function showPreview(){
+  goS('s-output');uf(8);
+  // reset all blocks
+  ['blockPrompt','blockOcr','blockExcel','blockPPTX'].forEach(id=>{document.getElementById(id).style.display='none';});
+
+  if(payRoute==='manual'){
+    document.getElementById('outTitle').textContent='生成されるガイドの内容を確認してください';
+    document.getElementById('outDesc').textContent=`${ind}・${pos} 向けの業務フロー整理ガイド（PowerPoint）が生成されます。`;
+    document.getElementById('blockPPTX').style.display='block';
+    return;
+  }
+
   const task=TOP10.find(t=>t.id===selectedToolId)||TOP10[0];
-  goS('s-output');uf(6);
-  document.getElementById('outTitle').textContent=`${task.name} の成果物が完成しました`;
-  document.getElementById('outDesc').textContent=`${ind}・${pos} 向けの「${task.name}」ツールセットです。`;
+  document.getElementById('outTitle').textContent=`「${task.name}」の生成内容を確認してください`;
+  document.getElementById('outDesc').textContent=`${ind}・${pos} 向けの専用ツールセットが生成されます。内容を確認してから購入できます。`;
+
   if(task.hasPrompt&&task.promptText){
+    const full=task.promptText(ind,pos);
+    const preview=full.split('\n').slice(0,6).join('\n')+'\n\n…（続きは購入後に全文表示されます）';
     document.getElementById('promptDesc').textContent=`このプロンプトを無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けると、${ind}向けの「${task.name}」専用Excelを自動で作成してくれます。`;
-    document.getElementById('promptTxt').textContent=task.promptText(ind,pos);
+    document.getElementById('promptTxt').textContent=preview;
     document.getElementById('blockPrompt').style.display='block';
   }
   if(task.hasOcr&&task.ocrText){
-    document.getElementById('ocrTxt').textContent=task.ocrText(ind);
+    const fullOcr=task.ocrText(ind);
+    const previewOcr=fullOcr.split('\n').slice(0,5).join('\n')+'\n\n…（続きは購入後に表示されます）';
+    document.getElementById('ocrTxt').textContent=previewOcr;
     document.getElementById('blockOcr').style.display='block';
   }
-  if(task.hasExcel&&task.excelFn){
+  if(task.hasExcel){
     document.getElementById('excelDesc').textContent=task.excelDesc||'';
     document.getElementById('blockExcel').style.display='block';
+  }
+}
+
+// ===== 実際の成果物表示（課金後・自動化ルート） =====
+function showActualOutput(){
+  const task=TOP10.find(t=>t.id===selectedToolId)||TOP10[0];
+  goS('s-download');uf(9);
+  document.getElementById('dlTitle').textContent=`${task.name} の成果物が完成しました`;
+  document.getElementById('dlDesc').textContent=`${ind}・${pos} 向けの「${task.name}」ツールセットです。`;
+  // reset
+  ['dlBlockPrompt','dlBlockOcr','dlBlockExcel'].forEach(id=>{document.getElementById(id).style.display='none';});
+  if(task.hasPrompt&&task.promptText){
+    document.getElementById('dlPromptDesc').textContent=`このプロンプトを無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けると、${ind}向けの「${task.name}」専用Excelを自動で作成してくれます。`;
+    document.getElementById('dlPromptTxt').textContent=task.promptText(ind,pos);
+    document.getElementById('dlBlockPrompt').style.display='block';
+  }
+  if(task.hasOcr&&task.ocrText){
+    document.getElementById('dlOcrTxt').textContent=task.ocrText(ind);
+    document.getElementById('dlBlockOcr').style.display='block';
+  }
+  if(task.hasExcel&&task.excelFn){
+    document.getElementById('dlExcelDesc').textContent=task.excelDesc||'';
+    document.getElementById('dlBlockExcel').style.display='block';
     document.getElementById('btnDL').onclick=()=>task.excelFn(ind,pos,task,ar);
   }
 }
@@ -1180,7 +1372,7 @@ function genStockExcel(ind,pos,task,ar){
 
 // ===== リセット =====
 function restart(){
-  ind='';pos='';q1Goals=[];q2Pain='';q2_1Steps='';ar=null;selectedToolId=null;payRoute='';
+  ind='';pos='';q1Goals=[];q2Pain='';q2_1Steps='';ar=null;selectedToolId=null;selectedReason='';payRoute='';roiMonthlyHours=0;
   document.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('otherInput').value='';
   document.getElementById('otherWrap').style.display='none';
@@ -1193,9 +1385,11 @@ function restart(){
   document.getElementById('btnROI').textContent='試算する →';
   document.getElementById('btnROI').onclick=calcROI;
   document.getElementById('roiBox').style.display='none';
-  document.getElementById('blockPrompt').style.display='none';
-  document.getElementById('blockOcr').style.display='none';
-  document.getElementById('blockExcel').style.display='none';
+  document.getElementById('roiContext').style.display='none';
+  document.getElementById('reasonBlock').style.display='none';
+  ['blockPrompt','blockOcr','blockExcel','blockPPTX','dlBlockPrompt','dlBlockOcr','dlBlockExcel'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='none';
+  });
   goS('s-attr');uf(0);
 }
 </script>
