@@ -758,8 +758,16 @@ async function runAnalysis(steps, setLS){
   if(q1Goals.includes('AIやITツールの導入を検討している'))flavorInstr+='無料AIツール（Claude無料/Gemini無料/NotebookLM）で代替できる工程を明示して。';
   if(!flavorInstr)flavorInstr='改善効果が最大になる視点で。';
 
-  // ④ テンプレマッチ改善：困りごとの内容も強く反映させる
-  const matchPrompt=`業務名の候補：${ids}
+  // テンプレートの説明をAIに渡してマッチング精度を上げる
+  const templateDesc=`
+- expense（経費精算）：領収書・経費の確認・チェック・集計・申請・精算・振り込み処理、経費チェックリスト
+- reconcile（入金消込）：請求書・入金・銀行明細・照合・未払い・消込・売掛金管理
+- invoice（請求書発行）：請求書作成・発行・送付・顧客への請求・支払期限管理
+- email（定型メール）：メール作成・返信テンプレート・問い合わせ対応・定型文・通知
+- stock（在庫管理）：在庫確認・発注・棚卸・備品管理・仕入れ・補充`;
+
+  const matchPrompt=`業務テンプレート候補（id：説明）：${templateDesc}
+
 困りごと：${q2Pain}
 業務手順：${steps}
 
@@ -772,11 +780,12 @@ async function runAnalysis(steps, setLS){
 ・stepsは入力された手順をそのまま忠実に分解してください（5〜10ステップ）
 ・automation：◎=今すぐ無料AIツールで自動化できる、△=ルール化・整理すれば自動化できる、×=人の判断が必要
 ・noteは◎△のステップのみ。「無料のClaude（claude.ai）」「無料のGemini（gemini.google.com）」「NotebookLM（完全無料）」のいずれかを使った具体的な方法を書く。有料ツール・有料プランは絶対に書かない
-・prompt_hint：◎△のステップのみ。ユーザーがそのままAIに貼れる具体的な指示文を書く（例：「以下のデータをアップロードして『〇〇のデータと△△のデータを照合して差異をまとめてください』と指示してください」）。×のステップは空文字
+・prompt_hint：◎△のステップのみ。ユーザーがそのままAIに貼れる具体的な指示文を書く。×のステップは空文字
 ・has_automationは◎または△が1つ以上あればtrue
-・matched_ids：困りごとの内容と手順から、${ids} の中で最も当てはまるものを最大2件。専用システムや特殊業務で全く当てはまらない場合は[]
+・matched_ids：困りごとと手順から最もテンプレートに近いものを最大2件選ぶ。完全一致でなくてもよい。「確認」「チェック」「集計」があればexpense、「請求」「入金」があればreconcileかinvoice、「メール」「通知」があればemail、「在庫」「発注」があればstockを候補にする。本当に全く関係ない場合のみ[]にする
 ・priority_idはmatched_idsの最優先1件。当てはまらない場合は""
 ・flavor指示：${flavorInstr}`;
+
 
   try{
     await new Promise(r=>setTimeout(r,400));setLS(1);
@@ -1207,18 +1216,12 @@ async function genManualPPTX(){
     s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:green,align:'center',wrap:true});
 
     const fname=`業務フロー整理ガイド_${ind}.pptx`;
-    // base64で取得→dataURL経由でダウンロード（blob URL不要・CSP制限も回避）
-    const base64=await pptx.write('base64');
-    const mime='application/vnd.openxmlformats-officedocument.presentationml.presentation';
-    function triggerDownload(){
-      const a=document.createElement('a');
-      a.href='data:'+mime+';base64,'+base64;
-      a.download=fname;
-      document.body.appendChild(a);a.click();
-      setTimeout(()=>document.body.removeChild(a),1000);
-    }
-    triggerDownload();
-    document.getElementById('btnReDownload').onclick=triggerDownload;
+    await pptx.writeFile({fileName:fname});
+    // 再ダウンロードボタン：同じpptxインスタンスを再利用
+    document.getElementById('btnReDownload').onclick=async()=>{
+      try{await pptx.writeFile({fileName:fname});}
+      catch(e){alert('再ダウンロードに失敗しました。ページを再読み込みして再試行してください。');}
+    };
   }catch(e){
     console.error('PPTX生成エラー:',e);
     alert('ファイル生成中にエラーが発生しました。ページを再読み込みして再試行してください。');
