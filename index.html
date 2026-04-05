@@ -1207,8 +1207,16 @@ async function genManualPPTX(){
     s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:green,align:'center',wrap:true});
 
     const fname=`業務フロー整理ガイド_${ind}.pptx`;
-    await pptx.writeFile({fileName:fname});
-    document.getElementById('btnReDownload').onclick=()=>pptx.writeFile({fileName:fname});
+    const blob=await pptx.write({outputType:'blob'});
+    function triggerDownload(b){
+      const url=URL.createObjectURL(b);
+      const a=document.createElement('a');
+      a.href=url;a.download=fname;
+      document.body.appendChild(a);a.click();
+      setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1500);
+    }
+    triggerDownload(blob);
+    document.getElementById('btnReDownload').onclick=()=>triggerDownload(blob);
   }catch(e){
     console.error('PPTX生成エラー:',e);
     alert('ファイル生成中にエラーが発生しました。ページを再読み込みして再試行してください。');
