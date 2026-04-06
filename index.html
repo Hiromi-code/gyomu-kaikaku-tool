@@ -6,12 +6,12 @@
 <title>業務半自動化スターターキット | Glocal Lab.</title>
 <meta name="description" content="業界・ポジションに合わせた診断で、AI半自動化しやすい業務を特定。専用プロンプト・Excelテンプレを生成します。">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <style>
 :root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2436;--border:#2a3050;--accent:#e87c3a;--blue:#3a7ce8;--text:#f0f2f8;--text2:#c0c8dc;--text3:#8892aa;--green:#3ac98a;--yellow:#e8c33a;--red:#e85a5a;--radius:6px;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:16px;line-height:1.6;}
 .header{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:100;}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-icon{width:28px;height:28px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;border-radius:4px;}
@@ -27,23 +27,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .fl.active{color:var(--accent);}
 .fl.done{color:var(--green);}
 .fa{margin:0 4px;color:var(--border);font-size:9px;}
-.main{max-width:660px;margin:0 auto;padding:24px 14px;}
+.main{max-width:1000px;margin:0 auto;padding:32px 24px;}
 .screen{display:none;}.screen.active{display:block;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px;animation:fadeIn .3s ease;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:14px;animation:fadeIn .3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .card-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:7px;}
-.card-title{font-size:17px;font-weight:700;line-height:1.5;margin-bottom:5px;}
-.card-hint{font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px;}
+.card-title{font-size:20px;font-weight:700;line-height:1.5;margin-bottom:6px;}
+.card-hint{font-size:14px;color:var(--text3);line-height:1.7;margin-bottom:14px;}
 .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
 .choice-grid.col3{grid-template-columns:1fr 1fr 1fr;}
-.choice-btn{padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-family:'Noto Sans JP',sans-serif;font-size:12px;cursor:pointer;text-align:left;transition:all .15s;line-height:1.4;}
+.choice-btn{padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-family:'Noto Sans JP',sans-serif;font-size:14px;cursor:pointer;text-align:left;transition:all .15s;line-height:1.4;}
 .choice-btn:hover{border-color:var(--accent);color:var(--text);}
 .choice-btn.selected{border-color:var(--accent);background:rgba(232,124,58,.1);color:var(--accent);font-weight:700;}
 .choice-btn.multi.selected{border-color:var(--blue);background:rgba(58,124,232,.1);color:var(--blue);font-weight:700;}
-.q-ta{width:100%;min-height:88px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.8;resize:vertical;outline:none;transition:border-color .2s;}
+.q-ta{width:100%;min-height:88px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:15px;line-height:1.8;resize:vertical;outline:none;transition:border-color .2s;}
 .q-ta:focus{border-color:var(--accent);}
-.q-ta::placeholder{color:var(--text3);font-size:12px;}
-.q-input{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;margin-top:8px;}
+.q-ta::placeholder{color:var(--text3);font-size:14px;}
+.q-input{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:15px;outline:none;margin-top:8px;}
 .q-input:focus{border-color:var(--accent);}
 .q-input::placeholder{color:var(--text3);}
 .context-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.7;}
@@ -63,7 +63,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 /* フローチャート - 画像スタイル */
 .fc-box-wrap{display:flex;flex-direction:column;align-items:center;gap:0;}
-.fc-box{width:100%;max-width:320px;border-radius:14px;padding:14px 18px;text-align:center;font-size:13px;font-weight:700;line-height:1.5;position:relative;}
+.fc-box{width:100%;max-width:360px;border-radius:14px;padding:14px 18px;text-align:center;font-size:16px;font-weight:700;line-height:1.5;position:relative;}
 .fc-box.type-manual{background:#e87c3a;color:#fff;}
 .fc-box.type-semi{background:#e8c33a;color:#1a1200;}
 .fc-box.type-auto{background:#7c5cd8;color:#fff;}
@@ -186,13 +186,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .structure-warning-title{font-size:13px;font-weight:700;color:#e85a5a;margin-bottom:8px;}
 .structure-warning-body{font-size:12px;color:var(--text2);line-height:1.8;}
 
-@media(max-width:480px){
+@media(max-width:768px){
   .choice-grid.col3{grid-template-columns:1fr 1fr;}
   .quant-grid{grid-template-columns:1fr;}
   .roi-nums{grid-template-columns:1fr 1fr 1fr;}
   .card{padding:14px;}
   .main{padding:16px 10px;}
   .cover-title{font-size:22px;}
+  .card-title{font-size:17px;}
+  .choice-btn{font-size:13px;}
+  body{font-size:15px;}
 }
 </style>
 </head>
@@ -1457,7 +1460,7 @@ function showActualOutput(){
     </div>`;
     document.getElementById('dlExcelDesc').innerHTML=(task.excelDesc||'')+sheetListDl;
     document.getElementById('dlBlockExcel').style.display='block';
-    document.getElementById('btnDL').onclick=()=>task.excelFn(ind,pos,task,ar);
+    document.getElementById('btnDL').onclick=()=>task.excelFn(ind,pos,task,ar).catch(e=>alert('Excel生成エラー：'+e.message));
   }
 }
 
@@ -1482,29 +1485,31 @@ async function genManualPPTX(){
     const safe=(v)=>v?String(v):'';
 
     const pptx=new PptxGenJS();
-    const bg='0f1117',surface='181c27',accent='e87c3a',text='f0f2f8',text3='8892aa',green='3ac98a';
+    // 印刷対応カラー（白背景・黒系テキスト）
+    const bg='FFFFFF',surface='F5F6FA',accent='E87C3A',blue='1A4FA0',
+          text='1A1A2E',text2='333333',text3='666680',green='1D7A4E',dark='1A1A2E';
 
     // Slide 1: Cover
     const s1=pptx.addSlide();
     s1.background={color:bg};
     s1.addShape(pptx.ShapeType.rect,{x:0,y:2.4,w:10,h:0.05,fill:{color:accent},line:{color:accent}});
-    s1.addText('業務フロー整理ガイド',{x:0.5,y:0.6,w:9,h:1.2,fontSize:30,bold:true,color:text,align:'center'});
+    s1.addText('業務フロー整理ガイド',{x:0.5,y:0.6,w:9,h:1.2,fontSize:30,bold:true,color:dark,align:'center'});
     s1.addText(`${safe(ind)} / ${safe(pos)}`,{x:0.5,y:1.8,w:9,h:0.5,fontSize:14,color:accent,align:'center'});
     s1.addText('このたたき台を育てて、会社の資産にしてください',{x:0.5,y:2.7,w:9,h:0.5,fontSize:11,color:text3,align:'center'});
     s1.addText(`作成日：${new Date().toLocaleDateString('ja-JP')}`,{x:0.5,y:4.8,w:9,h:0.4,fontSize:10,color:text3,align:'center'});
 
     // Slide 2: 課題・困りごと
     const s2=pptx.addSlide();
-    s2.background={color:surface};
-    s2.addText('課題・困りごと',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    s2.background={color:bg};
+    s2.addText('課題・困りごと',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     s2.addShape(pptx.ShapeType.rect,{x:0.4,y:0.85,w:0.05,h:3.5,fill:{color:accent},line:{color:accent}});
-    s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:3.4,fontSize:13,color:text,valign:'top',wrap:true});
+    s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:3.4,fontSize:13,color:text2,valign:'top',wrap:true});
 
     // Slide 3: 現状の業務フロー
     const rawSteps=(q2_1Steps||'').split('\n').filter(s=>s.trim()).slice(0,9);
     const s3=pptx.addSlide();
-    s3.background={color:surface};
-    s3.addText('現状の業務フロー（たたき台）',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    s3.background={color:bg};
+    s3.addText('現状の業務フロー（たたき台）',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     s3.addText('※ ステップを確認し、抜け・漏れがあれば追記してください',{x:0.4,y:0.85,w:9,h:0.35,fontSize:10,color:text3,italic:true});
     if(rawSteps.length===0){
       s3.addText('（手順の入力なし）',{x:0.4,y:1.3,w:9,h:0.5,fontSize:12,color:text3});
@@ -1512,33 +1517,33 @@ async function genManualPPTX(){
       rawSteps.forEach((step,i)=>{
         const y=1.25+i*0.44;
         s3.addShape(pptx.ShapeType.rect,{x:0.4,y:y+0.04,w:0.3,h:0.3,fill:{color:accent},line:{color:accent},rounding:true});
-        s3.addText(`${i+1}`,{x:0.4,y:y+0.04,w:0.3,h:0.3,fontSize:10,bold:true,color:'ffffff',align:'center',valign:'middle'});
-        s3.addText(safe(step).trim().replace(/^[\d.\-\s]+/,'')||`ステップ${i+1}`,{x:0.85,y:y,w:8.6,h:0.42,fontSize:12,color:text,valign:'middle'});
+        s3.addText(`${i+1}`,{x:0.4,y:y+0.04,w:0.3,h:0.3,fontSize:10,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+        s3.addText(safe(step).trim().replace(/^[\d.\-\s]+/,'')||`ステップ${i+1}`,{x:0.85,y:y,w:8.6,h:0.42,fontSize:12,color:text2,valign:'middle'});
       });
     }
 
     // Slide 4: 整理のポイント（AIの分析から）
     const autoSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎'||s.automation==='△');
     const s4=pptx.addSlide();
-    s4.background={color:surface};
-    s4.addText('整理・改善のポイント',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    s4.background={color:bg};
+    s4.addText('整理・改善のポイント',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     if(autoSteps.length>0){
       s4.addText('以下の工程に改善の余地があります。まず整理から始めましょう。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
       autoSteps.slice(0,5).forEach((step,i)=>{
         const y=1.3+i*0.62;
-        const lcolor=step.automation==='◎'?accent:'e8c33a';
-        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.52,fill:{color:'1e2436'},line:{color:lcolor,pt:1}});
-        s4.addText(`STEP ${safe(step.step)}  ${safe(step.text)}`,{x:0.55,y:y+0.05,w:8.6,h:0.25,fontSize:11,bold:true,color:text});
+        const lcolor=step.automation==='◎'?accent:'D4890A';
+        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.52,fill:{color:'F5F6FA'},line:{color:lcolor,pt:1.5}});
+        s4.addText(`STEP ${safe(step.step)}  ${safe(step.text)}`,{x:0.55,y:y+0.05,w:8.6,h:0.25,fontSize:11,bold:true,color:dark});
         if(step.note)s4.addText(`→ ${safe(step.note)}`,{x:0.55,y:y+0.28,w:8.6,h:0.2,fontSize:10,color:lcolor});
       });
     }else{
-      s4.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text,wrap:true});
+      s4.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text2,wrap:true});
     }
 
     // Slide 5: たたき台の使い方
     const s5=pptx.addSlide();
-    s5.background={color:surface};
-    s5.addText('このたたき台の使い方',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    s5.background={color:bg};
+    s5.addText('このたたき台の使い方',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     const tips=[
       ['① 各ステップを自分の言葉で書き直す','実際の作業と合っているか確認しながら修正する'],
       ['② 判断基準（OK/NG）を書き足す','「こういう時はこうする」を具体的に記載する'],
@@ -1549,15 +1554,15 @@ async function genManualPPTX(){
     tips.forEach(([title,sub],i)=>{
       const y=0.98+i*0.72;
       s5.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:0.35,h:0.35,fill:{color:accent},line:{color:accent}});
-      s5.addText(`${i+1}`,{x:0.4,y:y,w:0.35,h:0.35,fontSize:11,bold:true,color:'ffffff',align:'center',valign:'middle'});
-      s5.addText(title,{x:0.9,y:y,w:8.4,h:0.28,fontSize:12,bold:true,color:text});
+      s5.addText(`${i+1}`,{x:0.4,y:y,w:0.35,h:0.35,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+      s5.addText(title,{x:0.9,y:y,w:8.4,h:0.28,fontSize:12,bold:true,color:dark});
       s5.addText(sub,{x:0.9,y:y+0.28,w:8.4,h:0.22,fontSize:10,color:text3});
     });
 
     // Slide 6: なぜ継続更新が必要か
     const s6=pptx.addSlide();
-    s6.background={color:bg};
-    s6.addText('なぜ継続ブラッシュアップが必要か',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
+    s6.background={color:surface};
+    s6.addText('なぜ継続ブラッシュアップが必要か',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     const reasons=[
       {icon:'🔄',title:'業務は変わり続ける',body:'ルール・ツール・担当者が変わるたびに手順も変わります'},
       {icon:'🧠',title:'頭の中は消える',body:'熟練者の「カン・経験」は記録しなければ次に伝わりません'},
@@ -1566,10 +1571,10 @@ async function genManualPPTX(){
     reasons.forEach((r,i)=>{
       const y=1.0+i*1.2;
       s6.addText(r.icon,{x:0.4,y:y,w:0.6,h:0.6,fontSize:22,align:'center'});
-      s6.addText(r.title,{x:1.1,y:y,w:8.2,h:0.35,fontSize:13,bold:true,color:text});
+      s6.addText(r.title,{x:1.1,y:y,w:8.2,h:0.35,fontSize:13,bold:true,color:dark});
       s6.addText(r.body,{x:1.1,y:y+0.33,w:8.2,h:0.35,fontSize:11,color:text3});
     });
-    s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:green,align:'center',wrap:true});
+    s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:blue,align:'center',wrap:true});
 
     // ⑦ Blobダウンロード方式（最安定）
     const fname=`業務フロー整理ガイド_${safe(ind)||'診断結果'}.pptx`;
@@ -1604,35 +1609,128 @@ async function genManualPPTX(){
   }
 }
 
+// ===== ExcelJS スタイルユーティリティ =====
+const XS = {
+  fill:(argb)=>({type:'pattern',pattern:'solid',fgColor:{argb}}),
+  C:{
+    NAVY:'FF1E2D4A', WHITE:'FFFFFFFF', ORANGE:'FFE87C3A',
+    LGRAY:'FFF0F2F8', XGRAY:'FFF8F9FB', TEXT:'FF333333', NAVY2:'FF1E2D4A',
+    LGREEN:'FFE8F5EE', LYELLOW:'FFFDF6E3', LORANGE:'FFFFF8F3',
+    DGREEN:'FF1D7A4E', AMBER:'FF8B6914',
+  }
+};
+
+function xTitle(ws,text,numCols){
+  const rn=ws.rowCount+1;
+  const row=ws.addRow([text]);
+  if(numCols>1)ws.mergeCells(rn,1,rn,numCols);
+  row.height=28;
+  const c=row.getCell(1);
+  c.fill=XS.fill(XS.C.NAVY); c.font={bold:true,size:13,color:{argb:XS.C.WHITE}};
+  c.alignment={vertical:'middle'};
+  return row;
+}
+
+function xHeader(ws,headers){
+  const row=ws.addRow(headers);
+  row.height=24;
+  row.eachCell({includeEmpty:true},(cell,ci)=>{
+    if(ci>headers.length)return;
+    cell.fill=XS.fill(XS.C.ORANGE);
+    cell.font={bold:true,size:11,color:{argb:XS.C.WHITE}};
+    cell.alignment={vertical:'middle',wrapText:true};
+    cell.border={bottom:{style:'medium',color:{argb:'FFCC6620'}}};
+  });
+  return row;
+}
+
+function xSection(ws,text,numCols){
+  const rn=ws.rowCount+1;
+  const row=ws.addRow([text]);
+  if(numCols&&numCols>1)ws.mergeCells(rn,1,rn,numCols);
+  row.height=18;
+  const c=row.getCell(1);
+  c.fill=XS.fill(XS.C.LGRAY); c.font={bold:true,size:11,color:{argb:XS.C.NAVY}};
+  return row;
+}
+
+function xSubNote(ws,text,numCols,bgArgb){
+  const rn=ws.rowCount+1;
+  const row=ws.addRow([text]);
+  if(numCols&&numCols>1)ws.mergeCells(rn,1,rn,numCols);
+  row.height=18;
+  const c=row.getCell(1);
+  c.fill=XS.fill(bgArgb||XS.C.LGRAY); c.alignment={wrapText:true};
+  return row;
+}
+
+function fml(formula){return {formula};}
+
+// ===== Excel保存（共通） =====
+async function saveWb(wb,name){
+  const buffer=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`${name}_${ind}.xlsx`;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+}
+
 // ===== Excel生成ヘルパー =====
 function addReadme(wb,task,ind,pos,ar,promptTxt,ocrTxt){
   const today=new Date().toLocaleDateString('ja-JP');
-  const rows=[
-    [`README＆プロンプトガイド｜${task.name}｜${ind}・${pos}`,'',''],
-    [`診断日: ${today}　自動化スコア: ${ar?.score||0}点`,'',''],
-    ['','',''],
-    ['【AIプロンプトの使い方】','',''],
-    ['以下のプロンプトを 無料のClaude（claude.ai）または Gemini（gemini.google.com）にコピーして貼り付けてください。','',''],
-    ['有料プランは不要です。無料枠で動作します。','',''],
-    ['','',''],
-  ];
+  const ws=wb.addWorksheet('README＆プロンプト');
+  ws.columns=[{width:62},{width:20},{width:20}];
+  const NC=3;
+
+  xTitle(ws,`README＆プロンプトガイド｜${task.name}｜${ind}・${pos}`,NC);
+
+  const dr=ws.addRow([`診断日: ${today}　自動化スコア: ${ar?.score||0}点`]);
+  ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+  dr.height=16; dr.getCell(1).fill=XS.fill(XS.C.LGRAY); dr.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
+
+  ws.addRow([]);
+  xSection(ws,'【AIプロンプトの使い方】',NC);
+  const u1=ws.addRow(['以下のプロンプトを 無料のClaude（claude.ai）または Gemini（gemini.google.com）にコピーして貼り付けてください。']);
+  ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+  u1.height=18; u1.getCell(1).alignment={wrapText:true};
+  const u2=ws.addRow(['✅ 有料プランは不要です。無料枠で動作します。']);
+  ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+  u2.height=18; u2.getCell(1).fill=XS.fill(XS.C.LORANGE);
+  u2.getCell(1).font={bold:true,size:11,color:{argb:XS.C.ORANGE}};
+  ws.addRow([]);
+
   if(promptTxt){
-    rows.push(['■ Excel作成プロンプト','','']);
-    rows.push(['---------- ここからコピー ----------','','']);
-    rows.push([promptTxt,'','']);
-    rows.push(['---------- ここまでコピー ----------','','']);
-    rows.push(['','','']);
+    xSection(ws,'■ Excel作成プロンプト',NC);
+    const s1=ws.addRow(['---------- ここからコピー ----------']);
+    ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+    s1.getCell(1).fill=XS.fill(XS.C.LORANGE); s1.getCell(1).font={bold:true,size:10,color:{argb:XS.C.AMBER}};
+    const pt=ws.addRow([promptTxt]);
+    ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+    pt.height=130; pt.getCell(1).fill=XS.fill(XS.C.LORANGE);
+    pt.getCell(1).alignment={wrapText:true,vertical:'top'};
+    const s2=ws.addRow(['---------- ここまでコピー ----------']);
+    ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+    s2.getCell(1).fill=XS.fill(XS.C.LORANGE); s2.getCell(1).font={bold:true,size:10,color:{argb:XS.C.AMBER}};
+    ws.addRow([]);
   }
   if(ocrTxt){
-    rows.push(['■ OCR転記プロンプト（紙・写真→表形式）','','']);
-    rows.push(['無料のClaude（claude.ai）またはGemini（gemini.google.com）に写真と一緒に送ってください。','','']);
-    rows.push(['---------- ここからコピー ----------','','']);
-    rows.push([ocrTxt,'','']);
-    rows.push(['---------- ここまでコピー ----------','','']);
+    xSection(ws,'■ OCR転記プロンプト（紙・写真→表形式）',NC);
+    const u3=ws.addRow(['無料のClaude（claude.ai）またはGemini（gemini.google.com）に写真と一緒に送ってください。']);
+    ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+    u3.height=18; u3.getCell(1).alignment={wrapText:true};
+    const s3=ws.addRow(['---------- ここからコピー ----------']);
+    ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+    s3.getCell(1).fill=XS.fill(XS.C.LORANGE); s3.getCell(1).font={bold:true,size:10,color:{argb:XS.C.AMBER}};
+    const ot=ws.addRow([ocrTxt]);
+    ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+    ot.height=130; ot.getCell(1).fill=XS.fill(XS.C.LORANGE);
+    ot.getCell(1).alignment={wrapText:true,vertical:'top'};
+    const s4=ws.addRow(['---------- ここまでコピー ----------']);
+    ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+    s4.getCell(1).fill=XS.fill(XS.C.LORANGE); s4.getCell(1).font={bold:true,size:10,color:{argb:XS.C.AMBER}};
   }
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:60},{wch:20},{wch:20}];
-  XLSX.utils.book_append_sheet(wb,ws,'README＆プロンプト');
 }
 
 // ===== 共通追加シート（フローチャート・AI活用・カスタマイズ・AI質問集）=====
@@ -1641,280 +1739,388 @@ function addCommonSheets(wb,task,ind,ar){
   const taskCtx=taskName?`業務名：${taskName}　担当者：${taskOwner}　タイミング：${taskTiming}`:'';
 
   // ① フローチャートシート
-  const flowRows=[
-    [`業務フローチャート｜${task.name}｜${ind}`,'',''],
-    [taskCtx||'','',''],
-    ['','',''],
-    ['STEP','業務内容','自動化区分'],
-  ];
-  steps.forEach(s=>{
-    const autoLabel=s.automation==='◎'?'◎ 無料AIで今すぐ自動化可':s.automation==='△'?'△ 整理で自動化できる':'× 人の判断が必要';
-    flowRows.push([`STEP ${s.step}`,s.text,autoLabel]);
-    if(s.note)flowRows.push(['',`▶ ${s.note}`,'']);
-    if(s.prompt_hint)flowRows.push(['',`📋 AIへの指示例：${s.prompt_hint}`,'']);
-  });
-  const wsFlow=XLSX.utils.aoa_to_sheet(flowRows);
-  wsFlow['!cols']=[{wch:10},{wch:50},{wch:22}];
-  XLSX.utils.book_append_sheet(wb,wsFlow,'フローチャート');
-
-  // ② AI活用ポイントシート
-  const autoSteps=steps.filter(s=>s.automation==='◎'||s.automation==='△');
-  const aiRows=[
-    [`AI活用ポイント｜${task.name}｜${ind}`,''],
-    ['無料のClaude（claude.ai）またはGemini（gemini.google.com）で対応できます。有料プランは不要です。',''],
-    ['',''],
-    ['STEP','AIでできること・指示例'],
-  ];
-  if(autoSteps.length===0){
-    aiRows.push(['—','現在の手順では自動化よりマニュアル化・ルール化が先決です']);
-  } else {
-    autoSteps.forEach(s=>{
-      aiRows.push([`STEP ${s.step}：${s.text}`,s.note||'']);
-      if(s.prompt_hint)aiRows.push(['📋 AIへの指示例',s.prompt_hint]);
-      aiRows.push(['','']);
+  {
+    const ws=wb.addWorksheet('フローチャート');
+    ws.columns=[{width:12},{width:52},{width:24}];
+    xTitle(ws,`業務フローチャート｜${task.name}｜${ind}`,3);
+    if(taskCtx){
+      const tr=ws.addRow([taskCtx]);
+      ws.mergeCells(ws.rowCount,1,ws.rowCount,3);
+      tr.height=18; tr.getCell(1).fill=XS.fill(XS.C.LGRAY);
+      tr.getCell(1).font={size:10,color:{argb:XS.C.TEXT}}; tr.getCell(1).alignment={wrapText:true};
+    }
+    ws.addRow([]);
+    xHeader(ws,['STEP','業務内容','自動化区分']);
+    steps.forEach(s=>{
+      const autoLabel=s.automation==='◎'?'◎ 無料AIで今すぐ自動化可':s.automation==='△'?'△ 整理で自動化できる':'× 人の判断が必要';
+      const bg=s.automation==='◎'?XS.C.LGREEN:s.automation==='△'?XS.C.LYELLOW:null;
+      const row=ws.addRow([`STEP ${s.step}`,s.text,autoLabel]);
+      row.height=20; row.getCell(2).alignment={wrapText:true};
+      if(bg)row.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=3)c.fill=XS.fill(bg);});
+      row.getCell(3).font={bold:true,size:10,color:{argb:s.automation==='◎'?XS.C.DGREEN:s.automation==='△'?XS.C.AMBER:'FF666666'}};
+      if(s.note){
+        const nr=ws.addRow(['',`▶ ${s.note}`,'']);
+        nr.height=18; nr.getCell(2).font={italic:true,size:10,color:{argb:'FF555577'}};
+        nr.getCell(2).alignment={wrapText:true};
+        if(bg)nr.getCell(2).fill=XS.fill(bg);
+      }
+      if(s.prompt_hint){
+        const pr=ws.addRow(['',`📋 AIへの指示例：${s.prompt_hint}`,'']);
+        pr.height=30; pr.getCell(2).fill=XS.fill(XS.C.LORANGE);
+        pr.getCell(2).font={italic:true,size:10,color:{argb:'FF995500'}};
+        pr.getCell(2).alignment={wrapText:true};
+      }
     });
   }
-  const wsAI=XLSX.utils.aoa_to_sheet(aiRows);
-  wsAI['!cols']=[{wch:28},{wch:60}];
-  XLSX.utils.book_append_sheet(wb,wsAI,'AI活用ポイント');
+
+  // ② AI活用ポイントシート
+  {
+    const ws=wb.addWorksheet('AI活用ポイント');
+    ws.columns=[{width:32},{width:62}];
+    xTitle(ws,`AI活用ポイント｜${task.name}｜${ind}`,2);
+    const nr=ws.addRow(['無料のClaude（claude.ai）またはGemini（gemini.google.com）で対応できます。有料プランは不要です。']);
+    ws.mergeCells(ws.rowCount,1,ws.rowCount,2);
+    nr.height=18; nr.getCell(1).fill=XS.fill(XS.C.LORANGE);
+    nr.getCell(1).font={size:11,color:{argb:XS.C.ORANGE}}; nr.getCell(1).alignment={wrapText:true};
+    ws.addRow([]);
+    xHeader(ws,['STEP','AIでできること・指示例']);
+    const autoSteps=steps.filter(s=>s.automation==='◎'||s.automation==='△');
+    if(autoSteps.length===0){
+      const er=ws.addRow(['—','現在の手順では自動化よりマニュアル化・ルール化が先決です']);
+      er.getCell(2).alignment={wrapText:true};
+    } else {
+      autoSteps.forEach(s=>{
+        const bg=s.automation==='◎'?XS.C.LGREEN:XS.C.LYELLOW;
+        const sr=ws.addRow([`STEP ${s.step}：${s.text}`,s.note||'']);
+        sr.height=20;
+        sr.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=2){c.fill=XS.fill(bg);c.font={bold:ci===1,size:11};}});
+        sr.getCell(2).alignment={wrapText:true};
+        if(s.prompt_hint){
+          const pr=ws.addRow(['📋 AIへの指示例',s.prompt_hint]);
+          pr.height=30;
+          pr.getCell(1).fill=XS.fill(XS.C.LORANGE); pr.getCell(1).font={bold:true,size:10,color:{argb:XS.C.ORANGE}};
+          pr.getCell(2).fill=XS.fill(XS.C.LORANGE); pr.getCell(2).font={size:10,color:{argb:'FF995500'}};
+          pr.getCell(2).alignment={wrapText:true};
+        }
+        ws.addRow([]);
+      });
+    }
+  }
 
   // ③ カスタマイズガイドシート
-  const guideRows=[
-    [`カスタマイズガイド｜${task.name}｜${ind}`],
-    ['このシートを自社用にカスタマイズするための手順を説明します。'],
-    [''],
-    ['【まず最初にやること】'],
-    ['1. 1件だけ試し入力をして、動作を確認してください'],
-    ['2. 不要な列があれば右クリック→削除で消してください'],
-    ['3. 項目名を自社の用語に変更してください（セルをダブルクリックで編集）'],
-    [''],
-    ['【項目名（列ヘッダー）の変更方法】'],
-    ['① 変更したいセルをダブルクリック'],
-    ['② 自社の用語に書き換える'],
-    ['③ Enterで確定'],
-    [''],
-    ['【列を追加する方法】'],
-    ['① 追加したい場所の列を右クリック'],
-    ['② 「挿入」を選択'],
-    ['③ ヘッダー行に項目名を入力'],
-    [''],
-    ['【プルダウン（ドロップダウン）を変更する方法】'],
-    ['① 変更したいセルを選択'],
-    ['② リボンの「データ」→「データの入力規則」をクリック'],
-    ['③ 「元の値」欄の選択肢を書き換える（カンマ区切り）'],
-    [''],
-    ['【シートを複製する方法（月次バックアップなど）】'],
-    ['① シートタブを右クリック'],
-    ['② 「移動またはコピー」→「コピーを作成する」にチェック'],
-    ['③ 任意の名前に変更（例：2025年4月）'],
-    [''],
-    ['【運用変更のタイミング】'],
-    ['・担当者が変わるとき'],
-    ['・ルールや申請フローが変わるとき'],
-    ['・管理する項目が増えたとき'],
-  ];
-  const wsGuide=XLSX.utils.aoa_to_sheet(guideRows);
-  wsGuide['!cols']=[{wch:70}];
-  XLSX.utils.book_append_sheet(wb,wsGuide,'カスタマイズガイド');
+  {
+    const ws=wb.addWorksheet('カスタマイズガイド');
+    ws.columns=[{width:72}];
+    xTitle(ws,`カスタマイズガイド｜${task.name}｜${ind}`,1);
+    const desc=ws.addRow(['このシートを自社用にカスタマイズするための手順を説明します。']);
+    desc.height=18; desc.getCell(1).alignment={wrapText:true};
+    ws.addRow([]);
+    const sections=[
+      {h:'【まず最初にやること】',items:['1. 1件だけ試し入力をして、動作を確認してください','2. 不要な列があれば右クリック→削除で消してください','3. 項目名を自社の用語に変更してください（セルをダブルクリックで編集）']},
+      {h:'【項目名（列ヘッダー）の変更方法】',items:['① 変更したいセルをダブルクリック','② 自社の用語に書き換える','③ Enterで確定']},
+      {h:'【列を追加する方法】',items:['① 追加したい場所の列を右クリック','② 「挿入」を選択','③ ヘッダー行に項目名を入力']},
+      {h:'【プルダウン（ドロップダウン）を変更する方法】',items:['① 変更したいセルを選択','② リボンの「データ」→「データの入力規則」をクリック','③ 「元の値」欄の選択肢を書き換える（カンマ区切り）']},
+      {h:'【シートを複製する方法（月次バックアップなど）】',items:['① シートタブを右クリック','② 「移動またはコピー」→「コピーを作成する」にチェック','③ 任意の名前に変更（例：2025年4月）']},
+      {h:'【運用変更のタイミング】',items:['・担当者が変わるとき','・ルールや申請フローが変わるとき','・管理する項目が増えたとき']},
+    ];
+    sections.forEach(sec=>{
+      xSection(ws,sec.h,1);
+      sec.items.forEach(item=>{
+        const r=ws.addRow([item]); r.height=18;
+        r.getCell(1).alignment={wrapText:true};
+      });
+      ws.addRow([]);
+    });
+  }
 
   // ④ AI質問集シート
-  const qRows=[
-    [`AI質問集（プロンプト集）｜${task.name}｜${ind}`],
-    ['以下をコピーして、無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けてください。'],
-    [''],
-    ['【列・項目の追加】'],
-    [`このExcelシートに「○○」という列を追加してください。${ind}向けの${task.name}シートです。`],
-    [''],
-    ['【判定条件の変更】'],
-    [`このシートの判定条件を変更してください。現在の条件：（貼り付けてください）→変更後：（書いてください）`],
-    [''],
-    ['【月次集計の作成】'],
-    [`この管理表を月次集計しやすい形に直してください。各月のデータを1シートに蓄積し、月ごとに集計を出す構造にしてください。`],
-    [''],
-    ['【年間管理への変換】'],
-    [`このファイル構成を、年間管理しやすい形に改善してください。月ごとにファイルをコピーせず、1ファイルで年間分を管理できるようにしてください。`],
-    [''],
-    ['【エラーの修正】'],
-    [`このExcelで「○○」というエラーが出ています。原因と修正方法を教えてください。`],
-    [''],
-    ['【使い方の説明】'],
-    [`このExcelシートの使い方を、新しい担当者向けに分かりやすく説明してください。`],
-    [''],
-    ['【項目の意味確認】'],
-    [`このシートの「○○」という項目は何のために使いますか？`],
-  ];
-  const wsQ=XLSX.utils.aoa_to_sheet(qRows);
-  wsQ['!cols']=[{wch:80}];
-  XLSX.utils.book_append_sheet(wb,wsQ,'AI質問集');
+  {
+    const ws=wb.addWorksheet('AI質問集');
+    ws.columns=[{width:82}];
+    xTitle(ws,`AI質問集（プロンプト集）｜${task.name}｜${ind}`,1);
+    const hdr=ws.addRow(['以下をコピーして、無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けてください。']);
+    hdr.height=20; hdr.getCell(1).fill=XS.fill(XS.C.LORANGE);
+    hdr.getCell(1).font={size:11,color:{argb:XS.C.ORANGE}}; hdr.getCell(1).alignment={wrapText:true};
+    ws.addRow([]);
+    const qData=[
+      {h:'【列・項目の追加】',q:`このExcelシートに「○○」という列を追加してください。${ind}向けの${task.name}シートです。`},
+      {h:'【判定条件の変更】',q:`このシートの判定条件を変更してください。現在の条件：（貼り付けてください）→変更後：（書いてください）`},
+      {h:'【月次集計の作成】',q:`この管理表を月次集計しやすい形に直してください。各月のデータを1シートに蓄積し、月ごとに集計を出す構造にしてください。`},
+      {h:'【年間管理への変換】',q:`このファイル構成を、年間管理しやすい形に改善してください。月ごとにファイルをコピーせず、1ファイルで年間分を管理できるようにしてください。`},
+      {h:'【エラーの修正】',q:`このExcelで「○○」というエラーが出ています。原因と修正方法を教えてください。`},
+      {h:'【使い方の説明】',q:`このExcelシートの使い方を、新しい担当者向けに分かりやすく説明してください。`},
+      {h:'【項目の意味確認】',q:`このシートの「○○」という項目は何のために使いますか？`},
+    ];
+    qData.forEach(q=>{
+      xSection(ws,q.h,1);
+      const pr=ws.addRow([q.q]); pr.height=38;
+      pr.getCell(1).fill=XS.fill(XS.C.LORANGE); pr.getCell(1).font={size:11,color:{argb:'FF995500'}};
+      pr.getCell(1).alignment={wrapText:true,vertical:'top'};
+      ws.addRow([]);
+    });
+  }
 }
 
-function saveWb(wb,name){
-  XLSX.writeFile(wb,`${name}_${ind}.xlsx`);
-}
-
-function genExpenseExcel(ind,pos,task,ar){
-  const wb=XLSX.utils.book_new();const S=7,rows=30,E=S+rows-1;
+async function genExpenseExcel(ind,pos,task,ar){
+  const wb=new ExcelJS.Workbook();
+  const S=7,rows=30,E=S+rows-1;
   const today=new Date().toLocaleDateString('ja-JP');
-  const s1=[[`経費精算チェックシート　${ind}`,...Array(13).fill('')],
-    [`作成日: ${today}`,...Array(13).fill('')],Array(14).fill(''),
-    ['部署名','','','申請者名','','','','申請日','','','','','',''],
-    Array(14).fill(''),
-    ['No.','日付','費目','摘要（内容）','金額（円）','添付書類','支払方法','日付\nチェック','金額\nチェック','添付\nチェック','規程\nチェック','総合判定','コメント','承認者']];
+  const NC=14;
+
+  // Sheet1: 経費入力チェック
+  const ws1=wb.addWorksheet('経費入力チェック');
+  ws1.columns=[{width:5},{width:13},{width:12},{width:24},{width:12},{width:10},{width:12},{width:10},{width:10},{width:10},{width:12},{width:10},{width:28},{width:12}];
+  const t1=ws1.addRow([`経費精算チェックシート　${ind}`]);
+  ws1.mergeCells(1,1,1,NC); t1.height=28;
+  t1.getCell(1).fill=XS.fill(XS.C.NAVY); t1.getCell(1).font={bold:true,size:14,color:{argb:XS.C.WHITE}};
+  t1.getCell(1).alignment={vertical:'middle'};
+  const t2=ws1.addRow([`作成日: ${today}`]);
+  ws1.mergeCells(2,1,2,NC); t2.height=16;
+  t2.getCell(1).fill=XS.fill(XS.C.LGRAY); t2.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
+  ws1.addRow([]);
+  const ir=ws1.addRow(['部署名','','','申請者名','','','','申請日','','','','','','']);
+  ir.height=18; [1,4,8].forEach(ci=>ir.getCell(ci).font={bold:true,size:11,color:{argb:XS.C.NAVY}});
+  ws1.addRow([]);
+  xHeader(ws1,['No.','日付','費目','摘要（内容）','金額（円）','添付書類','支払方法','日付\nチェック','金額\nチェック','添付\nチェック','規程\nチェック','総合判定','コメント','承認者']);
   for(let i=0;i<rows;i++){
     const r=S+i;
-    s1.push([i+1,'','','','','','',
-      {f:`IF(B${r}="","",IF(B${r}>TODAY(),"NG：未来日付","OK"))`},
-      {f:`IF(E${r}="","",IF(AND(C${r}="接待費",E${r}>5000),"要確認：接待規程",IF(E${r}>100000,"要確認：高額",IF(E${r}<=0,"NG：金額エラー","OK"))))`},
-      {f:`IF(F${r}="","",IF(F${r}="なし",IF(E${r}>3000,"NG：添付必須","要確認"),"OK"))`},
-      {f:`IF(OR(C${r}="",G${r}=""),"",IF(AND(C${r}="宿泊費",E${r}>15000),"要確認：宿泊上限超","OK"))`},
-      {f:`IF(AND(B${r}="",E${r}=""),"",IF(OR(H${r}="NG：未来日付",I${r}="NG：金額エラー",J${r}="NG：添付必須"),"NG",IF(OR(ISNUMBER(SEARCH("要確認",I${r})),ISNUMBER(SEARCH("要確認",K${r}))),"要確認","OK")))`},
-      {f:`IF(L${r}="","",IF(L${r}="NG","【要差戻し】"&I${r},IF(L${r}="要確認","【要確認】","承認可能")))`},
-      '']);}
-  s1.push(['合計','','','',{f:`SUM(E${S}:E${E})`},'','','','','','','','','']);
-  const ws1=XLSX.utils.aoa_to_sheet(s1);
-  ws1['!cols']=[{wch:5},{wch:13},{wch:12},{wch:24},{wch:12},{wch:10},{wch:12},{wch:10},{wch:10},{wch:10},{wch:12},{wch:10},{wch:28},{wch:12}];
-  ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:13}},{s:{r:1,c:0},e:{r:1,c:13}}];
-  XLSX.utils.book_append_sheet(wb,ws1,'経費入力チェック');
-  const s2=[[`規程設定シート　${ind}`,'',''],
-    ['※ここの値を変えると「経費入力チェック」の判定基準が変わります。','',''],
-    Array(3).fill(''),['項目','設定値','備考'],
-    ['【接待費】上限金額（円）',5000,'5,000円超で「要確認」'],
-    ['【宿泊費】上限金額（円）',15000,'15,000円超で「要確認」'],
-    ['【領収書不要】上限金額（円）',3000,'3,000円以下は添付なしでも可'],
-    ['【高額確認】ライン（円）',100000,'10万円超は要確認'],
-    ['【申請期限】日数',90,'90日超でNG']];
-  const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:30},{wch:14},{wch:28}];
-  XLSX.utils.book_append_sheet(wb,ws2,'規程設定');
+    const dr=ws1.addRow([i+1,'','','','','','']);
+    dr.height=16;
+    dr.getCell(8).value=fml(`IF(B${r}="","",IF(B${r}>TODAY(),"NG：未来日付","OK"))`);
+    dr.getCell(9).value=fml(`IF(E${r}="","",IF(AND(C${r}="接待費",E${r}>5000),"要確認：接待規程",IF(E${r}>100000,"要確認：高額",IF(E${r}<=0,"NG：金額エラー","OK"))))`);
+    dr.getCell(10).value=fml(`IF(F${r}="","",IF(F${r}="なし",IF(E${r}>3000,"NG：添付必須","要確認"),"OK"))`);
+    dr.getCell(11).value=fml(`IF(OR(C${r}="",G${r}=""),"",IF(AND(C${r}="宿泊費",E${r}>15000),"要確認：宿泊上限超","OK"))`);
+    dr.getCell(12).value=fml(`IF(AND(B${r}="",E${r}=""),"",IF(OR(H${r}="NG：未来日付",I${r}="NG：金額エラー",J${r}="NG：添付必須"),"NG",IF(OR(ISNUMBER(SEARCH("要確認",I${r})),ISNUMBER(SEARCH("要確認",K${r}))),"要確認","OK")))`);
+    dr.getCell(13).value=fml(`IF(L${r}="","",IF(L${r}="NG","【要差戻し】"&I${r},IF(L${r}="要確認","【要確認】","承認可能")))`);
+    if(i%2===1)dr.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=NC)c.fill=XS.fill(XS.C.XGRAY);});
+  }
+  const tot1=ws1.addRow(['合計','','','',null,'','','','','','','','','']);
+  tot1.getCell(5).value=fml(`SUM(E${S}:E${E})`); tot1.height=20;
+  tot1.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=NC){c.fill=XS.fill(XS.C.LGRAY);c.font={bold:true,size:11,color:{argb:XS.C.NAVY}};c.border={top:{style:'medium',color:{argb:XS.C.ORANGE}}};}});
+
+  // Sheet2: 規程設定
+  const ws2=wb.addWorksheet('規程設定');
+  ws2.columns=[{width:30},{width:14},{width:28}];
+  xTitle(ws2,`規程設定シート　${ind}`,3);
+  const n2=ws2.addRow(['※ここの値を変えると「経費入力チェック」の判定基準が変わります。']);
+  ws2.mergeCells(ws2.rowCount,1,ws2.rowCount,3); n2.height=18;
+  n2.getCell(1).fill=XS.fill(XS.C.LORANGE); n2.getCell(1).font={size:11,color:{argb:XS.C.ORANGE}}; n2.getCell(1).alignment={wrapText:true};
+  ws2.addRow([]);
+  xHeader(ws2,['項目','設定値','備考']);
+  [['【接待費】上限金額（円）',5000,'5,000円超で「要確認」'],['【宿泊費】上限金額（円）',15000,'15,000円超で「要確認」'],['【領収書不要】上限金額（円）',3000,'3,000円以下は添付なしでも可'],['【高額確認】ライン（円）',100000,'10万円超は要確認'],['【申請期限】日数',90,'90日超でNG']].forEach((rule,i)=>{
+    const r=ws2.addRow(rule); r.height=18;
+    r.getCell(2).font={bold:true,size:12,color:{argb:XS.C.ORANGE}}; r.getCell(3).font={size:10,color:{argb:'FF666666'}};
+    if(i%2===1)r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=3)c.fill=XS.fill(XS.C.XGRAY);});
+  });
+
+  // Sheet3: 費目別集計
+  const ws3=wb.addWorksheet('費目別集計');
+  ws3.columns=[{width:14},{width:16},{width:10},{width:14},{width:10}];
+  xTitle(ws3,`費目別集計　${ind}`,5);
+  const n3=ws3.addRow(['※「経費入力チェック」への入力が自動集計されます。']);
+  ws3.mergeCells(ws3.rowCount,1,ws3.rowCount,5); n3.height=18; n3.getCell(1).fill=XS.fill(XS.C.LGRAY); n3.getCell(1).alignment={wrapText:true};
+  ws3.addRow([]); ws3.addRow([]);
+  xHeader(ws3,['費目','合計金額（円）','件数','平均単価（円）','NG件数']);
   const rc=`'経費入力チェック'!C${S}:C${E}`,re=`'経費入力チェック'!E${S}:E${E}`,rl=`'経費入力チェック'!L${S}:L${E}`;
-  const cats=['交通費','宿泊費','会議費','接待費','消耗品費','通信費','研修費','その他'];
-  const s3=[[`費目別集計　${ind}`,...Array(4).fill('')],
-    ['※「経費入力チェック」への入力が自動集計されます。',...Array(4).fill('')],
-    Array(5).fill(''),['費目','合計金額（円）','件数','平均単価（円）','NG件数']];
-  cats.forEach((cat,i)=>{const r=5+i;s3.push([cat,{f:`SUMIF(${rc},A${r},${re})`},{f:`COUNTIF(${rc},A${r})`},{f:`IFERROR(B${r}/C${r},"-")`},{f:`COUNTIFS(${rc},A${r},${rl},"NG")`}]);});
-  const ws3=XLSX.utils.aoa_to_sheet(s3);ws3['!cols']=[{wch:14},{wch:16},{wch:10},{wch:14},{wch:10}];
-  XLSX.utils.book_append_sheet(wb,ws3,'費目別集計');
+  ['交通費','宿泊費','会議費','接待費','消耗品費','通信費','研修費','その他'].forEach((cat,i)=>{
+    const rn=ws3.rowCount+1;
+    const cr=ws3.addRow([cat,fml(`SUMIF(${rc},A${rn},${re})`),fml(`COUNTIF(${rc},A${rn})`),fml(`IFERROR(B${rn}/C${rn},"-")`),fml(`COUNTIFS(${rc},A${rn},${rl},"NG")`)]);
+    cr.height=18; cr.getCell(2).font={bold:true,size:12,color:{argb:XS.C.ORANGE}};
+    if(i%2===1)cr.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=5)c.fill=XS.fill(XS.C.XGRAY);});
+  });
+
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),task.ocrText(ind));
   addCommonSheets(wb,task,ind,ar);
-  saveWb(wb,'経費精算チェックシート');
+  await saveWb(wb,'経費精算チェックシート');
 }
 
-function genReconcileExcel(ind,pos,task,ar){
-  const wb=XLSX.utils.book_new();const S=6,rows=30,E=S+rows-1;
+async function genReconcileExcel(ind,pos,task,ar){
+  const wb=new ExcelJS.Workbook();
+  const S=7,rows=30,E=S+rows-1;
   const today=new Date().toLocaleDateString('ja-JP');
-  const s1=[[`入金消込シート｜請求データ　${ind}`,...Array(8).fill('')],
-    [`作成日: ${today}`,...Array(8).fill('')],Array(9).fill(''),
-    ['担当者名','','','対象月','','','','',''],Array(9).fill(''),
-    ['No.','請求日','得意先名','請求書番号','請求金額（円）','支払期日','入金予定日','入金金額（円）','消込状況']];
-  for(let i=0;i<rows;i++)s1.push([i+1,'','','','','','','','']);
-  s1.push(['合計','','','',{f:`SUM(E${S}:E${E})`},'','',{f:`SUM(H${S}:H${E})`},'']);
-  s1.push(['未消込件数',{f:`COUNTIF(I${S}:I${E},"未消込")`},'','消込済件数',{f:`COUNTIF(I${S}:I${E},"消込済")`},'','','','']);
-  const ws1=XLSX.utils.aoa_to_sheet(s1);
-  ws1['!cols']=[{wch:5},{wch:13},{wch:24},{wch:16},{wch:14},{wch:12},{wch:12},{wch:14},{wch:12}];
-  ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}},{s:{r:1,c:0},e:{r:1,c:8}}];
-  XLSX.utils.book_append_sheet(wb,ws1,'請求データ');
-  const s2=[[`入金消込シート｜入金データ（銀行明細）　${ind}`,...Array(5).fill('')],
-    [`作成日: ${today}`,...Array(5).fill('')],Array(6).fill(''),Array(6).fill(''),Array(6).fill(''),
-    ['No.','入金日','振込人名','入金額（円）','請求書番号（照合）','備考']];
-  for(let i=0;i<rows;i++)s2.push([i+1,'','','','','']);
-  s2.push(['合計','','',{f:`SUM(D${S}:D${E})`},'','']);
-  const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:5},{wch:13},{wch:26},{wch:14},{wch:18},{wch:22}];
-  XLSX.utils.book_append_sheet(wb,ws2,'入金データ');
-  const s3=[[`照合チェック　${ind}`,...Array(10).fill('')],
-    ['※請求書番号・得意先・金額・入金日を入力すると差異・期日・金額が自動判定されます。',...Array(10).fill('')],
-    Array(11).fill(''),Array(11).fill(''),Array(11).fill(''),
-    ['No.','請求書番号','得意先名','請求金額（円）','支払期日','入金日','入金金額（円）','差異（円）','期日判定','金額判定','総合判定']];
-  for(let i=0;i<rows;i++){const r=S+i;s3.push([i+1,'','','','','','',
-    {f:`IF(OR(D${r}=0,G${r}=0),"",G${r}-D${r})`},
-    {f:`IF(OR(E${r}="",F${r}=""),"",IF(F${r}<=E${r},"OK","遅延"))`},
-    {f:`IF(OR(D${r}=0,G${r}=0),"",IF(H${r}=0,"OK",IF(H${r}>0,"超過入金","不足入金")))`},
-    {f:`IF(AND(D${r}=0,G${r}=0),"",IF(AND(I${r}="OK",J${r}="OK"),"消込完了",IF(OR(I${r}="遅延",J${r}="不足入金",J${r}="超過入金"),"要確認","未入金")))`}]);}
-  const ws3=XLSX.utils.aoa_to_sheet(s3);
-  ws3['!cols']=[{wch:5},{wch:16},{wch:22},{wch:14},{wch:12},{wch:12},{wch:14},{wch:12},{wch:10},{wch:10},{wch:10}];
-  XLSX.utils.book_append_sheet(wb,ws3,'照合チェック');
+
+  // Sheet1: 請求データ
+  const ws1=wb.addWorksheet('請求データ');
+  ws1.columns=[{width:5},{width:13},{width:24},{width:16},{width:14},{width:12},{width:12},{width:14},{width:12}];
+  const t1=ws1.addRow([`入金消込シート｜請求データ　${ind}`]);
+  ws1.mergeCells(1,1,1,9); t1.height=28;
+  t1.getCell(1).fill=XS.fill(XS.C.NAVY); t1.getCell(1).font={bold:true,size:14,color:{argb:XS.C.WHITE}}; t1.getCell(1).alignment={vertical:'middle'};
+  const t2=ws1.addRow([`作成日: ${today}`]);
+  ws1.mergeCells(2,1,2,9); t2.height=16;
+  t2.getCell(1).fill=XS.fill(XS.C.LGRAY); t2.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
+  ws1.addRow([]);
+  const ir1=ws1.addRow(['担当者名','','','対象月','','','','','']); ir1.height=18;
+  [1,4].forEach(ci=>ir1.getCell(ci).font={bold:true,size:11,color:{argb:XS.C.NAVY}});
+  ws1.addRow([]);
+  xHeader(ws1,['No.','請求日','得意先名','請求書番号','請求金額（円）','支払期日','入金予定日','入金金額（円）','消込状況']);
+  for(let i=0;i<rows;i++){
+    const dr=ws1.addRow([i+1,'','','','','','','','']); dr.height=16;
+    if(i%2===1)dr.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=9)c.fill=XS.fill(XS.C.XGRAY);});
+  }
+  const tot1=ws1.addRow(['合計','','','',fml(`SUM(E${S}:E${E})`),'','',fml(`SUM(H${S}:H${E})`),''  ]);
+  tot1.height=20; tot1.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=9){c.fill=XS.fill(XS.C.LGRAY);c.font={bold:true,size:11,color:{argb:XS.C.NAVY}};c.border={top:{style:'medium',color:{argb:XS.C.ORANGE}}};}});
+  const sum1=ws1.addRow(['未消込件数',fml(`COUNTIF(I${S}:I${E},"未消込")`),'','消込済件数',fml(`COUNTIF(I${S}:I${E},"消込済")`),'','','','']);
+  sum1.height=18; sum1.getCell(1).font={bold:true,color:{argb:XS.C.NAVY}}; sum1.getCell(4).font={bold:true,color:{argb:XS.C.DGREEN}};
+  sum1.getCell(2).font={bold:true,size:12,color:{argb:'FFCC3333'}}; sum1.getCell(5).font={bold:true,size:12,color:{argb:XS.C.DGREEN}};
+
+  // Sheet2: 入金データ
+  const ws2=wb.addWorksheet('入金データ');
+  ws2.columns=[{width:5},{width:13},{width:26},{width:14},{width:18},{width:22}];
+  const t3=ws2.addRow([`入金消込シート｜入金データ（銀行明細）　${ind}`]);
+  ws2.mergeCells(1,1,1,6); t3.height=28;
+  t3.getCell(1).fill=XS.fill(XS.C.NAVY); t3.getCell(1).font={bold:true,size:14,color:{argb:XS.C.WHITE}}; t3.getCell(1).alignment={vertical:'middle'};
+  const t4=ws2.addRow([`作成日: ${today}`]);
+  ws2.mergeCells(2,1,2,6); t4.height=16; t4.getCell(1).fill=XS.fill(XS.C.LGRAY);
+  ws2.addRow([]); ws2.addRow([]); ws2.addRow([]);
+  xHeader(ws2,['No.','入金日','振込人名','入金額（円）','請求書番号（照合）','備考']);
+  for(let i=0;i<rows;i++){
+    const dr=ws2.addRow([i+1,'','','','','']); dr.height=16;
+    if(i%2===1)dr.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=6)c.fill=XS.fill(XS.C.XGRAY);});
+  }
+  const tot2=ws2.addRow(['合計','','',fml(`SUM(D${S}:D${E})`),'','']);
+  tot2.height=20; tot2.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=6){c.fill=XS.fill(XS.C.LGRAY);c.font={bold:true,size:11,color:{argb:XS.C.NAVY}};c.border={top:{style:'medium',color:{argb:XS.C.ORANGE}}};}});
+
+  // Sheet3: 照合チェック
+  const ws3=wb.addWorksheet('照合チェック');
+  ws3.columns=[{width:5},{width:16},{width:22},{width:14},{width:12},{width:12},{width:14},{width:12},{width:10},{width:10},{width:12}];
+  const t5=ws3.addRow([`照合チェック　${ind}`]);
+  ws3.mergeCells(1,1,1,11); t5.height=28;
+  t5.getCell(1).fill=XS.fill(XS.C.NAVY); t5.getCell(1).font={bold:true,size:14,color:{argb:XS.C.WHITE}}; t5.getCell(1).alignment={vertical:'middle'};
+  const n5=ws3.addRow(['※請求書番号・得意先・金額・入金日を入力すると差異・期日・金額が自動判定されます。']);
+  ws3.mergeCells(2,1,2,11); n5.height=18; n5.getCell(1).fill=XS.fill(XS.C.LORANGE);
+  n5.getCell(1).font={size:10,color:{argb:XS.C.ORANGE}}; n5.getCell(1).alignment={wrapText:true};
+  ws3.addRow([]); ws3.addRow([]); ws3.addRow([]);
+  xHeader(ws3,['No.','請求書番号','得意先名','請求金額（円）','支払期日','入金日','入金金額（円）','差異（円）','期日判定','金額判定','総合判定']);
+  for(let i=0;i<rows;i++){
+    const r=S+i;
+    const dr=ws3.addRow([i+1,'','','','','','']); dr.height=16;
+    dr.getCell(8).value=fml(`IF(OR(D${r}=0,G${r}=0),"",G${r}-D${r})`);
+    dr.getCell(9).value=fml(`IF(OR(E${r}="",F${r}=""),"",IF(F${r}<=E${r},"OK","遅延"))`);
+    dr.getCell(10).value=fml(`IF(OR(D${r}=0,G${r}=0),"",IF(H${r}=0,"OK",IF(H${r}>0,"超過入金","不足入金")))`);
+    dr.getCell(11).value=fml(`IF(AND(D${r}=0,G${r}=0),"",IF(AND(I${r}="OK",J${r}="OK"),"消込完了",IF(OR(I${r}="遅延",J${r}="不足入金",J${r}="超過入金"),"要確認","未入金")))`);
+    if(i%2===1)dr.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=11)c.fill=XS.fill(XS.C.XGRAY);});
+  }
+
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),task.ocrText(ind));
   addCommonSheets(wb,task,ind,ar);
-  saveWb(wb,'入金消込シート');
+  await saveWb(wb,'入金消込シート');
 }
 
-function genInvoiceExcel(ind,pos,task,ar){
-  const wb=XLSX.utils.book_new();const S=8,rows=10,E=S+rows-1;
-  const s1=[['請求書','','','','',''],Array(6).fill(''),
-    ['請求先','','','発行日','',''],['（会社名）','','','（日付）','',''],
-    ['（担当者名）様','','','請求書番号','',''],
-    ['','','','支払期限','',''],Array(6).fill(''),
-    ['品目・摘要','数量','単位','単価（円）','金額（円）','備考']];
-  for(let i=0;i<rows;i++){const r=S+i;s1.push(['','','','',{f:`IF(AND(B${r}<>"",D${r}<>""),B${r}*D${r},"")`},'']);}
-  s1.push(['','','','小計',{f:`SUM(E${S}:E${E})`},'']);
-  s1.push(['','','','消費税（10%）',{f:`ROUND(E${E+1}*0.1,0)`},'']);
-  s1.push(['','','','合計金額',{f:`E${E+1}+E${E+2}`},'']);
-  s1.push(Array(6).fill(''));
-  s1.push(['振込先：銀行名　支店名　口座種別：普通　口座番号　口座名義','','','','','']);
-  const ws1=XLSX.utils.aoa_to_sheet(s1);ws1['!cols']=[{wch:28},{wch:8},{wch:8},{wch:14},{wch:14},{wch:14}];
-  XLSX.utils.book_append_sheet(wb,ws1,'請求書');
-  const s2=[['顧客マスター','','','',''],['会社名','担当者名','メールアドレス','支払サイト','備考'],...Array(20).fill(['','','','',''])];
-  const ws2=XLSX.utils.aoa_to_sheet(s2);ws2['!cols']=[{wch:24},{wch:16},{wch:28},{wch:12},{wch:20}];
-  XLSX.utils.book_append_sheet(wb,ws2,'顧客マスター');
-  const s3=[['発行履歴','','','',''],['発行日','請求先','請求書番号','金額（円）','入金状況'],...Array(30).fill(['','','','',''])];
-  const ws3=XLSX.utils.aoa_to_sheet(s3);ws3['!cols']=[{wch:13},{wch:24},{wch:16},{wch:14},{wch:12}];
-  XLSX.utils.book_append_sheet(wb,ws3,'発行履歴');
+async function genInvoiceExcel(ind,pos,task,ar){
+  const wb=new ExcelJS.Workbook();
+  const S=9,rows=10,E=S+rows-1;
+
+  // Sheet1: 請求書
+  const ws1=wb.addWorksheet('請求書');
+  ws1.columns=[{width:28},{width:8},{width:8},{width:14},{width:14},{width:14}];
+
+  const t1=ws1.addRow(['請求書']); ws1.mergeCells(1,1,1,6); t1.height=32;
+  t1.getCell(1).fill=XS.fill(XS.C.NAVY); t1.getCell(1).font={bold:true,size:16,color:{argb:XS.C.WHITE}};
+  t1.getCell(1).alignment={vertical:'middle',horizontal:'center'};
+
+  ws1.addRow([]);
+  const r3=ws1.addRow(['請求先','','','発行日','','']); r3.height=18;
+  [1,4].forEach(ci=>r3.getCell(ci).font={bold:true,size:11,color:{argb:XS.C.NAVY}});
+  const r4=ws1.addRow(['（会社名）','','','（日付）','','']); r4.height=18; r4.getCell(1).fill=XS.fill(XS.C.LGRAY);
+  const r5=ws1.addRow(['（担当者名）様','','','請求書番号','','']); r5.height=18;
+  r5.getCell(4).font={bold:true,size:11,color:{argb:XS.C.NAVY}};
+  const r6=ws1.addRow(['','','','支払期限','','']); r6.height=18;
+  r6.getCell(4).font={bold:true,size:11,color:{argb:XS.C.NAVY}};
+  ws1.addRow([]);
+  ws1.addRow([]); // row 8: blank before items
+  xHeader(ws1,['品目・摘要','数量','単位','単価（円）','金額（円）','備考']); // row 8 actually
+
+  for(let i=0;i<rows;i++){
+    const r=S+i;
+    const dr=ws1.addRow(['','','','',fml(`IF(AND(B${r}<>"",D${r}<>""),B${r}*D${r},"")`),''  ]);
+    dr.height=18; dr.getCell(5).font={color:{argb:XS.C.ORANGE}};
+    if(i%2===1)dr.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=6)c.fill=XS.fill(XS.C.XGRAY);});
+  }
+  const totRow=ws1.addRow(['','','','小計',fml(`SUM(E${S}:E${E})`),''  ]);
+  totRow.height=20; totRow.getCell(4).font={bold:true,size:11,color:{argb:XS.C.NAVY}};
+  totRow.getCell(5).font={bold:true,size:12,color:{argb:XS.C.ORANGE}};
+  totRow.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=6)c.fill=XS.fill(XS.C.LGRAY);});
+  const taxRow=ws1.addRow(['','','','消費税（10%）',fml(`ROUND(E${E+1}*0.1,0)`),''  ]);
+  taxRow.height=18; taxRow.getCell(4).font={bold:true,size:11,color:{argb:XS.C.NAVY}}; taxRow.getCell(5).font={bold:true,size:12};
+  const totalRow=ws1.addRow(['','','','合計金額',fml(`E${E+1}+E${E+2}`),''  ]);
+  totalRow.height=24;
+  totalRow.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=6){c.fill=XS.fill(XS.C.NAVY);c.font={bold:true,size:13,color:{argb:XS.C.WHITE}};}});
+  ws1.addRow([]);
+  const bank=ws1.addRow(['振込先：銀行名　支店名　口座種別：普通　口座番号　口座名義','','','','','']);
+  ws1.mergeCells(ws1.rowCount,1,ws1.rowCount,6); bank.height=20;
+  bank.getCell(1).fill=XS.fill(XS.C.LGRAY); bank.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
+
+  // Sheet2: 顧客マスター
+  const ws2=wb.addWorksheet('顧客マスター');
+  ws2.columns=[{width:24},{width:16},{width:28},{width:12},{width:20}];
+  xTitle(ws2,'顧客マスター',5);
+  xHeader(ws2,['会社名','担当者名','メールアドレス','支払サイト','備考']);
+  for(let i=0;i<20;i++){const r=ws2.addRow(['','','','','']);r.height=16;if(i%2===1)r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=5)c.fill=XS.fill(XS.C.XGRAY);});}
+
+  // Sheet3: 発行履歴
+  const ws3=wb.addWorksheet('発行履歴');
+  ws3.columns=[{width:13},{width:24},{width:16},{width:14},{width:12}];
+  xTitle(ws3,'発行履歴',5);
+  xHeader(ws3,['発行日','請求先','請求書番号','金額（円）','入金状況']);
+  for(let i=0;i<30;i++){const r=ws3.addRow(['','','','','']);r.height=16;if(i%2===1)r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=5)c.fill=XS.fill(XS.C.XGRAY);});}
+
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),null);
   addCommonSheets(wb,task,ind,ar);
-  saveWb(wb,'請求書テンプレート');
+  await saveWb(wb,'請求書テンプレート');
 }
 
-function genStockExcel(ind,pos,task,ar){
-  const wb=XLSX.utils.book_new();const S=5,rows=30,E=S+rows-1;
+async function genStockExcel(ind,pos,task,ar){
+  const wb=new ExcelJS.Workbook();
+  const S=6,rows=30,E=S+rows-1;
   const today=new Date().toLocaleDateString('ja-JP');
 
   // Sheet1: 品目・仕入先マスター
-  const master=[
-    [`品目・仕入先マスター　${ind}`,'',''],
-    ['※ここに品目名と仕入先を入力してください。在庫管理シートのドロップダウンに反映されます。','',''],
-    ['','',''],
-    ['品目名','仕入先','備考'],
-    ['商品A（例・削除OK）','山田商店（例・削除OK）',''],
-    ['商品B（例・削除OK）','鈴木物産（例・削除OK）',''],
-    ['商品C（例・削除OK）','佐藤産業（例・削除OK）',''],
-  ];
-  for(let i=0;i<50;i++)master.push(['','','']);
-  const wsMaster=XLSX.utils.aoa_to_sheet(master);
-  wsMaster['!cols']=[{wch:28},{wch:28},{wch:22}];
-  XLSX.utils.book_append_sheet(wb,wsMaster,'品目・仕入先マスター');
+  const wsMaster=wb.addWorksheet('品目・仕入先マスター');
+  wsMaster.columns=[{width:28},{width:28},{width:22}];
+  xTitle(wsMaster,`品目・仕入先マスター　${ind}`,3);
+  const mn=wsMaster.addRow(['※ここに品目名と仕入先を入力してください。在庫管理シートのドロップダウンに反映されます。']);
+  wsMaster.mergeCells(wsMaster.rowCount,1,wsMaster.rowCount,3); mn.height=20;
+  mn.getCell(1).fill=XS.fill(XS.C.LORANGE); mn.getCell(1).font={size:10,color:{argb:XS.C.ORANGE}}; mn.getCell(1).alignment={wrapText:true};
+  wsMaster.addRow([]);
+  xHeader(wsMaster,['品目名','仕入先','備考']);
+  [['商品A（例・削除OK）','山田商店（例・削除OK）',''],['商品B（例・削除OK）','鈴木物産（例・削除OK）',''],['商品C（例・削除OK）','佐藤産業（例・削除OK）','']].forEach((row,i)=>{
+    const r=wsMaster.addRow(row); r.height=16;
+    r.getCell(1).font={italic:true,color:{argb:'FF888888'}}; r.getCell(2).font={italic:true,color:{argb:'FF888888'}};
+  });
+  for(let i=0;i<50;i++){const r=wsMaster.addRow(['','','']);r.height=16;if(i%2===1)r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=3)c.fill=XS.fill(XS.C.XGRAY);});}
 
   // Sheet2: 在庫管理（ドロップダウン付き）
-  const s1=[[`在庫・発注管理シート　${ind}`,...Array(6).fill('')],
-    [`作成日: ${today}`,...Array(6).fill('')],
-    ['※品目名・仕入先はドロップダウンから選択できます（マスターシートに追加すると選択肢が増えます）',...Array(6).fill('')],
-    Array(7).fill(''),
-    ['品目名','現在庫数','発注点','通常発注数','仕入先','発注要否','備考']];
-  for(let i=0;i<rows;i++){const r=S+i;s1.push(['','',10,5,'',{f:`IF(B${r}="","",IF(B${r}<=C${r},"★発注必要","OK"))`},'']);}
-  const ws1=XLSX.utils.aoa_to_sheet(s1);
-  ws1['!cols']=[{wch:26},{wch:10},{wch:10},{wch:12},{wch:26},{wch:14},{wch:20}];
-  // ドロップダウン設定（品目名・仕入先）
-  if(!ws1['!dataValidations'])ws1['!dataValidations']=[];
-  ws1['!dataValidations'].push({
-    sqref:`A${S}:A${E}`,
-    type:'list',
-    formula1:"'品目・仕入先マスター'!$A$5:$A$54",
-    showDropDown:false,
-    showErrorMessage:true,
-    error:'品目マスターにない品目です。マスターシートに追加してください。',
-    errorTitle:'入力エラー'
-  });
-  ws1['!dataValidations'].push({
-    sqref:`E${S}:E${E}`,
-    type:'list',
-    formula1:"'品目・仕入先マスター'!$B$5:$B$54",
-    showDropDown:false,
-    showErrorMessage:true,
-    error:'仕入先マスターにない仕入先です。マスターシートに追加してください。',
-    errorTitle:'入力エラー'
-  });
-  XLSX.utils.book_append_sheet(wb,ws1,'在庫管理');
+  const ws1=wb.addWorksheet('在庫管理');
+  ws1.columns=[{width:26},{width:10},{width:10},{width:12},{width:26},{width:14},{width:20}];
+  const t1=ws1.addRow([`在庫・発注管理シート　${ind}`]);
+  ws1.mergeCells(1,1,1,7); t1.height=28;
+  t1.getCell(1).fill=XS.fill(XS.C.NAVY); t1.getCell(1).font={bold:true,size:14,color:{argb:XS.C.WHITE}}; t1.getCell(1).alignment={vertical:'middle'};
+  const t2=ws1.addRow([`作成日: ${today}`]);
+  ws1.mergeCells(2,1,2,7); t2.height=16; t2.getCell(1).fill=XS.fill(XS.C.LGRAY); t2.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
+  const n1=ws1.addRow(['※品目名・仕入先はドロップダウンから選択できます（マスターシートに追加すると選択肢が増えます）']);
+  ws1.mergeCells(3,1,3,7); n1.height=18; n1.getCell(1).fill=XS.fill(XS.C.LORANGE);
+  n1.getCell(1).font={size:10,color:{argb:XS.C.ORANGE}}; n1.getCell(1).alignment={wrapText:true};
+  ws1.addRow([]); // row 4
+  xHeader(ws1,['品目名','現在庫数','発注点','通常発注数','仕入先','発注要否','備考']); // row 5
+
+  for(let i=0;i<rows;i++){
+    const r=S+i;
+    const dr=ws1.addRow(['','',10,5,'',fml(`IF(B${r}="","",IF(B${r}<=C${r},"★発注必要","OK"))`),'']);
+    dr.height=16;
+    const judgment=dr.getCell(6);
+    judgment.font={bold:true};
+    if(i%2===1)dr.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=7)c.fill=XS.fill(XS.C.XGRAY);});
+  }
+
+  // ドロップダウン（ExcelJS dataValidations）
+  for(let i=0;i<rows;i++){
+    ws1.getCell(`A${S+i}`).dataValidation={type:'list',formulae:["'品目・仕入先マスター'!$A$5:$A$54"],showErrorMessage:true,error:'品目マスターにない品目です。マスターシートに追加してください。',errorTitle:'入力エラー'};
+    ws1.getCell(`E${S+i}`).dataValidation={type:'list',formulae:["'品目・仕入先マスター'!$B$5:$B$54"],showErrorMessage:true,error:'仕入先マスターにない仕入先です。マスターシートに追加してください。',errorTitle:'入力エラー'};
+  }
 
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),null);
   addCommonSheets(wb,task,ind,ar);
-  saveWb(wb,'在庫発注管理シート');
+  await saveWb(wb,'在庫発注管理シート');
 }
 
 // ===== リセット =====
