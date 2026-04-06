@@ -154,12 +154,42 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .asset-note{background:rgba(58,201,138,.06);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:14px 16px;font-size:12px;color:var(--text2);line-height:1.85;text-align:left;margin-top:16px;}
 .asset-note strong{color:var(--green);}
 
+/* 表紙 */
+.cover-wrap{min-height:calc(100vh - 50px);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px 20px;text-align:center;}
+.cover-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.25em;border:1px solid rgba(232,124,58,.35);padding:4px 14px;border-radius:20px;margin-bottom:24px;display:inline-block;}
+.cover-title{font-size:28px;font-weight:700;line-height:1.3;margin-bottom:8px;}
+.cover-sub{font-size:14px;color:var(--text3);margin-bottom:32px;}
+.cover-steps{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;width:100%;max-width:400px;text-align:left;}
+.cover-step-row{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);}
+.cover-step-row:last-child{border-bottom:none;}
+.cover-step-num{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(232,124,58,.12);border:1px solid rgba(232,124,58,.25);border-radius:4px;padding:2px 7px;flex-shrink:0;margin-top:2px;}
+.cover-step-text{font-size:13px;color:var(--text2);line-height:1.5;}
+.cover-step-time{font-size:10px;color:var(--text3);margin-top:2px;}
+.cover-msg{background:var(--surface2);border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin-bottom:28px;font-size:12px;color:var(--text2);line-height:1.8;text-align:left;max-width:400px;width:100%;}
+/* 手順展開 */
+.expand-step-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;}
+.expand-step-num{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(232,124,58,.12);border:1px solid rgba(232,124,58,.25);border-radius:4px;padding:3px 7px;flex-shrink:0;margin-top:4px;}
+.expand-step-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-size:13px;font-family:'Noto Sans JP',sans-serif;line-height:1.5;outline:none;resize:none;}
+.expand-step-input:focus{border-color:var(--accent);}
+.expand-step-del{background:none;border:1px solid var(--border);color:var(--text3);border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin-top:4px;flex-shrink:0;}
+.expand-step-del:hover{border-color:var(--red);color:var(--red);}
+.expand-add-btn{background:none;border:1px dashed var(--border);color:var(--text3);padding:8px 14px;border-radius:var(--radius);cursor:pointer;font-size:12px;width:100%;margin-top:4px;}
+.expand-add-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* 業務内訳 */
+.breakdown-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.breakdown-label{font-size:11px;color:var(--text2);width:100px;flex-shrink:0;}
+.breakdown-bar-wrap{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden;}
+.breakdown-bar-fill{height:100%;border-radius:5px;transition:width 1s ease;}
+.breakdown-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;width:36px;flex-shrink:0;text-align:right;}
+.breakdown-insight{background:rgba(58,124,232,.08);border:1px solid rgba(58,124,232,.2);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.8;margin-top:14px;}
+
 @media(max-width:480px){
   .choice-grid.col3{grid-template-columns:1fr 1fr;}
   .quant-grid{grid-template-columns:1fr;}
   .roi-nums{grid-template-columns:1fr 1fr 1fr;}
   .card{padding:14px;}
   .main{padding:16px 10px;}
+  .cover-title{font-size:22px;}
 }
 </style>
 </head>
@@ -177,29 +207,68 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 </div>
 
 <div class="flow-bar">
-  <div class="fs"><div class="fd active" id="fd0">1</div><span class="fl active" id="fl0">属性</span></div>
+  <div class="fs"><div class="fd active" id="fd0">◎</div><span class="fl active" id="fl0">開始</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd1">2</div><span class="fl" id="fl1">目的</span></div>
+  <div class="fs"><div class="fd" id="fd1">1</div><span class="fl" id="fl1">属性</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd2">3</div><span class="fl" id="fl2">困りごと</span></div>
+  <div class="fs"><div class="fd" id="fd2">2</div><span class="fl" id="fl2">目的</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd3">4</div><span class="fl" id="fl3">手順</span></div>
+  <div class="fs"><div class="fd" id="fd3">3</div><span class="fl" id="fl3">困りごと</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd4">5</div><span class="fl" id="fl4">AI分析</span></div>
+  <div class="fs"><div class="fd" id="fd4">4</div><span class="fl" id="fl4">手順</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd5">6</div><span class="fl" id="fl5">フロー確認</span></div>
+  <div class="fs"><div class="fd" id="fd5">5</div><span class="fl" id="fl5">AI分析</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd6">7</div><span class="fl" id="fl6">候補選択</span></div>
+  <div class="fs"><div class="fd" id="fd6">6</div><span class="fl" id="fl6">フロー確認</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd7">8</div><span class="fl" id="fl7">ROI</span></div>
+  <div class="fs"><div class="fd" id="fd7">7</div><span class="fl" id="fl7">候補選択</span></div>
   <div class="fa">▶</div>
-  <div class="fs"><div class="fd" id="fd8">9</div><span class="fl" id="fl8">プレビュー</span></div>
+  <div class="fs"><div class="fd" id="fd8">8</div><span class="fl" id="fl8">ROI</span></div>
+  <div class="fa">▶</div>
+  <div class="fs"><div class="fd" id="fd9">9</div><span class="fl" id="fl9">プレビュー</span></div>
 </div>
 
 <div class="main">
 
+<!-- ⓪ 表紙 -->
+<div class="screen active" id="s-cover">
+  <div class="cover-wrap">
+    <span class="cover-badge">BUSINESS AUTOMATION TOOLKIT</span>
+    <h1 class="cover-title">半自動化実装キット<br>業務改善診断</h1>
+    <p class="cover-sub">約15〜20分</p>
+    <div class="cover-steps">
+      <div class="cover-step-row">
+        <span class="cover-step-num">STEP 1</span>
+        <div><div class="cover-step-text">困っている業務を入力</div><div class="cover-step-time">約3分</div></div>
+      </div>
+      <div class="cover-step-row">
+        <span class="cover-step-num">STEP 2</span>
+        <div><div class="cover-step-text">手順の整理・確認</div><div class="cover-step-time">約5分</div></div>
+      </div>
+      <div class="cover-step-row">
+        <span class="cover-step-num">STEP 3</span>
+        <div><div class="cover-step-text">業務の見える化（AIが分析）</div><div class="cover-step-time">約5分</div></div>
+      </div>
+      <div class="cover-step-row">
+        <span class="cover-step-num">STEP 4</span>
+        <div><div class="cover-step-text">改善ポイントの選択</div><div class="cover-step-time">約3分</div></div>
+      </div>
+      <div class="cover-step-row">
+        <span class="cover-step-num">STEP 5</span>
+        <div><div class="cover-step-text">成果物の確認・取得</div><div class="cover-step-time">約2分</div></div>
+      </div>
+    </div>
+    <div class="cover-msg">
+      👉 この診断は「考えながら進める」ことで効果が出ます。<br>
+      テンプレートを受け取る場ではなく、<strong>1つ改善を実行するための整理の場</strong>です。<br>
+      少し時間をとって取り組むことをおすすめします。
+    </div>
+    <button class="btn-p" style="padding:14px 40px;font-size:15px;" onclick="startDiagnosis()">診断をはじめる →</button>
+  </div>
+</div>
+
 <!-- ① 属性 -->
-<div class="screen active" id="s-attr">
+<div class="screen" id="s-attr">
   <div class="card">
     <div class="card-label">STEP 1｜あなたについて</div>
     <div class="card-title">まず業界とポジションを教えてください</div>
@@ -246,7 +315,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-attr');uf(0)">← 戻る</button>
+    <button class="btn-s" onclick="goS('s-attr');uf(1)">← 戻る</button>
     <button class="btn-p" id="btnGoals" onclick="goPain()" disabled>次へ →</button>
   </div>
 </div>
@@ -260,7 +329,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <textarea class="q-ta" id="painAns" rows="4" placeholder="例：毎月の請求書の照合に時間がかかっている&#10;例：担当者が変わるたびに引き継ぎが大変&#10;例：同じ内容を何度も別のファイルに入力している" oninput="chkPain()"></textarea>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-goals');uf(1)">← 戻る</button>
+    <button class="btn-s" onclick="goS('s-goals');uf(2)">← 戻る</button>
     <button class="btn-p" id="btnPain" onclick="goSteps()" disabled>次へ →</button>
   </div>
 </div>
@@ -278,8 +347,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <textarea class="q-ta" id="stepsAns" rows="6" placeholder="例：&#10;1. 仕入先からFAXで請求書が届く&#10;2. 金額・品目を確認してExcelに手入力する&#10;3. 上司にメールで確認を送る&#10;4. 承認後、会計ソフトに再入力する&#10;5. 振込処理をする" oninput="chkSteps()"></textarea>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-pain');uf(2)">← 戻る</button>
+    <button class="btn-s" onclick="goS('s-pain');uf(3)">← 戻る</button>
     <button class="btn-p" id="btnSteps" onclick="startAnalysis()" disabled>AIに分析してもらう →</button>
+  </div>
+</div>
+
+<!-- ④-A 手順の自動展開（新機能） -->
+<div class="screen" id="s-expand">
+  <div class="card">
+    <div class="card-label">STEP 4｜手順の整理・確認</div>
+    <div class="card-title">入力内容をもとに手順を整理しました</div>
+    <div class="card-hint">違うところだけ直してください。行の追加・削除もできます。</div>
+    <div id="expandedStepsList" style="margin-bottom:10px;"></div>
+    <button class="expand-add-btn" onclick="addExpandStep()">＋ ステップを追加する</button>
+  </div>
+  <div class="nav">
+    <button class="btn-s" onclick="goS('s-steps');uf(4)">← 書き直す</button>
+    <button class="btn-p" onclick="useExpandedSteps()">この手順で分析する →</button>
   </div>
 </div>
 
@@ -293,7 +377,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <textarea class="q-ta" id="stepsAnsRevised" rows="6" placeholder="修正した手順をここに入力してください" oninput="chkRevised()" style="margin-top:4px;"></textarea>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-steps');uf(3)">← 手順を書き直す</button>
+    <button class="btn-s" onclick="goS('s-steps');uf(4)">← 手順を書き直す</button>
     <button class="btn-p" id="btnRevised" onclick="proceedAfterValidation()">この内容で分析する →</button>
   </div>
 </div>
@@ -316,7 +400,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <!-- ⑥ フローチャート（無料） -->
 <div class="screen" id="s-flowchart">
   <div class="card">
-    <div class="card-label">STEP 6｜AI診断結果（無料）</div>
+    <div class="card-label">STEP 5｜AI診断結果（業務の見える化）</div>
     <div class="card-title">あなたの業務フロー — 自動化診断</div>
     <div class="score-big">
       <div class="score-num" id="fcScore" style="color:var(--accent)">0</div>
@@ -334,11 +418,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div id="autoSummary" style="margin-top:14px;"></div>
   </div>
 
+  <!-- 業務内訳 -->
+  <div class="card" id="breakdownCard" style="display:none;">
+    <div class="card-label">WORK BREAKDOWN</div>
+    <div class="card-title" style="font-size:15px;margin-bottom:14px;">あなたの業務の内訳</div>
+    <div id="breakdownBars"></div>
+    <div class="breakdown-insight" id="breakdownInsight"></div>
+  </div>
+
   <!-- 分岐CTA -->
   <div id="branchCta"></div>
 
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-steps');uf(3)">← 手順を修正する</button>
+    <button class="btn-s" onclick="goS('s-steps');uf(4)">← 手順を修正する</button>
   </div>
 </div>
 
@@ -364,7 +456,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-flowchart');uf(5)">← 戻る</button>
+    <button class="btn-s" onclick="goS('s-flowchart');uf(6)">← 戻る</button>
     <button class="btn-p" id="btnSelect" onclick="goROI()" disabled>ROIを試算する →</button>
   </div>
 </div>
@@ -396,7 +488,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-select');uf(6)">← 戻る</button>
+    <button class="btn-s" onclick="goS('s-select');uf(7)">← 戻る</button>
     <button class="btn-p" id="btnROI" onclick="calcROI()">試算する →</button>
   </div>
 </div>
@@ -404,8 +496,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <!-- ⑨ 成果物プレビュー（課金前確認） -->
 <div class="screen" id="s-output">
   <div class="card">
-    <div class="card-label">STEP 9｜生成内容の確認</div>
-    <div class="card-title" id="outTitle">この内容で生成されます</div>
+    <div class="card-label">STEP 9｜これが生成されます</div>
+    <div class="card-title" id="outTitle">これが生成されます</div>
     <div style="font-size:12px;color:var(--text2);line-height:1.8;" id="outDesc"></div>
   </div>
 
@@ -469,7 +561,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </div>
 
   <div class="nav" style="margin-top:16px;">
-    <button class="btn-s" onclick="goS('s-select');uf(6)">戻って選び直す</button>
+    <button class="btn-s" onclick="goS('s-select');uf(7)">戻って選び直す</button>
     <button class="btn-p" onclick="openPayModal()">この内容で生成する →</button>
   </div>
 </div>
@@ -593,7 +685,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 <script>
 // ===== APIキー設定（本番ではサーバー経由に変更すること） =====
-const ANTHROPIC_API_KEY = 'YOUR_API_KEY_HERE'; // ← ここにAPIキーを設定
+const WORKER_URL = 'https://anthropic-proxy.kokoda-mu.workers.dev';
 
 // ===== フォールバックマッチング（AI失敗時・matched_ids空時の補完） =====
 function fallbackMatch(pain, steps){
@@ -668,14 +760,17 @@ let payRoute=''; // 'auto' or 'manual'
 let roiMonthlyHours=0;
 
 // ===== ユーティリティ =====
-function uf(a){for(let i=0;i<9;i++){const d=document.getElementById('fd'+i),l=document.getElementById('fl'+i);if(!d||!l)continue;d.className='fd'+(i<a?' done':i===a?' active':'');l.className='fl'+(i<a?' done':i===a?' active':'');d.textContent=i<a?'✓':i+1;}}
+function uf(a){for(let i=0;i<10;i++){const d=document.getElementById('fd'+i),l=document.getElementById('fl'+i);if(!d||!l)continue;d.className='fd'+(i<a?' done':i===a?' active':'');l.className='fl'+(i<a?' done':i===a?' active':'');d.textContent=i<a?'✓':i===0?'◎':i;}}
 function goS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+
+// ===== 表紙 =====
+function startDiagnosis(){goS('s-attr');uf(1);}
 
 // ===== Q0: 属性 =====
 function selInd(btn,v){document.querySelectorAll('#industryGrid .choice-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');ind=v;document.getElementById('otherWrap').style.display=v==='その他'?'block':'none';chkAttr();}
 function selPos(btn,v){document.querySelectorAll('#posGrid .choice-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');pos=v;chkAttr();}
 function chkAttr(){const ok=ind!==''&&(ind!=='その他'||document.getElementById('otherInput').value.trim()!=='');document.getElementById('btnA').disabled=!(ok&&pos!=='');}
-function goGoals(){if(ind==='その他'){const v=document.getElementById('otherInput').value.trim();if(v)ind=v;}goS('s-goals');uf(1);}
+function goGoals(){if(ind==='その他'){const v=document.getElementById('otherInput').value.trim();if(v)ind=v;}goS('s-goals');uf(2);}
 
 // ===== Q1: 目的 =====
 function toggleGoal(btn,v){
@@ -684,7 +779,7 @@ function toggleGoal(btn,v){
   else q1Goals=q1Goals.filter(x=>x!==v);
   document.getElementById('btnGoals').disabled=q1Goals.length===0;
 }
-function goPain(){goS('s-pain');uf(2);}
+function goPain(){goS('s-pain');uf(3);}
 
 // ===== Q2: 困りごと =====
 function chkPain(){document.getElementById('btnPain').disabled=document.getElementById('painAns').value.trim()==='';
@@ -693,17 +788,100 @@ function goSteps(){
   q2Pain=document.getElementById('painAns').value.trim();
   document.getElementById('stepsContextText').textContent=q2Pain;
   document.getElementById('stepsTitle').textContent='その業務の手順を教えてください';
-  goS('s-steps');uf(3);
+  goS('s-steps');uf(4);
 }
 
 // ===== Q2-1: 手順 =====
 function chkSteps(){document.getElementById('btnSteps').disabled=document.getElementById('stepsAns').value.trim()=='';}
 function chkRevised(){document.getElementById('btnRevised').disabled=document.getElementById('stepsAnsRevised').value.trim()=='';}
 
+// ===== 手順の自動展開判定 =====
+const ABSTRACT_WORDS=/処理|対応|確認|対処|実施|作業|管理|運営|業務|ケア|対応する/;
+function needsExpansion(text){
+  const lines=text.split('\n').filter(l=>l.trim());
+  if(lines.length<=3) return true;
+  const abstractCount=lines.filter(l=>ABSTRACT_WORDS.test(l)).length;
+  return abstractCount>=Math.ceil(lines.length*0.6);
+}
+
+let expandedSteps=[];
+
+function addExpandStep(){
+  expandedSteps.push('');
+  renderExpandSteps();
+}
+function removeExpandStep(i){
+  expandedSteps.splice(i,1);
+  renderExpandSteps();
+}
+function renderExpandSteps(){
+  const list=document.getElementById('expandedStepsList');
+  list.innerHTML='';
+  expandedSteps.forEach((s,i)=>{
+    const row=document.createElement('div');
+    row.className='expand-step-row';
+    row.innerHTML=`<span class="expand-step-num">${i+1}</span>
+      <textarea class="expand-step-input" rows="2" oninput="expandedSteps[${i}]=this.value">${s}</textarea>
+      <button class="expand-step-del" onclick="removeExpandStep(${i})">✕</button>`;
+    list.appendChild(row);
+  });
+}
+function useExpandedSteps(){
+  const filled=expandedSteps.filter(s=>s.trim());
+  if(filled.length===0){alert('少なくとも1つ手順を入力してください。');return;}
+  q2_1Steps=filled.map((s,i)=>`${i+1}. ${s.trim()}`).join('\n');
+  goS('s-analyzing');uf(5);
+  const setLS=(n)=>{['ls1','ls2','ls3','ls4'].forEach((id,ii)=>{const el=document.getElementById(id);if(ii<n){el.className='ls done';el.textContent=el.textContent.replace('▶','✓').replace('　','✓');}else if(ii===n)el.className='ls active';else el.className='ls wait';});};
+  runAnalysis(q2_1Steps,setLS);
+}
+
+async function tryAutoExpand(rawText){
+  // Call AI to expand abstract/short steps
+  const expandPrompt=`以下の業務入力をもとに、「取り掛かりから完了まで」の具体的な手順を5〜8ステップで整理してください。
+
+入力：
+${rawText}
+
+回答はJSONのみ（前後の文章不要）：
+{"steps":["ステップ1の内容","ステップ2の内容",...]}
+
+ルール：
+・動詞で始める（例：データを受け取る、金額を確認する）
+・1ステップ=1アクション
+・入力に含まれない工程は推測して追加してよい
+・曖昧な表現は具体化する（例「確認する」→「金額と品目が注文書と一致するか確認する」）`;
+  try{
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:expandPrompt}]})});
+    const data=await res.json();
+    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(raw);
+    return parsed.steps||[];
+  }catch(e){return null;}
+}
+
 // ===== ① バリデーション（不明ツール名・複数業務チェック） =====
 async function startAnalysis(){
   q2_1Steps=document.getElementById('stepsAns').value.trim();
-  goS('s-analyzing');uf(4);
+
+  // 手順の自動展開チェック
+  if(needsExpansion(q2_1Steps)){
+    goS('s-analyzing');uf(5);
+    const setLS2=(n)=>{['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(i<n){el.className='ls done';el.textContent=el.textContent.replace('▶','✓').replace('　','✓');}else if(i===n)el.className='ls active';else el.className='ls wait';});};
+    setLS2(0);
+    document.getElementById('ls2').textContent='▶ 手順を整理しています…';
+    const expanded=await tryAutoExpand(q2_1Steps);
+    if(expanded&&expanded.length>0){
+      expandedSteps=[...expanded];
+      renderExpandSteps();
+      goS('s-expand');uf(4);
+      return;
+    }
+    await runAnalysis(q2_1Steps,setLS2);
+    return;
+  }
+
+  goS('s-analyzing');uf(5);
   const setLS=(n)=>{['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(i<n){el.className='ls done';el.textContent=el.textContent.replace('▶','✓').replace('　','✓');}else if(i===n)el.className='ls active';else el.className='ls wait';});};
 
   // Step1: Pre-validation
@@ -724,7 +902,7 @@ ${q2_1Steps}
 
   try{
     await new Promise(r=>setTimeout(r,300));setLS(1);
-    const vres=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:validatePrompt}]})});
+    const vres=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:validatePrompt}]})});
     const vdata=await vres.json();
     const vraw=vdata.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
     const vr=JSON.parse(vraw);
@@ -751,12 +929,12 @@ function showValidation(issues){
   // 現在の入力をコピーして見やすくする
   document.getElementById('stepsAnsRevised').value=q2_1Steps;
   document.getElementById('btnRevised').disabled=false;
-  goS('s-validate');uf(3);
+  goS('s-validate');uf(4);
 }
 
 async function proceedAfterValidation(){
   q2_1Steps=document.getElementById('stepsAnsRevised').value.trim();
-  goS('s-analyzing');uf(4);
+  goS('s-analyzing');uf(5);
   const setLS=(n)=>{['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(i<n){el.className='ls done';el.textContent=el.textContent.replace('▶','✓').replace('　','✓');}else if(i===n)el.className='ls active';else el.className='ls wait';});};
   await runAnalysis(q2_1Steps, setLS);
 }
@@ -803,7 +981,7 @@ async function runAnalysis(steps, setLS){
 
   try{
     await new Promise(r=>setTimeout(r,400));setLS(1);
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:matchPrompt}]})});
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:matchPrompt}]})});
     if(!res.ok){throw new Error('APIレスポンスエラー: '+res.status);}
     const data=await res.json();
     if(!data||!data.content||data.content.length===0){throw new Error('APIレスポンス不正: contentなし');}
@@ -820,15 +998,21 @@ async function runAnalysis(steps, setLS){
   }catch(e){
     console.error('AI分析エラー:', e);
     alert('AI分析に失敗しました。入力内容を確認して再度お試しください。\n\nエラー詳細: '+e.message);
-    goS('s-steps');uf(3);
+    goS('s-steps');uf(4);
     return;
   }
   showFlowchart();
 }
 
 // ===== ③ フローチャート表示（画像スタイル） =====
+function classifyStep(text){
+  if(/入力|転記|記録|集計|コピー|貼り付け|印刷|ファイル|送付/.test(text)) return 'repeat';
+  if(/確認|チェック|判断|照合|比較|審査|承認|検証/.test(text)) return 'rule';
+  return 'exception';
+}
+
 function showFlowchart(){
-  goS('s-flowchart');uf(5);
+  goS('s-flowchart');uf(6);
   const score=ar.score||0;
   document.getElementById('fcScore').textContent=score;
   const color=score>=70?'var(--green)':score>=40?'var(--yellow)':'var(--accent)';
@@ -894,17 +1078,58 @@ function showFlowchart(){
       <span style="color:var(--yellow);font-weight:700;">📋 現時点では自動化よりも、業務の見える化・マニュアル化が優先です。</span><br>まず手順をドキュメント化することで、改善の基盤ができます。</div>`;
   }
 
+  // 業務内訳の可視化（新機能）
+  const allSteps=ar.steps||[];
+  if(allSteps.length>0){
+    let rep=0,rule=0,exc=0;
+    allSteps.forEach(s=>{
+      const type=classifyStep(s.text||'');
+      if(type==='repeat')rep++;
+      else if(type==='rule')rule++;
+      else exc++;
+    });
+    const total=allSteps.length;
+    const repPct=Math.round(rep/total*100);
+    const rulePct=Math.round(rule/total*100);
+    const excPct=100-repPct-rulePct;
+    const breakdownEl=document.getElementById('breakdownCard');
+    breakdownEl.style.display='block';
+    document.getElementById('breakdownBars').innerHTML=`
+      <div class="breakdown-bar-row">
+        <span class="breakdown-label">繰り返し作業</span>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar-fill" style="width:${repPct}%;background:#3ac98a;"></div></div>
+        <span class="breakdown-pct" style="color:#3ac98a;">${repPct}%</span>
+      </div>
+      <div class="breakdown-bar-row">
+        <span class="breakdown-label">ルール判断</span>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar-fill" style="width:${rulePct}%;background:#3a7ce8;"></div></div>
+        <span class="breakdown-pct" style="color:#3a7ce8;">${rulePct}%</span>
+      </div>
+      <div class="breakdown-bar-row">
+        <span class="breakdown-label">例外対応</span>
+        <div class="breakdown-bar-wrap"><div class="breakdown-bar-fill" style="width:${excPct}%;background:#e8c33a;"></div></div>
+        <span class="breakdown-pct" style="color:#e8c33a;">${excPct}%</span>
+      </div>`;
+    const insightMsg=repPct>=50
+      ?`繰り返し作業が <strong style="color:#3ac98a;">${repPct}%</strong> を占めています。この部分はルール化・テンプレート化で大幅に削減できます。<br>👉「その場判断に見える仕事の多くはルールが言語化されていないだけです」`
+      :rulePct>=40
+      ?`ルール判断が <strong style="color:#3a7ce8;">${rulePct}%</strong> を占めています。判断基準を文書化するだけで、誰でもできる業務になります。<br>👉「その場判断に見える仕事の多くはルールが言語化されていないだけです」`
+      :`例外対応が多い業務です。まずよくある例外をリスト化し、対応パターンをマニュアル化することが最初の一歩です。`;
+    document.getElementById('breakdownInsight').innerHTML=insightMsg;
+  }
+
   // 分岐CTA（ここでは売らない。「次に何を選ぶか考える」画面へ誘導）
   const ctaEl=document.getElementById('branchCta');
   const hasMatchedTemplate=ar.matched_ids && ar.matched_ids.length>0;
   if(hasAuto && hasMatchedTemplate){
     const matched=ar.matched_ids.map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
     buildSelectScreen(matched);
+    const btnLabel=matched.length===1?`「${matched[0].name}」シートを生成する →`:'候補を選ぶ →';
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
       <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
-      <div class="branch-cta-title">まず1つ、着手する業務を選びます</div>
-      <div class="branch-cta-desc">診断で見つかった候補の中から、今いちばん取り組むものを1つ選んでください。</div>
-      <button class="btn-p" onclick="goSelectBeforePay()">候補を選ぶ →</button>
+      <div class="branch-cta-title">${matched.length===1?`「${matched[0].name}」のシートを生成できます`:'まず1つ、着手する業務を選びます'}</div>
+      <div class="branch-cta-desc">${matched.length===1?'診断結果からこの業務がマッチしました。次のステップで内容を確認できます。':'診断で見つかった候補の中から、今いちばん取り組むものを1つ選んでください。'}</div>
+      <button class="btn-p" onclick="goSelectBeforePay()">${btnLabel}</button>
     </div>`;
   }else if(hasAuto && !hasMatchedTemplate){
     buildManualSelectScreen();
@@ -935,8 +1160,11 @@ function buildSelectScreen(tasks){
   document.querySelectorAll('#reasonGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('selectTitle').textContent=
     tasks.length>1?`「${tasks.map(t=>t.name).join('」か「')}」どちらから始めますか？`
-    :tasks.length===1?`「${tasks[0].name}」から始めてみましょう`:'業務を選んでください';
-  document.getElementById('selectHint').textContent='診断結果から絞り込まれた候補です。1つ選んでください。';
+    :tasks.length===1?`「${tasks[0].name}」のシートを生成できます`:'業務を選んでください';
+  document.getElementById('selectHint').textContent=
+    tasks.length===1
+    ?'診断結果からこの業務がマッチしました。カードをタップして選択し、次に進んでください。'
+    :'診断結果から絞り込まれた候補です。1つ選んでください。';
   tasks.forEach(task=>{
     const card=document.createElement('div');
     card.className='tool-select-card';
@@ -958,7 +1186,6 @@ function buildSelectScreen(tasks){
       checkSelectReady();
     };
     container.appendChild(card);
-    if(tasks.length===1){card.click();}
   });
 }
 
@@ -989,8 +1216,8 @@ function buildManualSelectScreen(){
   });
 }
 
-function goSelectBeforePay(){payRoute='auto';goS('s-select');uf(6);}
-function goManualChoiceBeforePay(){payRoute='manual';goS('s-select');uf(6);}
+function goSelectBeforePay(){payRoute='auto';goS('s-select');uf(7);}
+function goManualChoiceBeforePay(){payRoute='manual';goS('s-select');uf(7);}
 
 function selReason(btn,v){
   document.querySelectorAll('#reasonGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
@@ -1017,7 +1244,7 @@ function goROI(){
   btn.textContent='試算する →';
   btn.onclick=calcROI;
   document.getElementById('roiBox').style.display='none';
-  goS('s-roi');uf(7);
+  goS('s-roi');uf(8);
 }
 
 // ===== 課金モーダル =====
@@ -1082,7 +1309,7 @@ function calcROI(){
 
 // ===== 成果物プレビュー表示（課金前） =====
 function showPreview(){
-  goS('s-output');uf(8);
+  goS('s-output');uf(9);
   // reset all blocks
   ['blockPrompt','blockOcr','blockExcel','blockPPTX'].forEach(id=>{document.getElementById(id).style.display='none';});
 
@@ -1126,7 +1353,7 @@ function showPreview(){
 // ===== 実際の成果物表示（課金後・自動化ルート） =====
 function showActualOutput(){
   const task=TOP10.find(t=>t.id===selectedToolId)||TOP10[0];
-  goS('s-download');uf(9);
+  goS('s-download');uf(10);
   document.getElementById('dlTitle').textContent=`${task.name} の成果物が完成しました`;
   document.getElementById('dlDesc').textContent=`${ind}・${pos} 向けの「${task.name}」ツールセットです。`;
   // reset
@@ -1403,19 +1630,60 @@ function genInvoiceExcel(ind,pos,task,ar){
 function genStockExcel(ind,pos,task,ar){
   const wb=XLSX.utils.book_new();const S=5,rows=30,E=S+rows-1;
   const today=new Date().toLocaleDateString('ja-JP');
+
+  // Sheet1: 品目・仕入先マスター
+  const master=[
+    [`品目・仕入先マスター　${ind}`,'',''],
+    ['※ここに品目名と仕入先を入力してください。在庫管理シートのドロップダウンに反映されます。','',''],
+    ['','',''],
+    ['品目名','仕入先','備考'],
+    ['商品A（例・削除OK）','山田商店（例・削除OK）',''],
+    ['商品B（例・削除OK）','鈴木物産（例・削除OK）',''],
+    ['商品C（例・削除OK）','佐藤産業（例・削除OK）',''],
+  ];
+  for(let i=0;i<50;i++)master.push(['','','']);
+  const wsMaster=XLSX.utils.aoa_to_sheet(master);
+  wsMaster['!cols']=[{wch:28},{wch:28},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,wsMaster,'品目・仕入先マスター');
+
+  // Sheet2: 在庫管理（ドロップダウン付き）
   const s1=[[`在庫・発注管理シート　${ind}`,...Array(6).fill('')],
-    [`作成日: ${today}`,...Array(6).fill('')],Array(7).fill(''),Array(7).fill(''),
+    [`作成日: ${today}`,...Array(6).fill('')],
+    ['※品目名・仕入先はドロップダウンから選択できます（マスターシートに追加すると選択肢が増えます）',...Array(6).fill('')],
+    Array(7).fill(''),
     ['品目名','現在庫数','発注点','通常発注数','仕入先','発注要否','備考']];
   for(let i=0;i<rows;i++){const r=S+i;s1.push(['','',10,5,'',{f:`IF(B${r}="","",IF(B${r}<=C${r},"★発注必要","OK"))`},'']);}
-  const ws1=XLSX.utils.aoa_to_sheet(s1);ws1['!cols']=[{wch:22},{wch:10},{wch:10},{wch:12},{wch:18},{wch:12},{wch:16}];
+  const ws1=XLSX.utils.aoa_to_sheet(s1);
+  ws1['!cols']=[{wch:26},{wch:10},{wch:10},{wch:12},{wch:26},{wch:14},{wch:20}];
+  // ドロップダウン設定（品目名・仕入先）
+  if(!ws1['!dataValidations'])ws1['!dataValidations']=[];
+  ws1['!dataValidations'].push({
+    sqref:`A${S}:A${E}`,
+    type:'list',
+    formula1:"'品目・仕入先マスター'!$A$5:$A$54",
+    showDropDown:false,
+    showErrorMessage:true,
+    error:'品目マスターにない品目です。マスターシートに追加してください。',
+    errorTitle:'入力エラー'
+  });
+  ws1['!dataValidations'].push({
+    sqref:`E${S}:E${E}`,
+    type:'list',
+    formula1:"'品目・仕入先マスター'!$B$5:$B$54",
+    showDropDown:false,
+    showErrorMessage:true,
+    error:'仕入先マスターにない仕入先です。マスターシートに追加してください。',
+    errorTitle:'入力エラー'
+  });
   XLSX.utils.book_append_sheet(wb,ws1,'在庫管理');
+
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),null);
   saveWb(wb,'在庫発注管理シート');
 }
 
 // ===== リセット =====
 function restart(){
-  ind='';pos='';q1Goals=[];q2Pain='';q2_1Steps='';ar=null;selectedToolId=null;selectedReason='';payRoute='';roiMonthlyHours=0;
+  ind='';pos='';q1Goals=[];q2Pain='';q2_1Steps='';ar=null;selectedToolId=null;selectedReason='';payRoute='';roiMonthlyHours=0;expandedSteps=[];
   document.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('otherInput').value='';
   document.getElementById('otherWrap').style.display='none';
@@ -1430,10 +1698,11 @@ function restart(){
   document.getElementById('roiBox').style.display='none';
   document.getElementById('roiContext').style.display='none';
   document.getElementById('reasonBlock').style.display='none';
+  document.getElementById('breakdownCard').style.display='none';
   ['blockPrompt','blockOcr','blockExcel','blockPPTX','dlBlockPrompt','dlBlockOcr','dlBlockExcel'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.display='none';
   });
-  goS('s-attr');uf(0);
+  goS('s-cover');uf(0);
 }
 </script>
 </body>
