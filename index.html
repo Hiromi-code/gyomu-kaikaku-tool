@@ -7,7 +7,7 @@
 <meta name="description" content="業界・ポジションに合わせた診断で、AI半自動化しやすい業務を特定。専用プロンプト・Excelテンプレを生成します。">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundled.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <style>
 :root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2436;--border:#2a3050;--accent:#e87c3a;--blue:#3a7ce8;--text:#f0f2f8;--text2:#c0c8dc;--text3:#8892aa;--green:#3ac98a;--yellow:#e8c33a;--red:#e85a5a;--radius:6px;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1472,14 +1472,24 @@ function doCopy(boxId,btnId){
 // ===== PPTX生成（マニュアルルート） =====
 async function genManualPPTX(){
   try{
-    const pptx=new PptxGenJS();    const bg='0f1117',surface='181c27',accent='e87c3a',text='f0f2f8',text3='8892aa',green='3ac98a';
+    console.log('PPTX生成開始');
+    // ライブラリ読み込み確認
+    if(typeof PptxGenJS==='undefined'){
+      throw new Error('PptxGenJSライブラリが読み込まれていません。ページを再読み込みしてください。');
+    }
+
+    // nullチェックヘルパー
+    const safe=(v)=>v?String(v):'';
+
+    const pptx=new PptxGenJS();
+    const bg='0f1117',surface='181c27',accent='e87c3a',text='f0f2f8',text3='8892aa',green='3ac98a';
 
     // Slide 1: Cover
     const s1=pptx.addSlide();
     s1.background={color:bg};
     s1.addShape(pptx.ShapeType.rect,{x:0,y:2.4,w:10,h:0.05,fill:{color:accent},line:{color:accent}});
     s1.addText('業務フロー整理ガイド',{x:0.5,y:0.6,w:9,h:1.2,fontSize:30,bold:true,color:text,align:'center'});
-    s1.addText(`${ind} / ${pos}`,{x:0.5,y:1.8,w:9,h:0.5,fontSize:14,color:accent,align:'center'});
+    s1.addText(`${safe(ind)} / ${safe(pos)}`,{x:0.5,y:1.8,w:9,h:0.5,fontSize:14,color:accent,align:'center'});
     s1.addText('このたたき台を育てて、会社の資産にしてください',{x:0.5,y:2.7,w:9,h:0.5,fontSize:11,color:text3,align:'center'});
     s1.addText(`作成日：${new Date().toLocaleDateString('ja-JP')}`,{x:0.5,y:4.8,w:9,h:0.4,fontSize:10,color:text3,align:'center'});
 
@@ -1488,23 +1498,27 @@ async function genManualPPTX(){
     s2.background={color:surface};
     s2.addText('課題・困りごと',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
     s2.addShape(pptx.ShapeType.rect,{x:0.4,y:0.85,w:0.05,h:3.5,fill:{color:accent},line:{color:accent}});
-    s2.addText(q2Pain,{x:0.65,y:0.9,w:8.7,h:3.4,fontSize:13,color:text,valign:'top',wrap:true});
+    s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:3.4,fontSize:13,color:text,valign:'top',wrap:true});
 
     // Slide 3: 現状の業務フロー
-    const rawSteps=q2_1Steps.split(/\n/).filter(s=>s.trim()).slice(0,9);
+    const rawSteps=(q2_1Steps||'').split('\n').filter(s=>s.trim()).slice(0,9);
     const s3=pptx.addSlide();
     s3.background={color:surface};
     s3.addText('現状の業務フロー（たたき台）',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
     s3.addText('※ ステップを確認し、抜け・漏れがあれば追記してください',{x:0.4,y:0.85,w:9,h:0.35,fontSize:10,color:text3,italic:true});
-    rawSteps.forEach((step,i)=>{
-      const y=1.25+i*0.44;
-      s3.addShape(pptx.ShapeType.rect,{x:0.4,y:y+0.04,w:0.3,h:0.3,fill:{color:accent},line:{color:accent},rounding:true});
-      s3.addText(`${i+1}`,{x:0.4,y:y+0.04,w:0.3,h:0.3,fontSize:10,bold:true,color:'ffffff',align:'center',valign:'middle'});
-      s3.addText(step.trim().replace(/^[\d\.\-\s]+/,''),{x:0.85,y:y,w:8.6,h:0.42,fontSize:12,color:text,valign:'middle'});
-    });
+    if(rawSteps.length===0){
+      s3.addText('（手順の入力なし）',{x:0.4,y:1.3,w:9,h:0.5,fontSize:12,color:text3});
+    }else{
+      rawSteps.forEach((step,i)=>{
+        const y=1.25+i*0.44;
+        s3.addShape(pptx.ShapeType.rect,{x:0.4,y:y+0.04,w:0.3,h:0.3,fill:{color:accent},line:{color:accent},rounding:true});
+        s3.addText(`${i+1}`,{x:0.4,y:y+0.04,w:0.3,h:0.3,fontSize:10,bold:true,color:'ffffff',align:'center',valign:'middle'});
+        s3.addText(safe(step).trim().replace(/^[\d.\-\s]+/,'')||`ステップ${i+1}`,{x:0.85,y:y,w:8.6,h:0.42,fontSize:12,color:text,valign:'middle'});
+      });
+    }
 
     // Slide 4: 整理のポイント（AIの分析から）
-    const autoSteps=(ar.steps||[]).filter(s=>s.automation==='◎'||s.automation==='△');
+    const autoSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎'||s.automation==='△');
     const s4=pptx.addSlide();
     s4.background={color:surface};
     s4.addText('整理・改善のポイント',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:accent});
@@ -1514,8 +1528,8 @@ async function genManualPPTX(){
         const y=1.3+i*0.62;
         const lcolor=step.automation==='◎'?accent:'e8c33a';
         s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.52,fill:{color:'1e2436'},line:{color:lcolor,pt:1}});
-        s4.addText(`STEP ${step.step}  ${step.text}`,{x:0.55,y:y+0.05,w:8.6,h:0.25,fontSize:11,bold:true,color:text});
-        if(step.note)s4.addText(`→ ${step.note}`,{x:0.55,y:y+0.28,w:8.6,h:0.2,fontSize:10,color:lcolor});
+        s4.addText(`STEP ${safe(step.step)}  ${safe(step.text)}`,{x:0.55,y:y+0.05,w:8.6,h:0.25,fontSize:11,bold:true,color:text});
+        if(step.note)s4.addText(`→ ${safe(step.note)}`,{x:0.55,y:y+0.28,w:8.6,h:0.2,fontSize:10,color:lcolor});
       });
     }else{
       s4.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text,wrap:true});
@@ -1557,17 +1571,35 @@ async function genManualPPTX(){
     });
     s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:green,align:'center',wrap:true});
 
-    const fname=`業務フロー整理ガイド_${ind}.pptx`;
-    await pptx.writeFile({fileName:fname});
-    // 再ダウンロードボタン：同じpptxインスタンスを再利用
+    // ⑦ Blobダウンロード方式（最安定）
+    const fname=`業務フロー整理ガイド_${safe(ind)||'診断結果'}.pptx`;
+    const blob=await pptx.write('blob');
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=fname;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+
+    // 再ダウンロードボタン
     document.getElementById('btnReDownload').style.display='block';
     document.getElementById('btnReDownload').onclick=async()=>{
-      try{await pptx.writeFile({fileName:fname});}
-      catch(e){alert('再ダウンロードに失敗しました。ページを再読み込みして再試行してください。');}
+      try{
+        const blob2=await pptx.write('blob');
+        const url2=URL.createObjectURL(blob2);
+        const a2=document.createElement('a');
+        a2.href=url2;a2.download=fname;
+        document.body.appendChild(a2);a2.click();
+        setTimeout(()=>{URL.revokeObjectURL(url2);document.body.removeChild(a2);},1000);
+      }catch(e){alert('再ダウンロードに失敗しました：'+e.message);}
     };
+
+    console.log('PPTX生成成功');
     return true;
   }catch(e){
-    console.error('PPTX生成エラー:', e);
+    console.error('PPTX生成エラー詳細:', e);
+    alert('PPTX生成に失敗しました：'+e.message);
     return false;
   }
 }
