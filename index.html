@@ -253,7 +253,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
     <!-- 2つのルート説明 -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;width:100%;max-width:420px;text-align:left;">
-      <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:12px;font-weight:700;">診断の結果によって、以下の2つから選べます</div>
+      <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:12px;font-weight:700;">診断の結果によって、以下の2つのどちらかを判断します</div>
 
       <div style="margin-bottom:14px;">
         <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;">📋 ルートA：整理から始める</div>
@@ -1750,49 +1750,94 @@ async function genManualPPTX(){
     s1.addText('このたたき台を育てて、会社の資産にしてください',{x:0.5,y:2.7,w:9,h:0.5,fontSize:11,color:text3,align:'center'});
     s1.addText(`作成日：${new Date().toLocaleDateString('ja-JP')}`,{x:0.5,y:4.8,w:9,h:0.4,fontSize:10,color:text3,align:'center'});
 
-    // Slide 2: 課題・困りごと
+    // Slide 2: 課題・困りごと ＋ 現在の運用状態
     const s2=pptx.addSlide();
     s2.background={color:bg};
     s2.addText('課題・困りごと',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
-    s2.addShape(pptx.ShapeType.rect,{x:0.4,y:0.85,w:0.05,h:3.5,fill:{color:accent},line:{color:accent}});
-    s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:3.4,fontSize:13,color:text2,valign:'top',wrap:true});
+    s2.addShape(pptx.ShapeType.rect,{x:0.4,y:0.85,w:0.05,h:1.0,fill:{color:accent},line:{color:accent}});
+    s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:1.0,fontSize:13,color:text2,valign:'top',wrap:true});
+    s2.addText('現在の運用状態',{x:0.8,y:2.1,w:8,h:0.4,fontSize:16,bold:true,color:dark});
+    s2.addShape(pptx.ShapeType.rect,{x:0.4,y:2.1,w:0.05,h:3.5,fill:{color:blue},line:{color:blue}});
+    s2.addText(
+      '・管理場所：店舗 / EC / 事務所\n' +
+      '・正データ：未決定 / Excel / POS / EC\n' +
+      '・更新頻度：都度 / 毎日 / 週次\n' +
+      '・課題：ズレ / 二重入力 / 属人化',
+      {x:1.0,y:2.55,w:8,h:2.0,fontSize:13,color:text2,valign:'top',wrap:true}
+    );
 
-    // Slide 3: 現状の業務フロー
-    const rawSteps=(q2_1Steps||'').split('\n').filter(s=>s.trim()).slice(0,9);
-    const s3=pptx.addSlide();
-    s3.background={color:bg};
-    s3.addText('現状の業務フロー（たたき台）',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
-    s3.addText('※ ステップを確認し、抜け・漏れがあれば追記してください',{x:0.4,y:0.85,w:9,h:0.35,fontSize:10,color:text3,italic:true});
-    if(rawSteps.length===0){
-      s3.addText('（手順の入力なし）',{x:0.4,y:1.3,w:9,h:0.5,fontSize:12,color:text3});
+    // Slide 3〜n: 現状の業務フロー（1工程1スライド）
+    const rawSteps=(q2_1Steps||'').split('\n').filter(s=>s.trim());
+    // ar.stepsがあればそちらを優先、なければrawStepsを使用
+    const arSteps=(ar&&ar.steps&&ar.steps.length>0)?ar.steps:null;
+    const stepSlides=arSteps
+      ? arSteps.map(st=>({title:safe(st.text)||`ステップ${st.step}`,purpose:safe(st.note)||'',detail:'',automation:st.automation||''}))
+      : rawSteps.map((st,i)=>({title:safe(st).trim().replace(/^[\d.\-\s]+/,'')||`ステップ${i+1}`,purpose:'',detail:'',automation:''}));
+
+    if(stepSlides.length===0){
+      const sEmpty=pptx.addSlide();
+      sEmpty.background={color:bg};
+      sEmpty.addText('現状の業務フロー（たたき台）',{x:0.6,y:0.4,w:8.5,h:0.4,fontSize:24,bold:true,color:dark});
+      sEmpty.addText('（手順の入力なし）',{x:0.8,y:1.5,w:8,h:0.5,fontSize:14,color:text3});
     }else{
-      rawSteps.forEach((step,i)=>{
-        const y=1.25+i*0.44;
-        s3.addShape(pptx.ShapeType.rect,{x:0.4,y:y+0.04,w:0.3,h:0.3,fill:{color:accent},line:{color:accent},rounding:true});
-        s3.addText(`${i+1}`,{x:0.4,y:y+0.04,w:0.3,h:0.3,fontSize:10,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
-        s3.addText(safe(step).trim().replace(/^[\d.\-\s]+/,'')||`ステップ${i+1}`,{x:0.85,y:y,w:8.6,h:0.42,fontSize:12,color:text2,valign:'middle'});
+      stepSlides.forEach((step,index)=>{
+        const ss=pptx.addSlide();
+        ss.background={color:bg};
+        // ステップ番号アクセントバー
+        ss.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.18,h:7.5,fill:{color:accent},line:{color:accent}});
+        ss.addText(`STEP ${index+1}：${step.title}`,{x:0.4,y:0.3,w:8.9,h:0.55,fontSize:20,bold:true,color:dark,wrap:true});
+        // 目的
+        ss.addShape(pptx.ShapeType.rect,{x:0.4,y:1.05,w:1.1,h:0.28,fill:{color:accent},line:{color:accent},rounding:true});
+        ss.addText('目的',{x:0.4,y:1.05,w:1.1,h:0.28,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+        ss.addText(step.purpose||'（記入してください）',{x:1.6,y:1.05,w:7.8,h:0.28,fontSize:12,color:text2,valign:'middle'});
+        // 手順
+        ss.addShape(pptx.ShapeType.rect,{x:0.4,y:1.55,w:1.1,h:0.28,fill:{color:blue},line:{color:blue},rounding:true});
+        ss.addText('手順',{x:0.4,y:1.55,w:1.1,h:0.28,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+        ss.addText(step.detail||'（具体的に記載してください）',{x:1.6,y:1.55,w:7.8,h:0.28,fontSize:12,color:text2,valign:'middle'});
+        // 判断基準
+        ss.addShape(pptx.ShapeType.rect,{x:0.4,y:2.35,w:1.1,h:0.28,fill:{color:green},line:{color:green},rounding:true});
+        ss.addText('判断基準',{x:0.4,y:2.35,w:1.1,h:0.28,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+        ss.addText('（OK/NGの条件を記載）',{x:1.6,y:2.35,w:7.8,h:0.28,fontSize:12,color:text3,valign:'middle'});
+        // 例外対応
+        ss.addShape(pptx.ShapeType.rect,{x:0.4,y:3.15,w:1.1,h:0.28,fill:{color:'8B6914'},line:{color:'8B6914'},rounding:true});
+        ss.addText('例外対応',{x:0.4,y:3.15,w:1.1,h:0.28,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+        ss.addText('（イレギュラー対応を記載）',{x:1.6,y:3.15,w:7.8,h:0.28,fontSize:12,color:text3,valign:'middle'});
+        // フッター注記
+        ss.addText(
+          '※まとめ方は「このたたき台の使い方」を参考にしてください',
+          {x:0.4,y:6.5,w:9,h:0.3,fontSize:10,color:text3,italic:true}
+        );
       });
     }
 
-    // Slide 4: 整理のポイント（AIの分析から）
+    // 整理・改善のポイント（プロンプト付き）
     const autoSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎'||s.automation==='△');
     const s4=pptx.addSlide();
     s4.background={color:bg};
     s4.addText('整理・改善のポイント',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     if(autoSteps.length>0){
       s4.addText('以下の工程に改善の余地があります。まず整理から始めましょう。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
-      autoSteps.slice(0,5).forEach((step,i)=>{
-        const y=1.3+i*0.62;
+      autoSteps.slice(0,3).forEach((step,i)=>{
+        const y=1.3+i*1.65;
         const lcolor=step.automation==='◎'?accent:'D4890A';
-        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.52,fill:{color:'F5F6FA'},line:{color:lcolor,pt:1.5}});
-        s4.addText(`STEP ${safe(step.step)}  ${safe(step.text)}`,{x:0.55,y:y+0.05,w:8.6,h:0.25,fontSize:11,bold:true,color:dark});
-        if(step.note)s4.addText(`→ ${safe(step.note)}`,{x:0.55,y:y+0.28,w:8.6,h:0.2,fontSize:10,color:lcolor});
+        // ステップ名ボックス
+        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.38,fill:{color:'F5F6FA'},line:{color:lcolor,pt:1.5}});
+        s4.addText(`STEP ${safe(step.step)}  ${safe(step.text)}`,{x:0.55,y:y+0.06,w:8.6,h:0.26,fontSize:11,bold:true,color:dark});
+        if(step.note)s4.addText(`→ ${safe(step.note)}`,{x:0.55,y:y+0.42,w:8.6,h:0.22,fontSize:10,color:lcolor});
+        // プロンプト例
+        const promptY=y+0.7;
+        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:promptY,w:8.9,h:0.85,fill:{color:'F0F4FF'},line:{color:blue,pt:1}});
+        s4.addText('▼ プロンプト例',{x:0.55,y:promptY+0.05,w:3,h:0.22,fontSize:9,bold:true,color:blue});
+        const promptText=step.promptHint
+          ? safe(step.promptHint)
+          : `以下の「${safe(step.text)}」の手順を整理し、判断基準とよくあるイレギュラー対応を箇条書きで教えてください。`;
+        s4.addText(promptText,{x:0.55,y:promptY+0.28,w:8.5,h:0.52,fontSize:10,color:'1A3A7A',wrap:true,valign:'top'});
       });
     }else{
       s4.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text2,wrap:true});
     }
 
-    // Slide 5: たたき台の使い方
+    // たたき台の使い方
     const s5=pptx.addSlide();
     s5.background={color:bg};
     s5.addText('このたたき台の使い方',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
@@ -1834,7 +1879,12 @@ async function genManualPPTX(){
     s7.addText('最初の3ステップ',{x:0.6,y:0.4,w:8.5,h:0.4,fontSize:24,bold:true,color:dark});
     s7.addText(
       '① マスタを決める（どのデータが正か）\n② 更新タイミングを統一する\n③ 差分チェックを週1で実施する',
-      {x:0.8,y:1.2,w:8,h:3,fontSize:18,color:text2,valign:'top',wrap:true}
+      {x:0.8,y:1.2,w:8,h:2.6,fontSize:18,color:text2,valign:'top',wrap:true}
+    );
+    s7.addShape(pptx.ShapeType.rect,{x:0.6,y:4.0,w:8.8,h:0.9,fill:{color:'FFF8F3'},line:{color:accent,pt:1}});
+    s7.addText(
+      '※①〜③が決まったら、業務フローの先頭に\n「基本ルール」として明記してください',
+      {x:0.8,y:4.05,w:8.4,h:0.8,fontSize:13,color:accent,valign:'middle',wrap:true}
     );
 
     // Slide 8: 次に誰に相談するか
