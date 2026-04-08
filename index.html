@@ -197,6 +197,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   .choice-btn{font-size:15px;}
   body{font-size:17px;}
 }
+#thinkingPointsBody ul{
+  margin:0;
+  padding-left:1.2em;
+}
+#thinkingPointsBody li{
+  margin-bottom:6px;
+}
 </style>
 </head>
 <body>
@@ -243,33 +250,70 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <h1 class="cover-title">業務半自動化スターターキット</h1>
     <p class="cover-sub">― ミス・ムダ・手戻りを減らす仕組みをつくる ―</p>
     <p class="cover-sub" style="font-size:14px;margin-top:-20px;">約15〜20分</p>
+
+    <!-- 2つのルート説明 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;width:100%;max-width:420px;text-align:left;">
+      <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:12px;font-weight:700;">診断の結果によって、以下の2つから選べます</div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;">📋 ルートA：整理から始める</div>
+        <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:6px;">
+          手順の見える化・マニュアル化ガイド（PowerPoint）を生成します。
+        </div>
+        <div style="font-size:12px;color:var(--text3);padding:6px 10px;background:var(--surface2);border-left:2px solid var(--yellow);border-radius:2px;">
+          ✓ あなたたちが肉付けするたたき台<br>
+          ✓ チーム全体で業務理解を深める<br>
+          ✓ 継続的に改善できる基盤づくり
+        </div>
+      </div>
+
+      <div style="margin-bottom:0;">
+        <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;">⚡ ルートB：自動化できる工程から始める</div>
+        <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:6px;">
+          Excelテンプレート＋AIプロンプトを生成します。
+        </div>
+        <div style="font-size:12px;color:var(--text3);padding:6px 10px;background:var(--surface2);border-left:2px solid var(--blue);border-radius:2px;">
+          ✓ AIが自動化できる工程を特定<br>
+          ✓ すぐに使い始められる（ただしカスタマイズ必須）<br>
+          ✓ 無料AIで即実装可能
+        </div>
+      </div>
+    </div>
+
     <div class="cover-steps">
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 1</span>
-        <div><div class="cover-step-text">困っている業務を入力</div><div class="cover-step-time">約3分</div></div>
+        <div><div class="cover-step-text">業界・困りごとを入力</div><div class="cover-step-time">約5分</div></div>
       </div>
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 2</span>
-        <div><div class="cover-step-text">手順の整理・確認</div><div class="cover-step-time">約5分</div></div>
+        <div><div class="cover-step-text">AIが業務を分析</div><div class="cover-step-time">自動</div></div>
       </div>
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 3</span>
-        <div><div class="cover-step-text">業務の見える化（AIが分析）</div><div class="cover-step-time">約5分</div></div>
+        <div><div class="cover-step-text">ルートを選択</div><div class="cover-step-time">約3分</div></div>
       </div>
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 4</span>
-        <div><div class="cover-step-text">改善ポイントの選択</div><div class="cover-step-time">約3分</div></div>
+        <div><div class="cover-step-text">カスタマイズ用ベースを取得</div><div class="cover-step-time">約2分</div></div>
       </div>
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 5</span>
-        <div><div class="cover-step-text">成果物の確認・取得</div><div class="cover-step-time">約2分</div></div>
+        <div><div class="cover-step-text">チーム内で整理・実装へ</div><div class="cover-step-time">開始</div></div>
       </div>
     </div>
+
     <div class="cover-msg">
-      👉 この診断は「考えながら進める」ことで効果が出ます。<br>
-      テンプレートを受け取る場ではなく、<strong>1つ改善を実行するための整理の場</strong>です。<br>
-      少し時間をとって取り組むことをおすすめします。
+      👉 <strong>このツールは「テンプレート販売」ではありません</strong><br>
+      <br>
+      ダウンロードするファイルは「完成品」ではなく、<br>
+      <strong>あなたたちが整理・カスタマイズするための『たたき台』</strong>です。<br>
+      <br>
+      その過程で、業務の真の問題点が見えてきます。<br>
+      チーム内で「本当にこうか？」と議論しながら進めることが<br>
+      改善を定着させる最大の秘訣です。
     </div>
+
     <button class="btn-p" style="padding:14px 40px;font-size:17px;" onclick="startDiagnosis()">診断をはじめる →</button>
   </div>
 </div>
@@ -449,6 +493,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="breakdown-insight" id="breakdownInsight"></div>
   </div>
 
+  <!-- 考えるポイント（複雑案件時のみ表示） -->
+  <div class="card" id="thinkingCard" style="display:none;">
+    <div class="card-label">THINKING POINTS</div>
+    <div class="card-title" style="font-size:17px;margin-bottom:12px;">考えるポイント</div>
+    <div id="thinkingPointsBody" class="output-desc" style="margin-bottom:0;"></div>
+  </div>
+
   <!-- 分岐CTA -->
   <div id="branchCta"></div>
 
@@ -509,6 +560,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div class="roi-nums" id="roiNums"></div>
       <div class="roi-summary" id="roiSum"></div>
     </div>
+    <div id="roiTimeValue" class="notice" style="display:none;"></div>
   </div>
   <div class="nav">
     <button class="btn-s" onclick="goS('s-select');uf(7)">← 戻る</button>
@@ -577,7 +629,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド3：現状の業務フロー（たたき台）</div>
         <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド4：整理・改善のポイント</div>
         <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド5：このたたき台の使い方</div>
-        <div style="font-size:14px;color:var(--text2);padding:6px 0;">📌 スライド6：なぜ継続更新が必要か</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド6：なぜ継続更新が必要か</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド7：最初の3ステップ</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド8：次に誰に相談するか</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;">📌 スライド9：まずこれだけやってください</div>
       </div>
       <div style="font-size:13px;color:var(--text3);">✅ 購入後すぐにダウンロードが始まります</div>
     </div>
@@ -593,7 +648,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <div class="screen" id="s-download">
   <div class="card">
     <div class="card-label">COMPLETE</div>
-    <div class="card-title" id="dlTitle">あなた専用の成果物が完成しました</div>
+    <div class="card-title" id="dlTitle">カスタマイズ用たたき台が生成されました</div>
     <div style="font-size:14px;color:var(--text2);line-height:1.8;" id="dlDesc"></div>
   </div>
 
@@ -637,7 +692,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="output-block" id="dlBlockExcel" style="display:none;">
     <div class="output-block-header">
       <span class="output-block-icon">📊</span>
-      <div><div class="output-block-title">Excelテンプレート（すぐ使える標準版）</div></div>
+      <div><div class="output-block-title">Excelテンプレート（カスタマイズ用たたき台）</div></div>
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="dlExcelDesc"></div>
@@ -647,7 +702,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div class="output-steps">
         <div class="output-step"><span class="step-num">1</span>下のボタンでExcelをダウンロードしてください</div>
         <div class="output-step"><span class="step-num">2</span>「README＆プロンプト」シートを開くと使い方・プロンプトが確認できます</div>
-        <div class="output-step"><span class="step-num">3</span>メインシートにそのまま入力を始めてください</div>
+        <div class="output-step"><span class="step-num">3</span>メインシートから入力を始め、自社に合わせてカスタマイズしてください</div>
       </div>
       <button class="btn-dl" id="btnDL">⬇ Excelをダウンロード</button>
       <div class="notice"><strong>⚠ Excelのダウンロードは PC（Windows・Mac）を推奨しています。</strong><br>スマートフォンからは上のプロンプトのコピーをご利用ください。</div>
@@ -663,18 +718,48 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <div class="screen" id="s-manual">
   <div class="done-box">
     <div class="done-icon">📋</div>
-    <div class="done-title">業務フロー整理ガイドが完成しました</div>
+    <div class="done-title">業務フロー整理ガイドの準備ができました</div>
     <div class="done-desc">PowerPointファイルのダウンロードが始まります。<br>開けない場合は下のボタンから再ダウンロードしてください。</div>
     <button class="btn-dl" id="btnReDownload" style="margin:0 auto;display:inline-flex;">⬇ 再ダウンロード</button>
+    <div class="asset-note" id="manualFirstSteps" style="margin-bottom:14px;">
+      <strong>最初の3ステップ</strong><br><br>
+      ① マスタを決める（どのデータが正か）<br>
+      ② 更新タイミングを統一する<br>
+      ③ 差分チェックを週1で実施する
+    </div>
+
+    <div class="asset-note" id="manualNextAction" style="margin-bottom:14px;">
+      <strong>次に誰に相談するか</strong><br><br>
+      ・業務整理 → 社内担当者 / コンサル<br>
+      ・システム連携 → エンジニア<br>
+      ・ツール導入 → SaaS選定担当
+    </div>
+
     <div class="asset-note">
-      <strong>このたたき台を「資産」に変えるために：</strong><br><br>
-      このガイドは完成品ではありません。<br>
-      あなたが肉付けするほど、会社固有の資産になります。<br><br>
-      ① 各ステップを自分の言葉で書き直す<br>
-      ② 判断基準・グレーゾーンの扱いを追記する<br>
-      ③ スクリーンショットや図を貼り付ける<br>
-      ④ 担当者が変わるたびに更新する習慣をつける<br><br>
-      <strong>誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。</strong>
+      <strong>📌 ここからが本当のスタートです</strong><br><br>
+
+      このガイドは完成品ではなく、あなたたちが肉付けするための「たたき台」です。<br>
+      このたたき台を育てるほど、会社固有の資産になります。<br><br>
+
+      <strong>【1週間以内にやること】</strong><br>
+      ① 各ステップを実際の作業と照らし合わせる<br>
+      ② 抜けている工程を追加<br>
+      ③ 誤っている内容を修正<br>
+      ④ チーム内で「本当にこうだっけ？」と議論<br><br>
+
+      <strong>【1ヶ月以内にやること】</strong><br>
+      ⑤ 判断基準・グレーゾーンの扱いを追記する<br>
+      ⑥ スクリーンショットや画像を貼り付ける<br>
+      ⑦ 見て分かるドキュメントに完成させる<br><br>
+
+      <strong>【継続的にやること】</strong><br>
+      ⑧ 担当者が変わるたびに確認・更新<br>
+      ⑨ 業務ルール変更時に即座に反映<br>
+      ⑩ 3ヶ月に1回、改善点がないか見直し<br><br>
+
+      <strong>💡 重要なポイント</strong><br>
+      誰かが辞めても、業務が変わっても、<br>
+      残り続けるものを今日作り始めてください。
     </div>
   </div>
   <div style="margin-top:14px;text-align:center;">
@@ -842,6 +927,36 @@ let roiMonthlyHours=0;
 // ===== ユーティリティ =====
 function uf(a){for(let i=0;i<10;i++){const d=document.getElementById('fd'+i),l=document.getElementById('fl'+i);if(!d||!l)continue;d.className='fd'+(i<a?' done':i===a?' active':'');l.className='fl'+(i<a?' done':i===a?' active':'');d.textContent=i<a?'✓':i===0?'◎':i;}}
 function goS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+
+// ===== 複雑案件判定 =====
+function isComplexCase(){
+  return !!ar?.structure_issue;
+}
+
+// ===== thinking card 描画 =====
+function renderThinkingPoints(){
+  const card=document.getElementById('thinkingCard');
+  const body=document.getElementById('thinkingPointsBody');
+  if(!isComplexCase()){
+    card.style.display='none';
+    body.innerHTML='';
+    return;
+  }
+  body.innerHTML=`
+    <ul>
+      <li>どのデータが正ですか？</li>
+      <li>ズレた時、誰が気づきますか？</li>
+      <li>判断は誰がしていますか？</li>
+    </ul>
+  `;
+  card.style.display='block';
+}
+
+// ===== 複雑案件：manual preview 直行 =====
+function goManualPreview(){
+  payRoute='manual';
+  showPreview();
+}
 
 // ===== 表紙 =====
 function startDiagnosis(){goS('s-attr');uf(1);}
@@ -1275,6 +1390,25 @@ function showFlowchart(){
 
   // 分岐CTA（ここでは売らない。「次に何を選ぶか考える」画面へ誘導）
   const ctaEl=document.getElementById('branchCta');
+
+  // 複雑案件なら manual ルート優先
+  if(isComplexCase()){
+    payRoute='manual';
+    ctaEl.innerHTML=`
+      <div class="branch-cta">
+        <div class="price-badge">複雑案件向け</div>
+        <div class="branch-cta-title">まずは整理から始めるのがおすすめです</div>
+        <div class="branch-cta-desc">
+          この業務は完成済みテンプレートよりも、
+          現状整理・判断基準の言語化・運用ルール設計が先です。
+        </div>
+        <button class="btn-p" onclick="goManualPreview()">整理ガイドを見る →</button>
+      </div>
+    `;
+    renderThinkingPoints();
+    return;
+  }
+
   const hasMatchedTemplate=ar.matched_ids && ar.matched_ids.length>0;
   if(hasAuto && hasMatchedTemplate){
     const matched=ar.matched_ids.map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
@@ -1303,6 +1437,7 @@ function showFlowchart(){
       <button class="btn-p" style="background:var(--yellow);color:#0f1117;" onclick="goManualChoiceBeforePay()">候補を選ぶ →</button>
     </div>`;
   }
+  renderThinkingPoints();
 }
 
 // ===== ツール選択画面の準備 =====
@@ -1412,13 +1547,30 @@ function openPayModal(){
   if(roiMonthlyHours>0)selHtml+=`<div>📌 想定削減：<strong>月 ${roiMonthlyHours} 時間</strong></div>`;
   document.getElementById('modalSelections').innerHTML=selHtml;
   // 含まれるもの
-  if(payRoute==='auto'&&task){
-    const items=['📊 メイン管理シート（すぐ使える標準版）','📋 AI活用プロンプト（無料Claude/Geminiで動作）','📈 業務フローチャート（自動化区分付き）','⚡ AI活用ポイント（工程別の指示例）','🛠 カスタマイズガイド（自社用カスタマイズ手順）','❓ AI質問集（困ったときのプロンプト集）','📖 README＆プロンプトシート付き'];
+  if(payRoute==='manual'){
+    document.getElementById('modalContents').innerHTML=`
+      ・PowerPoint整理ガイド<br>
+      ・最初の3ステップ<br>
+      ・次の相談先ガイド
+    `;
+  }else if(payRoute==='auto'&&task){
+    const items=[
+      '📊 メイン管理シート（カスタマイズ用・たたき台）',
+      '📋 AI活用プロンプト（無料Claude/Geminiで動作）',
+      '📈 業務フローチャート（自動化区分・AIヒント付き）',
+      '⚡ カスタマイズガイド（修正方法の手順書）',
+      '❓ AI質問集（困ったときのプロンプト集）',
+      '📖 README＆プロンプトシート付き',
+      '⚠️ <strong style="color:var(--red);">重要：このExcelは完成品ではなく、あなたが自社に合わせてカスタマイズするためのベースです</strong>'
+    ];
     if(task.hasOcr)items.splice(1,0,'📷 OCR転記プロンプト');
     document.getElementById('modalContents').innerHTML=items.map(s=>`✅ ${s}`).join('<br>');
   }else{
     document.getElementById('modalContents').innerHTML=[
-      '📋 業務フロー整理スライド（6枚）','✏️ たたき台の使い方・肉付けガイド','🔄 なぜ継続更新が必要かの説明ページ'
+      '📋 業務フロー整理スライド（6枚）',
+      '✏️ たたき台の使い方・肉付けガイド',
+      '🔄 なぜ継続更新が必要かの説明ページ',
+      '⚠️ <strong style="color:var(--red);">重要：このガイドは完成品ではなく、チーム内で修正・拡張するためのたたき台です</strong>'
     ].map(s=>`✅ ${s}`).join('<br>');
   }
   document.getElementById('payModal').style.display='flex';
@@ -1460,6 +1612,12 @@ function calcROI(){
   const btn=document.getElementById('btnROI');
   btn.textContent='成果物の内容を確認する →';
   btn.onclick=showPreview;
+  const roiTimeValue=document.getElementById('roiTimeValue');
+  roiTimeValue.innerHTML=`
+    通常、この整理には2〜3週間かかります。<br>
+    このツールでは約20分で土台を作成できます。
+  `;
+  roiTimeValue.style.display='block';
 }
 
 // ===== 成果物プレビュー表示（課金前） =====
@@ -1469,27 +1627,38 @@ function showPreview(){
   ['blockPrompt','blockOcr','blockExcel','blockPPTX'].forEach(id=>{document.getElementById(id).style.display='none';});
 
   if(payRoute==='manual'){
-    document.getElementById('outTitle').textContent='生成されるガイドの内容を確認してください';
-    const previewLines=q2_1Steps.split('\n').filter(s=>s.trim()).slice(0,5);
-    const previewHtml=previewLines.map((l,i)=>`<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${l.trim().replace(/^[\d\.\-\s]+/,'')}`).join('<br>');
-    document.getElementById('outDesc').innerHTML=`${ind}・${pos} 向けの業務フロー整理ガイド（PowerPoint）が生成されます。<br><br>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-top:8px;">
-        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">入力された手順（スライドに反映されます）</div>
-        <div style="font-size:14px;color:var(--text2);line-height:1.9;">${previewHtml}${q2_1Steps.split('\n').filter(s=>s.trim()).length>5?'<br><span style="color:var(--text3);">…他 '+(q2_1Steps.split('\n').filter(s=>s.trim()).length-5)+'ステップ</span>':''}</div>
-      </div>`;
+    document.getElementById('outTitle').textContent='整理から始めるための成果物です';
+    document.getElementById('outDesc').innerHTML=`
+      この成果物は完成品ではなく、実装前の設計図です。<br>
+      そのままでは運用できませんが、整理・議論・実装準備を大幅に短縮できます。
+    `;
     document.getElementById('blockPPTX').style.display='block';
+    document.getElementById('blockPrompt').style.display='none';
+    document.getElementById('blockOcr').style.display='none';
+    document.getElementById('blockExcel').style.display='none';
     console.log('manual生成データ', {pain: q2Pain, steps: q2_1Steps, reason: selectedReason});
     return;
   }
 
   const task=TOP10.find(t=>t.id===selectedToolId)||TOP10[0];
-  document.getElementById('outTitle').textContent=`「${task.name}」の生成内容を確認してください`;
-  document.getElementById('outDesc').textContent=`${ind}・${pos} 向けの専用ツールセットが生成されます。内容を確認してから購入できます。`;
+  document.getElementById('outTitle').textContent=`「${task.name}」のカスタマイズ用たたき台`;
+  document.getElementById('outDesc').innerHTML=`
+    <div style="margin-bottom:14px;">
+      ${ind}・${pos} 向けの「${task.name}」カスタマイズ用ツールセットが生成されます。
+    </div>
+
+    <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;font-size:14px;color:var(--text2);line-height:1.8;">
+      <strong style="color:var(--accent);">⚠️ これは『完成品』ではなく『たたき台』です</strong><br><br>
+      下のExcelはあくまで標準版のたたき台です。<br>
+      あなたの業務に合わせて<strong>列の追加・削除、ドロップダウンの変更、関数のカスタマイズが必須</strong>です。<br><br>
+      その整理プロセスを通じて、「本当の問題」が見えてきます。
+    </div>
+  `;
 
   if(task.hasPrompt&&task.promptText){
     const full=task.promptText(ind,pos);
     const preview=full.split('\n').slice(0,6).join('\n')+'\n\n…（続きは購入後に全文表示されます）';
-    document.getElementById('promptDesc').textContent=`このプロンプトを無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けると、${ind}向けの「${task.name}」専用Excelを自動で作成してくれます。`;
+    document.getElementById('promptDesc').textContent=`このプロンプトを無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けると、${ind}向けの「${task.name}」専用Excelを自動で作成してくれます。ただし、生成されたExcelもたたき台です。自社用にカスタマイズしてください。`;
     document.getElementById('promptTxt').textContent=preview;
     document.getElementById('blockPrompt').style.display='block';
   }
@@ -1502,10 +1671,10 @@ function showPreview(){
   if(task.hasExcel){
     const sheetList=`<div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:2;">
       <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">含まれるシート</div>
-      ✅ メイン管理シート（すぐ使える標準版）<br>
+      ✅ メイン管理シート（カスタマイズ用）<br>
       ✅ フローチャート（自動化区分・AIヒント付き）<br>
       ✅ AI活用ポイント（工程別の指示例）<br>
-      ✅ カスタマイズガイド（自社用カスタマイズ手順）<br>
+      ✅ カスタマイズガイド（修正手順を記載）<br>
       ✅ AI質問集（困ったときのプロンプト集）<br>
       ✅ README＆プロンプト（使い方・全文プロンプト）
     </div>`;
@@ -1534,10 +1703,10 @@ function showActualOutput(){
   if(task.hasExcel&&task.excelFn){
     const sheetListDl=`<div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:2;">
       <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">含まれるシート</div>
-      ✅ メイン管理シート（すぐ使える標準版）<br>
+      ✅ メイン管理シート（カスタマイズ用）<br>
       ✅ フローチャート（自動化区分・AIヒント付き）<br>
       ✅ AI活用ポイント（工程別の指示例）<br>
-      ✅ カスタマイズガイド（自社用カスタマイズ手順）<br>
+      ✅ カスタマイズガイド（修正手順を記載）<br>
       ✅ AI質問集（困ったときのプロンプト集）<br>
       ✅ README＆プロンプト（使い方・全文プロンプト）
     </div>`;
@@ -1659,6 +1828,33 @@ async function genManualPPTX(){
     });
     s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:blue,align:'center',wrap:true});
 
+    // Slide 7: 最初の3ステップ
+    const s7=pptx.addSlide();
+    s7.background={color:bg};
+    s7.addText('最初の3ステップ',{x:0.6,y:0.4,w:8.5,h:0.4,fontSize:24,bold:true,color:dark});
+    s7.addText(
+      '① マスタを決める（どのデータが正か）\n② 更新タイミングを統一する\n③ 差分チェックを週1で実施する',
+      {x:0.8,y:1.2,w:8,h:3,fontSize:18,color:text2,valign:'top',wrap:true}
+    );
+
+    // Slide 8: 次に誰に相談するか
+    const s8=pptx.addSlide();
+    s8.background={color:bg};
+    s8.addText('次に誰に相談するか',{x:0.6,y:0.4,w:8.5,h:0.4,fontSize:24,bold:true,color:dark});
+    s8.addText(
+      '・業務整理 → 社内担当者 / コンサル\n・システム連携 → エンジニア\n・ツール導入 → SaaS選定担当',
+      {x:0.8,y:1.2,w:8,h:3,fontSize:18,color:text2,valign:'top',wrap:true}
+    );
+
+    // Slide 9: まずこれだけやってください
+    const s9=pptx.addSlide();
+    s9.background={color:surface};
+    s9.addText('まずこれだけやってください',{x:0.6,y:0.4,w:8.5,h:0.4,fontSize:24,bold:true,color:dark});
+    s9.addText(
+      '「どのデータが正か」を決めることから始めてください。',
+      {x:0.8,y:1.4,w:8,h:2,fontSize:22,bold:true,color:blue,wrap:true}
+    );
+
     // ⑦ Blobダウンロード方式（最安定）
     const fname=`業務フロー整理ガイド_${safe(ind)||'診断結果'}.pptx`;
     const blob=await pptx.write('blob');
@@ -1772,6 +1968,37 @@ function addReadme(wb,task,ind,pos,ar,promptTxt,ocrTxt){
   const dr=ws.addRow([`診断日: ${today}　自動化スコア: ${ar?.score||0}点`]);
   ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
   dr.height=16; dr.getCell(1).fill=XS.fill(XS.C.LGRAY); dr.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
+
+  // このExcelについてセクション
+  ws.addRow([]);
+  xSection(ws,'【このExcelについて - 重要】',NC);
+
+  const intro=ws.addRow([
+    '⚠️ このExcelは「完成品」ではありません\n\n'
+    +'このシートは、あなたの業務をベースに生成された「カスタマイズ用たたき台」です。\n'
+    +'以下の点に注意してください：\n\n'
+    +'【必ずやること】\n'
+    +'✓ そのまま使うのではなく、修正が必須です\n'
+    +'✓ 不要な列・項目は削除してください\n'
+    +'✓ 不足している項目は追加してください\n'
+    +'✓ ドロップダウン・関数を自社ルールに合わせてください\n'
+    +'✓ チーム内で「本当にこうか？」と議論しながら整理することが大事です\n\n'
+    +'【このプロセスのメリット】\n'
+    +'→ 完成品を導入するより定着率が高い\n'
+    +'→ 業務の真の問題点が見える\n'
+    +'→ 業務が変わった時、自分たちで改善できる体質になる\n\n'
+    +'【推奨される進め方】\n'
+    +'1. 各シートを一度見て、「これ、本当にこう？」と確認\n'
+    +'2. 不要な列を削除、不足分を追加\n'
+    +'3. 関数・ドロップダウンを自社ルールにカスタマイズ\n'
+    +'4. チーム全体で「なぜこの項目が必要か」を議論\n'
+    +'5. 実装開始（ここから本番です）'
+  ]);
+  intro.height=180;
+  ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+  intro.getCell(1).alignment={wrapText:true,vertical:'top'};
+  intro.getCell(1).fill=XS.fill(XS.C.LORANGE);
+  intro.getCell(1).font={size:10,color:{argb:XS.C.ORANGE}};
 
   ws.addRow([]);
   xSection(ws,'【AIプロンプトの使い方】',NC);
@@ -2245,6 +2472,7 @@ function restart(){
   document.getElementById('btnROI').onclick=calcROI;
   document.getElementById('roiBox').style.display='none';
   document.getElementById('roiContext').style.display='none';
+  const rtv=document.getElementById('roiTimeValue');if(rtv)rtv.style.display='none';
   document.getElementById('reasonBlock').style.display='none';
   document.getElementById('breakdownCard').style.display='none';
   ['blockPrompt','blockOcr','blockExcel','blockPPTX','dlBlockPrompt','dlBlockOcr','dlBlockExcel'].forEach(id=>{
