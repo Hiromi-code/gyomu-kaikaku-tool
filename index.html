@@ -11,180 +11,180 @@
 <style>
 :root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2436;--border:#2a3050;--accent:#e87c3a;--blue:#3a7ce8;--text:#f0f2f8;--text2:#c0c8dc;--text3:#8892aa;--green:#3ac98a;--yellow:#e8c33a;--red:#e85a5a;--radius:6px;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:16px;line-height:1.6;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:18px;line-height:1.6;}
 .header{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:100;}
 .logo{display:flex;align-items:center;gap:10px;}
-.logo-icon{width:28px;height:28px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;border-radius:4px;}
-.logo-text{font-size:13px;font-weight:700;}
-.logo-sub{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;letter-spacing:.15em;}
-.pc-badge{font-size:10px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:3px 9px;border-radius:20px;}
+.logo-icon{width:28px;height:28px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px;color:#fff;border-radius:4px;}
+.logo-text{font-size:15px;font-weight:700;}
+.logo-sub{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;letter-spacing:.15em;}
+.pc-badge{font-size:12px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:3px 9px;border-radius:20px;}
 .flow-bar{display:flex;align-items:center;padding:9px 16px;background:var(--surface2);border-bottom:1px solid var(--border);overflow-x:auto;gap:0;-webkit-overflow-scrolling:touch;}
 .fs{display:flex;align-items:center;gap:4px;white-space:nowrap;}
-.fd{width:19px;height:19px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;color:var(--text3);flex-shrink:0;transition:all .3s;}
+.fd{width:19px;height:19px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--text3);flex-shrink:0;transition:all .3s;}
 .fd.active{background:var(--accent);border-color:var(--accent);color:#fff;}
 .fd.done{background:var(--green);border-color:var(--green);color:#fff;}
-.fl{font-size:9px;color:var(--text3);transition:color .3s;}
+.fl{font-size:11px;color:var(--text3);transition:color .3s;}
 .fl.active{color:var(--accent);}
 .fl.done{color:var(--green);}
-.fa{margin:0 4px;color:var(--border);font-size:9px;}
+.fa{margin:0 4px;color:var(--border);font-size:11px;}
 .main{max-width:1000px;margin:0 auto;padding:32px 24px;}
 .screen{display:none;}.screen.active{display:block;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:14px;animation:fadeIn .3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.card-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:7px;}
-.card-title{font-size:20px;font-weight:700;line-height:1.5;margin-bottom:6px;}
-.card-hint{font-size:14px;color:var(--text3);line-height:1.7;margin-bottom:14px;}
+.card-label{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:7px;}
+.card-title{font-size:22px;font-weight:700;line-height:1.5;margin-bottom:6px;}
+.card-hint{font-size:16px;color:var(--text3);line-height:1.7;margin-bottom:14px;}
 .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
 .choice-grid.col3{grid-template-columns:1fr 1fr 1fr;}
-.choice-btn{padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-family:'Noto Sans JP',sans-serif;font-size:14px;cursor:pointer;text-align:left;transition:all .15s;line-height:1.4;}
+.choice-btn{padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-family:'Noto Sans JP',sans-serif;font-size:16px;cursor:pointer;text-align:left;transition:all .15s;line-height:1.4;}
 .choice-btn:hover{border-color:var(--accent);color:var(--text);}
 .choice-btn.selected{border-color:var(--accent);background:rgba(232,124,58,.1);color:var(--accent);font-weight:700;}
 .choice-btn.multi.selected{border-color:var(--blue);background:rgba(58,124,232,.1);color:var(--blue);font-weight:700;}
-.q-ta{width:100%;min-height:88px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:15px;line-height:1.8;resize:vertical;outline:none;transition:border-color .2s;}
+.q-ta{width:100%;min-height:88px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:17px;line-height:1.8;resize:vertical;outline:none;transition:border-color .2s;}
 .q-ta:focus{border-color:var(--accent);}
-.q-ta::placeholder{color:var(--text3);font-size:14px;}
-.q-input{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:15px;outline:none;margin-top:8px;}
+.q-ta::placeholder{color:var(--text3);font-size:16px;}
+.q-input{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:17px;outline:none;margin-top:8px;}
 .q-input:focus{border-color:var(--accent);}
 .q-input::placeholder{color:var(--text3);}
-.context-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.7;}
-.context-label{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:4px;}
+.context-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-bottom:12px;font-size:14px;color:var(--text2);line-height:1.7;}
+.context-label{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:4px;}
 .loading-box{text-align:center;padding:50px 0;}
 .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.ls{font-size:11px;font-family:'IBM Plex Mono',monospace;padding:3px 0;}
+.ls{font-size:13px;font-family:'IBM Plex Mono',monospace;padding:3px 0;}
 .ls.done{color:var(--green);}
 .ls.active{color:var(--accent);}
 .ls.wait{color:var(--text3);}
 
 /* バリデーション */
 .validate-issue{background:var(--surface2);border:1px solid var(--yellow);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;}
-.validate-issue-label{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--yellow);letter-spacing:.15em;margin-bottom:6px;}
-.validate-issue-text{font-size:13px;color:var(--text);line-height:1.7;margin-bottom:10px;}
+.validate-issue-label{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--yellow);letter-spacing:.15em;margin-bottom:6px;}
+.validate-issue-text{font-size:15px;color:var(--text);line-height:1.7;margin-bottom:10px;}
 
 /* フローチャート - 画像スタイル */
 .fc-box-wrap{display:flex;flex-direction:column;align-items:center;gap:0;}
-.fc-box{width:100%;max-width:360px;border-radius:14px;padding:14px 18px;text-align:center;font-size:16px;font-weight:700;line-height:1.5;position:relative;}
+.fc-box{width:100%;max-width:360px;border-radius:14px;padding:14px 18px;text-align:center;font-size:18px;font-weight:700;line-height:1.5;position:relative;}
 .fc-box.type-manual{background:#e87c3a;color:#fff;}
 .fc-box.type-semi{background:#e8c33a;color:#1a1200;}
 .fc-box.type-auto{background:#7c5cd8;color:#fff;}
 .fc-box.type-note{background:#e85a8a;color:#fff;}
 .fc-arrow{width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:14px solid rgba(232,124,58,.45);margin:4px 0;}
-.fc-note{width:100%;max-width:320px;margin-top:6px;padding:8px 12px;background:rgba(124,92,216,.12);border:1px solid rgba(124,92,216,.35);border-radius:var(--radius);font-size:11px;color:#b0a0e8;line-height:1.65;text-align:left;}
+.fc-note{width:100%;max-width:320px;margin-top:6px;padding:8px 12px;background:rgba(124,92,216,.12);border:1px solid rgba(124,92,216,.35);border-radius:var(--radius);font-size:13px;color:#b0a0e8;line-height:1.65;text-align:left;}
 .fc-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
-.fc-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);}
+.fc-legend-item{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text3);}
 .fc-legend-dot{width:12px;height:12px;border-radius:3px;}
 .score-big{text-align:center;padding:18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;}
-.score-num{font-family:'IBM Plex Mono',monospace;font-size:48px;font-weight:700;line-height:1;}
-.score-label{font-size:11px;color:var(--text3);margin-top:4px;}
+.score-num{font-family:'IBM Plex Mono',monospace;font-size:50px;font-weight:700;line-height:1;}
+.score-label{font-size:13px;color:var(--text3);margin-top:4px;}
 .score-bar-wrap{height:7px;background:var(--border);border-radius:4px;margin:10px 0 4px;overflow:hidden;}
 .score-bar-fill{height:100%;border-radius:4px;transition:width 1.2s ease;}
 .auto-summary{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;}
-.auto-count{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;color:var(--accent);line-height:1;}
-.auto-count-label{font-size:11px;color:var(--text3);margin-top:2px;}
+.auto-count{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:700;color:var(--accent);line-height:1;}
+.auto-count-label{font-size:13px;color:var(--text3);margin-top:2px;}
 .branch-cta{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;}
-.branch-cta-title{font-size:14px;font-weight:700;margin-bottom:6px;}
-.branch-cta-desc{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
-.price-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);background:rgba(232,124,58,.1);border:1px solid rgba(232,124,58,.25);padding:3px 10px;border-radius:4px;display:inline-block;margin-bottom:12px;}
+.branch-cta-title{font-size:16px;font-weight:700;margin-bottom:6px;}
+.branch-cta-desc{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
+.price-badge{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);background:rgba(232,124,58,.1);border:1px solid rgba(232,124,58,.25);padding:3px 10px;border-radius:4px;display:inline-block;margin-bottom:12px;}
 
 /* ツール選択 */
 .tool-select-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;cursor:pointer;transition:all .2s;}
 .tool-select-card:hover{border-color:var(--accent);}
 .tool-select-card.selected{border-color:var(--accent);background:rgba(232,124,58,.05);}
-.tool-select-title{font-size:15px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
-.tool-select-desc{font-size:12px;color:var(--text2);line-height:1.7;}
+.tool-select-title{font-size:17px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.tool-select-desc{font-size:14px;color:var(--text2);line-height:1.7;}
 .tool-select-items{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
-.tool-chip{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;}
+.tool-chip{font-size:13px;padding:3px 9px;border-radius:20px;font-weight:600;}
 .chip-excel{background:rgba(58,201,138,.12);color:var(--green);border:1px solid rgba(58,201,138,.25);}
 .chip-prompt{background:rgba(58,124,232,.12);color:var(--blue);border:1px solid rgba(58,124,232,.25);}
 .chip-ocr{background:rgba(232,195,58,.12);color:var(--yellow);border:1px solid rgba(232,195,58,.25);}
 .task-info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
 .task-info-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
-.task-info-name{font-size:14px;font-weight:700;}
-.task-mechanism{font-size:11px;color:var(--text3);line-height:1.65;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.task-info-name{font-size:16px;font-weight:700;}
+.task-mechanism{font-size:13px;color:var(--text3);line-height:1.65;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);}
 .task-mechanism strong{color:var(--text2);}
 .task-info-body{padding:14px 16px;}
-.can-title{font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px;}
-.cannot-title{font-size:11px;font-weight:700;color:var(--yellow);margin-bottom:6px;margin-top:10px;}
-.task-item{font-size:12px;color:var(--text2);line-height:1.75;padding:3px 0;display:flex;align-items:flex-start;gap:6px;}
+.can-title{font-size:13px;font-weight:700;color:var(--green);margin-bottom:6px;}
+.cannot-title{font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:6px;margin-top:10px;}
+.task-item{font-size:14px;color:var(--text2);line-height:1.75;padding:3px 0;display:flex;align-items:flex-start;gap:6px;}
 
 /* ROI */
 .roi-box{background:var(--surface2);border:1px solid var(--green);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
-.roi-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green);letter-spacing:.2em;margin-bottom:10px;}
+.roi-title{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green);letter-spacing:.2em;margin-bottom:10px;}
 .roi-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
 .roi-nc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center;}
-.roi-n{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;line-height:1;margin-bottom:2px;}
-.roi-l{font-size:10px;color:var(--text3);}
-.roi-summary{font-size:12px;color:var(--text2);line-height:1.8;padding:10px;background:rgba(58,201,138,.06);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);}
+.roi-n{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;line-height:1;margin-bottom:2px;}
+.roi-l{font-size:12px;color:var(--text3);}
+.roi-summary{font-size:14px;color:var(--text2);line-height:1.8;padding:10px;background:rgba(58,201,138,.06);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);}
 .roi-summary strong{color:var(--green);}
 .quant-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
-.q-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;}
-.q-field label span{font-size:10px;color:var(--text3);font-weight:400;margin-left:4px;}
-.q-field select{width:100%;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;outline:none;font-family:'Noto Sans JP',sans-serif;}
+.q-field label{display:block;font-size:13px;font-weight:700;color:var(--text2);margin-bottom:5px;}
+.q-field label span{font-size:12px;color:var(--text3);font-weight:400;margin-left:4px;}
+.q-field select{width:100%;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:15px;outline:none;font-family:'Noto Sans JP',sans-serif;}
 
 /* 成果物 */
 .output-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;}
 .output-block-header{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:10px;}
-.output-block-icon{font-size:18px;}
-.output-block-title{font-size:14px;font-weight:700;}
+.output-block-icon{font-size:20px;}
+.output-block-title{font-size:16px;font-weight:700;}
 .output-block-body{padding:16px;}
-.output-desc{font-size:12px;color:var(--text2);line-height:1.85;margin-bottom:14px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);}
+.output-desc{font-size:14px;color:var(--text2);line-height:1.85;margin-bottom:14px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);}
 .output-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
-.output-step{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--text2);line-height:1.7;}
-.step-num{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;font-family:'IBM Plex Mono',monospace;}
-.prompt-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:11px;color:var(--text2);line-height:1.85;white-space:pre-wrap;font-family:'Noto Sans JP',sans-serif;max-height:160px;overflow-y:auto;margin-bottom:8px;}
-.btn-copy{background:var(--blue);color:#fff;border:none;padding:9px 18px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s;display:inline-flex;align-items:center;gap:5px;}
+.output-step{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text2);line-height:1.7;}
+.step-num{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;font-family:'IBM Plex Mono',monospace;}
+.prompt-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:13px;color:var(--text2);line-height:1.85;white-space:pre-wrap;font-family:'Noto Sans JP',sans-serif;max-height:160px;overflow-y:auto;margin-bottom:8px;}
+.btn-copy{background:var(--blue);color:#fff;border:none;padding:9px 18px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;display:inline-flex;align-items:center;gap:5px;}
 .btn-copy:hover{opacity:.85;}
 .btn-copy.copied{background:var(--green);}
-.btn-dl{background:var(--green);color:#0f1117;border:none;padding:12px 20px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .2s;}
+.btn-dl{background:var(--green);color:#0f1117;border:none;padding:12px 20px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .2s;}
 .btn-dl:hover{opacity:.88;}
-.notice{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:11px;color:var(--text3);line-height:1.6;margin-top:10px;}
+.notice{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text3);line-height:1.6;margin-top:10px;}
 .notice strong{color:var(--yellow);}
-.btn-p{background:var(--accent);color:#fff;border:none;padding:11px 22px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;}
+.btn-p{background:var(--accent);color:#fff;border:none;padding:11px 22px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;}
 .btn-p:hover{opacity:.85;transform:translateY(-1px);}
 .btn-p:disabled{opacity:.35;cursor:not-allowed;transform:none;}
-.btn-s{background:transparent;color:var(--text2);border:1px solid var(--border);padding:9px 16px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:13px;cursor:pointer;}
+.btn-s{background:transparent;color:var(--text2);border:1px solid var(--border);padding:9px 16px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:15px;cursor:pointer;}
 .btn-s:hover{border-color:var(--text2);color:var(--text);}
 .nav{display:flex;justify-content:space-between;align-items:center;margin-top:16px;}
 
 /* マニュアル完了 */
 .done-box{background:var(--surface);border:1px solid var(--green);border-radius:var(--radius);padding:28px;text-align:center;}
-.done-icon{font-size:40px;margin-bottom:12px;}
-.done-title{font-size:18px;font-weight:700;margin-bottom:8px;}
-.done-desc{font-size:13px;color:var(--text2);line-height:1.85;margin-bottom:18px;}
-.asset-note{background:rgba(58,201,138,.06);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:14px 16px;font-size:12px;color:var(--text2);line-height:1.85;text-align:left;margin-top:16px;}
+.done-icon{font-size:42px;margin-bottom:12px;}
+.done-title{font-size:20px;font-weight:700;margin-bottom:8px;}
+.done-desc{font-size:15px;color:var(--text2);line-height:1.85;margin-bottom:18px;}
+.asset-note{background:rgba(58,201,138,.06);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:14px 16px;font-size:14px;color:var(--text2);line-height:1.85;text-align:left;margin-top:16px;}
 .asset-note strong{color:var(--green);}
 
 /* 表紙 */
 .cover-wrap{min-height:calc(100vh - 50px);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px 20px;text-align:center;}
-.cover-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.25em;border:1px solid rgba(232,124,58,.35);padding:4px 14px;border-radius:20px;margin-bottom:24px;display:inline-block;}
-.cover-title{font-size:28px;font-weight:700;line-height:1.3;margin-bottom:8px;}
-.cover-sub{font-size:14px;color:var(--text3);margin-bottom:32px;}
+.cover-badge{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:.25em;border:1px solid rgba(232,124,58,.35);padding:4px 14px;border-radius:20px;margin-bottom:24px;display:inline-block;}
+.cover-title{font-size:30px;font-weight:700;line-height:1.3;margin-bottom:8px;}
+.cover-sub{font-size:16px;color:var(--text3);margin-bottom:32px;}
 .cover-steps{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;width:100%;max-width:400px;text-align:left;}
 .cover-step-row{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);}
 .cover-step-row:last-child{border-bottom:none;}
-.cover-step-num{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(232,124,58,.12);border:1px solid rgba(232,124,58,.25);border-radius:4px;padding:2px 7px;flex-shrink:0;margin-top:2px;}
-.cover-step-text{font-size:13px;color:var(--text2);line-height:1.5;}
-.cover-step-time{font-size:10px;color:var(--text3);margin-top:2px;}
-.cover-msg{background:var(--surface2);border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin-bottom:28px;font-size:12px;color:var(--text2);line-height:1.8;text-align:left;max-width:400px;width:100%;}
+.cover-step-num{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--accent);background:rgba(232,124,58,.12);border:1px solid rgba(232,124,58,.25);border-radius:4px;padding:2px 7px;flex-shrink:0;margin-top:2px;}
+.cover-step-text{font-size:15px;color:var(--text2);line-height:1.5;}
+.cover-step-time{font-size:12px;color:var(--text3);margin-top:2px;}
+.cover-msg{background:var(--surface2);border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin-bottom:28px;font-size:14px;color:var(--text2);line-height:1.8;text-align:left;max-width:400px;width:100%;}
 /* 手順展開 */
 .expand-step-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;}
-.expand-step-num{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(232,124,58,.12);border:1px solid rgba(232,124,58,.25);border-radius:4px;padding:3px 7px;flex-shrink:0;margin-top:4px;}
-.expand-step-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-size:13px;font-family:'Noto Sans JP',sans-serif;line-height:1.5;outline:none;resize:none;}
+.expand-step-num{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--accent);background:rgba(232,124,58,.12);border:1px solid rgba(232,124,58,.25);border-radius:4px;padding:3px 7px;flex-shrink:0;margin-top:4px;}
+.expand-step-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-size:15px;font-family:'Noto Sans JP',sans-serif;line-height:1.5;outline:none;resize:none;}
 .expand-step-input:focus{border-color:var(--accent);}
-.expand-step-del{background:none;border:1px solid var(--border);color:var(--text3);border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin-top:4px;flex-shrink:0;}
+.expand-step-del{background:none;border:1px solid var(--border);color:var(--text3);border-radius:4px;padding:4px 8px;cursor:pointer;font-size:13px;margin-top:4px;flex-shrink:0;}
 .expand-step-del:hover{border-color:var(--red);color:var(--red);}
-.expand-add-btn{background:none;border:1px dashed var(--border);color:var(--text3);padding:8px 14px;border-radius:var(--radius);cursor:pointer;font-size:12px;width:100%;margin-top:4px;}
+.expand-add-btn{background:none;border:1px dashed var(--border);color:var(--text3);padding:8px 14px;border-radius:var(--radius);cursor:pointer;font-size:14px;width:100%;margin-top:4px;}
 .expand-add-btn:hover{border-color:var(--accent);color:var(--accent);}
 /* 業務内訳 */
 .breakdown-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.breakdown-label{font-size:11px;color:var(--text2);width:100px;flex-shrink:0;}
+.breakdown-label{font-size:13px;color:var(--text2);width:100px;flex-shrink:0;}
 .breakdown-bar-wrap{flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden;}
 .breakdown-bar-fill{height:100%;border-radius:5px;transition:width 1s ease;}
-.breakdown-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;width:36px;flex-shrink:0;text-align:right;}
-.breakdown-insight{background:rgba(58,124,232,.08);border:1px solid rgba(58,124,232,.2);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.8;margin-top:14px;}
+.breakdown-pct{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;width:36px;flex-shrink:0;text-align:right;}
+.breakdown-insight{background:rgba(58,124,232,.08);border:1px solid rgba(58,124,232,.2);border-radius:var(--radius);padding:12px 14px;font-size:14px;color:var(--text2);line-height:1.8;margin-top:14px;}
 .structure-warning{background:rgba(232,90,90,.08);border:2px solid rgba(232,90,90,.45);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
-.structure-warning-title{font-size:13px;font-weight:700;color:#e85a5a;margin-bottom:8px;}
-.structure-warning-body{font-size:12px;color:var(--text2);line-height:1.8;}
+.structure-warning-title{font-size:15px;font-weight:700;color:#e85a5a;margin-bottom:8px;}
+.structure-warning-body{font-size:14px;color:var(--text2);line-height:1.8;}
 
 @media(max-width:768px){
   .choice-grid.col3{grid-template-columns:1fr 1fr;}
@@ -192,10 +192,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   .roi-nums{grid-template-columns:1fr 1fr 1fr;}
   .card{padding:14px;}
   .main{padding:16px 10px;}
-  .cover-title{font-size:22px;}
-  .card-title{font-size:17px;}
-  .choice-btn{font-size:13px;}
-  body{font-size:15px;}
+  .cover-title{font-size:24px;}
+  .card-title{font-size:19px;}
+  .choice-btn{font-size:15px;}
+  body{font-size:17px;}
 }
 </style>
 </head>
@@ -242,7 +242,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <span class="cover-badge">BUSINESS AUTOMATION TOOLKIT</span>
     <h1 class="cover-title">業務半自動化スターターキット</h1>
     <p class="cover-sub">― ミス・ムダ・手戻りを減らす仕組みをつくる ―</p>
-    <p class="cover-sub" style="font-size:12px;margin-top:-20px;">約15〜20分</p>
+    <p class="cover-sub" style="font-size:14px;margin-top:-20px;">約15〜20分</p>
     <div class="cover-steps">
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 1</span>
@@ -270,7 +270,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       テンプレートを受け取る場ではなく、<strong>1つ改善を実行するための整理の場</strong>です。<br>
       少し時間をとって取り組むことをおすすめします。
     </div>
-    <button class="btn-p" style="padding:14px 40px;font-size:15px;" onclick="startDiagnosis()">診断をはじめる →</button>
+    <button class="btn-p" style="padding:14px 40px;font-size:17px;" onclick="startDiagnosis()">診断をはじめる →</button>
   </div>
 </div>
 
@@ -281,7 +281,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="card-title">まず業界とポジションを教えてください</div>
     <div class="card-hint">回答に合わせて、次の質問の内容が変わります。</div>
     <div style="margin-bottom:18px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">あなたの業界</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:8px;">あなたの業界</div>
       <div class="choice-grid col3" id="industryGrid">
         <button class="choice-btn" onclick="selInd(this,'製造・物流')">🏭 製造・物流</button>
         <button class="choice-btn" onclick="selInd(this,'医療・介護')">🏥 医療・介護</button>
@@ -295,7 +295,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       </div>
     </div>
     <div>
-      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">あなたのポジション</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:8px;">あなたのポジション</div>
       <div class="choice-grid" id="posGrid">
         <button class="choice-btn" onclick="selPos(this,'経営者・役員')">👔 経営者・役員</button>
         <button class="choice-btn" onclick="selPos(this,'管理職')">📊 管理職</button>
@@ -353,12 +353,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <!-- 業務コンテキスト入力（新規追加） -->
     <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">TASK CONTEXT（必須）</div>
-      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px;">① この業務は何ですか？</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">TASK CONTEXT（必須）</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">① この業務は何ですか？</div>
       <input class="q-input" id="taskName" placeholder="例：給与計算業務、請求書発行、入金確認" style="margin-top:0;margin-bottom:12px;" oninput="chkSteps()">
-      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px;">② 誰が行いますか？</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">② 誰が行いますか？</div>
       <input class="q-input" id="taskOwner" placeholder="例：自分、経理担当、事務スタッフ" style="margin-top:0;margin-bottom:12px;" oninput="chkSteps()">
-      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px;">③ いつ行いますか？</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">③ いつ行いますか？</div>
       <input class="q-input" id="taskTiming" placeholder="例：毎月初め、毎週金曜、毎日夕方" style="margin-top:0;" oninput="chkSteps()">
     </div>
     <textarea class="q-ta" id="stepsAns" rows="6" placeholder="例：&#10;1. 仕入先からFAXで請求書が届く&#10;2. 金額・品目を確認してExcelに手入力する&#10;3. 上司にメールで確認を送る&#10;4. 承認後、会計ソフトに再入力する&#10;5. 振込処理をする" oninput="chkSteps()"></textarea>
@@ -403,8 +403,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <div class="screen" id="s-analyzing">
   <div class="loading-box">
     <div class="spinner"></div>
-    <div style="font-size:16px;font-weight:700;margin-bottom:6px">AIが業務を分析しています…</div>
-    <div style="font-size:12px;color:var(--text3)">業務フローを整理・自動化ポイントを特定中</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:6px">AIが業務を分析しています…</div>
+    <div style="font-size:14px;color:var(--text3)">業務フローを整理・自動化ポイントを特定中</div>
     <div style="margin-top:18px;display:inline-block;text-align:left;">
       <div class="ls done" id="ls1">✓ 回答を受け取りました</div>
       <div class="ls active" id="ls2">▶ 業務フローを整理しています</div>
@@ -424,13 +424,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div class="score-label">自動化ポテンシャルスコア（100点満点）</div>
       <div class="score-bar-wrap"><div class="score-bar-fill" id="fcBar" style="width:0%;background:var(--accent)"></div></div>
     </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.85;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;" id="fcComment"></div>
+    <!-- スコア内訳ゲージ（AI出力のscore_breakdownを表示） -->
+    <div id="scoreBreakdown" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.15em;margin-bottom:12px;">SCORE BREAKDOWN</div>
+      <div id="scoreBreakdownBars"></div>
+      <div id="scoreBreakdownComment" style="display:none;font-size:13px;color:var(--text3);border-top:1px solid var(--border);padding-top:10px;margin-top:4px;line-height:1.7;"></div>
+    </div>
+    <div style="font-size:15px;color:var(--text2);line-height:1.85;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;" id="fcComment"></div>
   </div>
 
   <!-- フローチャート本体 -->
   <div class="card">
     <div class="card-label">FLOWCHART</div>
-    <div id="fcFlavorNote" style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);"></div>
+    <div id="fcFlavorNote" style="font-size:14px;color:var(--text3);line-height:1.7;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);"></div>
     <div id="flowchartSteps"></div>
     <div id="autoSummary" style="margin-top:14px;"></div>
   </div>
@@ -438,7 +444,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <!-- 業務内訳 -->
   <div class="card" id="breakdownCard" style="display:none;">
     <div class="card-label">WORK BREAKDOWN</div>
-    <div class="card-title" style="font-size:15px;margin-bottom:14px;">あなたの業務の内訳</div>
+    <div class="card-title" style="font-size:17px;margin-bottom:14px;">あなたの業務の内訳</div>
     <div id="breakdownBars"></div>
     <div class="breakdown-insight" id="breakdownInsight"></div>
   </div>
@@ -483,8 +489,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="card">
     <div class="card-label">STEP 8｜効果試算</div>
     <div class="card-title">選んだ業務を改善した場合の効果を試算します</div>
-    <div id="roiContext" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:13px;line-height:1.85;display:none;">
-      <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">YOUR SELECTION</div>
+    <div id="roiContext" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:15px;line-height:1.85;display:none;">
+      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">YOUR SELECTION</div>
       <div id="roiContextContent"></div>
     </div>
     <div class="card-hint">現在の作業量を入力してください。</div>
@@ -515,7 +521,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="card">
     <div class="card-label">STEP 9｜これが生成されます</div>
     <div class="card-title" id="outTitle">これが生成されます</div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.8;" id="outDesc"></div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.8;" id="outDesc"></div>
   </div>
 
   <!-- プロンプトプレビュー -->
@@ -526,9 +532,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="promptDesc"></div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">▼ プレビュー（冒頭のみ）</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;">▼ プレビュー（冒頭のみ）</div>
       <div class="prompt-box" id="promptTxt" style="opacity:.7;"></div>
-      <div style="font-size:11px;color:var(--text3);margin-top:6px;">※ 全文は購入後に表示・コピーできます</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:6px;">※ 全文は購入後に表示・コピーできます</div>
     </div>
   </div>
 
@@ -539,9 +545,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div><div class="output-block-title">OCR転記プロンプト（写真→データ変換用）</div></div>
     </div>
     <div class="output-block-body">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">▼ プレビュー（冒頭のみ）</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;">▼ プレビュー（冒頭のみ）</div>
       <div class="prompt-box" id="ocrTxt" style="opacity:.7;"></div>
-      <div style="font-size:11px;color:var(--text3);margin-top:6px;">※ 全文は購入後に表示・コピーできます</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:6px;">※ 全文は購入後に表示・コピーできます</div>
     </div>
   </div>
 
@@ -553,7 +559,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="excelDesc"></div>
-      <div style="font-size:11px;color:var(--text3);margin-top:8px;">✅ ダウンロードは購入後に可能になります</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:8px;">✅ ダウンロードは購入後に可能になります</div>
     </div>
   </div>
 
@@ -566,14 +572,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="output-block-body">
       <div class="output-desc">入力いただいた手順と診断結果をもとにPowerPointを生成します。</div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
-        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド1：表紙（業種・ポジション）</div>
-        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド2：課題・困りごと</div>
-        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド3：現状の業務フロー（たたき台）</div>
-        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド4：整理・改善のポイント</div>
-        <div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド5：このたたき台の使い方</div>
-        <div style="font-size:12px;color:var(--text2);padding:6px 0;">📌 スライド6：なぜ継続更新が必要か</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド1：表紙（業種・ポジション）</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド2：課題・困りごと</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド3：現状の業務フロー（たたき台）</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド4：整理・改善のポイント</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド5：このたたき台の使い方</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;">📌 スライド6：なぜ継続更新が必要か</div>
       </div>
-      <div style="font-size:11px;color:var(--text3);">✅ 購入後すぐにダウンロードが始まります</div>
+      <div style="font-size:13px;color:var(--text3);">✅ 購入後すぐにダウンロードが始まります</div>
     </div>
   </div>
 
@@ -588,7 +594,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="card">
     <div class="card-label">COMPLETE</div>
     <div class="card-title" id="dlTitle">あなた専用の成果物が完成しました</div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.8;" id="dlDesc"></div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.8;" id="dlDesc"></div>
   </div>
 
   <!-- プロンプト（フル） -->
@@ -635,7 +641,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="dlExcelDesc"></div>
-      <div style="font-size:12px;color:var(--green);background:rgba(58,201,138,.08);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;">
+      <div style="font-size:14px;color:var(--green);background:rgba(58,201,138,.08);border:1px solid rgba(58,201,138,.2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;">
         💡 このExcelファイルの最後の「README＆プロンプト」シートに、AIへの指示プロンプトとOCRプロンプトも入っています。
       </div>
       <div class="output-steps">
@@ -679,15 +685,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <!-- 課金モーダル（最終確認） -->
 <div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeModal()">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:440px;width:100%;animation:fadeIn .2s ease;">
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">CONFIRM</div>
-    <div style="font-size:17px;font-weight:700;margin-bottom:14px;">この内容で成果物を生成しますか？</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">CONFIRM</div>
+    <div style="font-size:19px;font-weight:700;margin-bottom:14px;">この内容で成果物を生成しますか？</div>
     <!-- 選択内容のサマリー -->
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:2;" id="modalSelections"></div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;font-size:14px;color:var(--text2);line-height:2;" id="modalSelections"></div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:20px;">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">含まれるもの：</div>
-      <div id="modalContents" style="font-size:12px;color:var(--text2);line-height:1.9;"></div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;">含まれるもの：</div>
+      <div id="modalContents" style="font-size:14px;color:var(--text2);line-height:1.9;"></div>
     </div>
-    <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:12px;margin-bottom:20px;font-size:12px;color:var(--text2);line-height:1.7;">
+    <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:12px;margin-bottom:20px;font-size:14px;color:var(--text2);line-height:1.7;">
       💳 <strong style="color:var(--accent);">このコンテンツは有料です（¥9,800・買い切り）</strong><br>
       購入後、何度でも再診断・再生成できます。更新料はありません。
     </div>
@@ -703,6 +709,62 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <script>
 // ===== APIキー設定（本番ではサーバー経由に変更すること） =====
 const WORKER_URL = 'https://anthropic-proxy.kokoda-mu.workers.dev';
+
+// ===== リトライ付きAPI呼び出し（タイムアウト30秒・最大2回リトライ） =====
+async function fetchWithRetry(body, maxRetries=2){
+  let lastErr;
+  for(let attempt=0;attempt<maxRetries;attempt++){
+    try{
+      const res=await Promise.race([
+        fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error('タイムアウト（30秒）')),30000))
+      ]);
+      if(!res.ok)throw new Error('APIエラー: HTTP '+res.status);
+      const data=await res.json();
+      if(!data||!data.content||data.content.length===0)throw new Error('レスポンス不正（contentなし）');
+      return data;
+    }catch(e){
+      lastErr=e;
+      if(attempt<maxRetries-1){
+        console.warn(`APIリトライ ${attempt+1}/${maxRetries}:`,e.message);
+        await new Promise(r=>setTimeout(r,2000*(attempt+1)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+// ===== APIエラーモーダル表示 =====
+function showApiError(e, onRetry){
+  const isTimeout=e.message.includes('タイムアウト');
+  const isNetwork=e.message.includes('Failed to fetch')||e.message.includes('NetworkError');
+  let title='AI分析に失敗しました',guide='';
+  if(isTimeout){
+    title='⏱ 応答に時間がかかっています';
+    guide='<li>ネットワーク接続を確認してください</li><li>しばらく待ってから再試行してください</li><li>手順の文字数が多い場合は短く整理してみてください</li>';
+  }else if(isNetwork){
+    title='🌐 ネットワークエラー';
+    guide='<li>インターネット接続を確認してください</li><li>VPN使用中の場合はオフにしてお試しください</li>';
+  }else{
+    guide='<li>入力内容を確認して再試行してください</li><li>問題が続く場合はページを再読み込みしてください</li>';
+  }
+  // 既存のモーダルを削除
+  document.getElementById('apiErrModal')?.remove();
+  const modal=document.createElement('div');
+  modal.id='apiErrModal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML=`<div style="background:var(--surface);border:1px solid var(--red);border-radius:8px;padding:28px;max-width:480px;width:100%;">
+    <div style="font-size:18px;font-weight:700;color:var(--red);margin-bottom:10px;">${title}</div>
+    <div style="font-size:13px;color:var(--text3);font-family:'IBM Plex Mono',monospace;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:8px 10px;margin-bottom:16px;word-break:break-all;">${e.message}</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:16px;"><strong style="color:var(--text);">対処方法：</strong><ul style="margin-top:6px;padding-left:18px;line-height:2;">${guide}</ul></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('apiErrModal').remove();goS('s-steps');uf(4);" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:14px;">← 手順を確認する</button>
+      <button id="apiErrRetryBtn" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">🔄 再試行する</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('apiErrRetryBtn').onclick=()=>{modal.remove();onRetry&&onRetry();};
+}
 
 // ===== フォールバックマッチング（AI失敗時・matched_ids空時の補完） =====
 function fallbackMatch(pain, steps){
@@ -875,9 +937,7 @@ ${rawText}
 ・入力に含まれない工程は推測して追加してよい
 ・曖昧な表現は具体化する（例「確認する」→「金額と品目が注文書と一致するか確認する」）`;
   try{
-    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:expandPrompt}]})});
-    const data=await res.json();
+    const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:expandPrompt}]});
     const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
     const parsed=JSON.parse(raw);
     return parsed.steps||[];
@@ -953,8 +1013,7 @@ ${q2_1Steps}
 
   try{
     await new Promise(r=>setTimeout(r,300));setLS(1);
-    const vres=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:validatePrompt}]})});
-    const vdata=await vres.json();
+    const vdata=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:validatePrompt}]});
     const vraw=vdata.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
     const vr=JSON.parse(vraw);
     if(!vr.is_valid && vr.issues && vr.issues.length>0){
@@ -974,7 +1033,7 @@ function showValidation(issues){
     div.className='validate-issue';
     div.innerHTML=`<div class="validate-issue-label">${issue.type==='multi_task'?'⚠ 複数業務が混在しています':'⚠ 不明なツール名が含まれています'}</div>
       <div class="validate-issue-text">${issue.message}</div>
-      ${issue.suggestion?`<div style="font-size:11px;color:var(--text3);">${issue.suggestion}</div>`:''}`;
+      ${issue.suggestion?`<div style="font-size:13px;color:var(--text3);">${issue.suggestion}</div>`:''}`;
     container.appendChild(div);
   });
   // 現在の入力をコピーして見やすくする
@@ -1018,7 +1077,7 @@ ${contextStr}困りごと：${q2Pain}
 上記の業務内容を分析し、フローチャートを作成してください。
 
 回答はJSONのみで返してください（前後の文章不要）：
-{"steps":[{"step":1,"text":"ステップの内容","automation":"×","note":"","prompt_hint":""}],"has_automation":true,"automation_count":2,"score":72,"matched_ids":[],"priority_id":"","comment":"2〜3文のコメント","flavor_note":"診断目的に合わせた一言コメント","structure_issue":false,"structure_note":""}
+{"steps":[{"step":1,"text":"ステップの内容","automation":"×","note":"","prompt_hint":""}],"has_automation":true,"automation_count":2,"score":72,"score_breakdown":{"automation_potential":80,"structure_clarity":65,"tool_availability":75,"comment":"自動化ポテンシャルは高いが手順の明確さが課題"},"matched_ids":[],"priority_id":"","comment":"2〜3文のコメント","flavor_note":"診断目的に合わせた一言コメント","structure_issue":false,"structure_note":""}
 
 ルール：
 ・stepsは入力された手順をそのまま忠実に分解してください（5〜10ステップ）
@@ -1034,10 +1093,7 @@ ${contextStr}困りごと：${q2Pain}
 
   try{
     await new Promise(r=>setTimeout(r,400));setLS(1);
-    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:matchPrompt}]})});
-    if(!res.ok){throw new Error('APIレスポンスエラー: '+res.status);}
-    const data=await res.json();
-    if(!data||!data.content||data.content.length===0){throw new Error('APIレスポンス不正: contentなし');}
+    const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:matchPrompt}]});
     const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
     try{ar=JSON.parse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
     // detectCategoryで業務名優先のマッチング補正
@@ -1060,8 +1116,7 @@ ${contextStr}困りごと：${q2Pain}
     await new Promise(r=>setTimeout(r,300));
   }catch(e){
     console.error('AI分析エラー:', e);
-    alert('AI分析に失敗しました。入力内容を確認して再度お試しください。\n\nエラー詳細: '+e.message);
-    goS('s-steps');uf(4);
+    showApiError(e, ()=>runAnalysis(steps, setLS));
     return;
   }
   showFlowchart();
@@ -1083,8 +1138,36 @@ function showFlowchart(){
   document.getElementById('fcBar').style.width=score+'%';
   document.getElementById('fcBar').style.background=color;
 
+  // スコア内訳ゲージ（score_breakdownがある場合のみ表示）
+  const sb=ar.score_breakdown;
+  const sbEl=document.getElementById('scoreBreakdown');
+  if(sb&&sbEl){
+    const items=[
+      {label:'自動化ポテンシャル',key:'automation_potential',color:'#7c5cd8'},
+      {label:'手順の明確さ',key:'structure_clarity',color:'#3a7ce8'},
+      {label:'ツール活用しやすさ',key:'tool_availability',color:'#3ac98a'},
+    ];
+    sbEl.style.display='block';
+    document.getElementById('scoreBreakdownBars').innerHTML=items.map(item=>{
+      const val=sb[item.key]||0;
+      return `<div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:13px;color:var(--text2);">${item.label}</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:${item.color};">${val}</span>
+        </div>
+        <div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${val}%;background:${item.color};border-radius:4px;transition:width 1.2s ease;"></div>
+        </div>
+      </div>`;
+    }).join('');
+    if(sb.comment){
+      document.getElementById('scoreBreakdownComment').textContent=sb.comment;
+      document.getElementById('scoreBreakdownComment').style.display='block';
+    }
+  }
+
   // 構造問題警告
-  let commentHtml=`<div style="font-size:13px;color:var(--text2);line-height:1.85;">${ar.comment||''}</div>`;
+  let commentHtml=`<div style="font-size:15px;color:var(--text2);line-height:1.85;">${ar.comment||''}</div>`;
   if(ar.structure_issue){
     commentHtml=`<div class="structure-warning">
       <div class="structure-warning-title">⚠ この業務は「作業の自動化」より先に、ファイル構造の見直しが必要です</div>
@@ -1100,7 +1183,7 @@ function showFlowchart(){
     <div class="fc-legend-item"><div class="fc-legend-dot" style="background:#e8c33a;"></div>整理すれば自動化できる</div>
     <div class="fc-legend-item"><div class="fc-legend-dot" style="background:#7c5cd8;"></div>無料AIで今すぐ自動化できる</div>
   </div>
-  <div style="font-size:11px;color:var(--text3);">${ar.flavor_note||''}</div>`;
+  <div style="font-size:13px;color:var(--text3);">${ar.flavor_note||''}</div>`;
 
   // ③ フローチャート：画像スタイルの色付きボックス
   const container=document.getElementById('flowchartSteps');
@@ -1123,7 +1206,7 @@ function showFlowchart(){
       noteEl.className='fc-note';
       let noteHtml='';
       if(s.note)noteHtml+=`<div style="margin-bottom:${s.prompt_hint?'6px':'0'};">${isAuto?'⚡':'🔧'} ${s.note}</div>`;
-      if(s.prompt_hint)noteHtml+=`<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:6px 8px;margin-top:4px;"><div style="font-size:9px;letter-spacing:.1em;color:#9080c8;margin-bottom:3px;">▼ AIへの指示例（コピーして使えます）</div><div style="color:#c8bef8;">${s.prompt_hint}</div></div>`;
+      if(s.prompt_hint)noteHtml+=`<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:6px 8px;margin-top:4px;"><div style="font-size:11px;letter-spacing:.1em;color:#9080c8;margin-bottom:3px;">▼ AIへの指示例（コピーして使えます）</div><div style="color:#c8bef8;">${s.prompt_hint}</div></div>`;
       noteEl.innerHTML=noteHtml;
       wrap.appendChild(noteEl);
     }
@@ -1142,11 +1225,11 @@ function showFlowchart(){
   const sumEl=document.getElementById('autoSummary');
   if(hasAuto){
     sumEl.innerHTML=`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(124,92,216,.1);border:1px solid rgba(124,92,216,.3);border-radius:var(--radius);margin-top:4px;">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:#9d7fe8;">${count}</div>
-      <div><div style="font-size:12px;font-weight:700;color:var(--text);">箇所に自動化の可能性があります</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;">下にAIの指示例が表示されます</div></div></div>`;
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;color:#9d7fe8;">${count}</div>
+      <div><div style="font-size:14px;font-weight:700;color:var(--text);">箇所に自動化の可能性があります</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:2px;">下にAIの指示例が表示されます</div></div></div>`;
   }else{
-    sumEl.innerHTML=`<div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-top:4px;font-size:12px;color:var(--text2);line-height:1.7;">
+    sumEl.innerHTML=`<div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-top:4px;font-size:14px;color:var(--text2);line-height:1.7;">
       <span style="color:var(--yellow);font-weight:700;">📋 現時点では自動化よりも、業務の見える化・マニュアル化が優先です。</span><br>まず手順をドキュメント化することで、改善の基盤ができます。</div>`;
   }
 
@@ -1198,7 +1281,7 @@ function showFlowchart(){
     buildSelectScreen(matched);
     const btnLabel=matched.length===1?`「${matched[0].name}」シートを生成する →`:'候補を選ぶ →';
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
-      <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
+      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
       <div class="branch-cta-title">${matched.length===1?`「${matched[0].name}」のシートを生成できます`:'まず1つ、着手する業務を選びます'}</div>
       <div class="branch-cta-desc">${matched.length===1?'診断結果からこの業務がマッチしました。次のステップで内容を確認できます。':'診断で見つかった候補の中から、今いちばん取り組むものを1つ選んでください。'}</div>
       <button class="btn-p" onclick="goSelectBeforePay()">${btnLabel}</button>
@@ -1206,7 +1289,7 @@ function showFlowchart(){
   }else if(hasAuto && !hasMatchedTemplate){
     buildManualSelectScreen();
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:rgba(124,92,216,.5);">
-      <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:#9d7fe8;letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
+      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:#9d7fe8;letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
       <div class="branch-cta-title">まず整理から始める範囲を選びます</div>
       <div class="branch-cta-desc">いきなり自動化せず、手順の見える化から始める業務を1つ決めてください。</div>
       <button class="btn-p" style="background:#7c5cd8;" onclick="goManualChoiceBeforePay()">候補を選ぶ →</button>
@@ -1214,7 +1297,7 @@ function showFlowchart(){
   }else{
     buildManualSelectScreen();
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--yellow);">
-      <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--yellow);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
+      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--yellow);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
       <div class="branch-cta-title">まず整理から始める範囲を選びます</div>
       <div class="branch-cta-desc">いきなり自動化せず、手順の見える化から始める業務を1つ決めてください。</div>
       <button class="btn-p" style="background:var(--yellow);color:#0f1117;" onclick="goManualChoiceBeforePay()">候補を選ぶ →</button>
@@ -1246,7 +1329,7 @@ function buildSelectScreen(tasks){
     if(task.hasPrompt)chips.push('<span class="tool-chip chip-prompt">📋 プロンプト</span>');
     if(task.hasOcr)chips.push('<span class="tool-chip chip-ocr">📷 OCR</span>');
     card.innerHTML=`<div class="tool-select-title">${task.name}
-      ${isRec?'<span style="font-size:10px;background:rgba(232,124,58,.15);color:var(--accent);padding:2px 9px;border-radius:10px;margin-left:6px;font-weight:700;">⭐ AIのおすすめ</span>':''}
+      ${isRec?'<span style="font-size:12px;background:rgba(232,124,58,.15);color:var(--accent);padding:2px 9px;border-radius:10px;margin-left:6px;font-weight:700;">⭐ AIのおすすめ</span>':''}
     </div>
     <div class="tool-select-desc">${task.mechanism}</div>
     <div class="tool-select-items">${chips.join('')}</div>`;
@@ -1369,9 +1452,9 @@ function calcROI(){
   const roi=Math.round(yv/9800*10)/10;
   roiMonthlyHours=sm.toFixed(1);
   document.getElementById('roiNums').innerHTML=`
-    <div class="roi-nc"><div class="roi-n" style="color:var(--accent)">${sm.toFixed(1)}<span style="font-size:10px">h</span></div><div class="roi-l">月間削減時間</div></div>
-    <div class="roi-nc"><div class="roi-n" style="color:var(--green)">${(yv/10000).toFixed(1)}<span style="font-size:10px">万円</span></div><div class="roi-l">年間削減コスト</div></div>
-    <div class="roi-nc"><div class="roi-n" style="color:var(--yellow)">${roi}<span style="font-size:10px">倍</span></div><div class="roi-l">ROI</div></div>`;
+    <div class="roi-nc"><div class="roi-n" style="color:var(--accent)">${sm.toFixed(1)}<span style="font-size:12px">h</span></div><div class="roi-l">月間削減時間</div></div>
+    <div class="roi-nc"><div class="roi-n" style="color:var(--green)">${(yv/10000).toFixed(1)}<span style="font-size:12px">万円</span></div><div class="roi-l">年間削減コスト</div></div>
+    <div class="roi-nc"><div class="roi-n" style="color:var(--yellow)">${roi}<span style="font-size:12px">倍</span></div><div class="roi-l">ROI</div></div>`;
   document.getElementById('roiSum').innerHTML=`現在 <strong>${count}件×${time}分×${staff}人＝月${mh.toFixed(1)}時間</strong> の作業のうち、<strong style="color:var(--green)">月${sm.toFixed(1)}時間（年間${sy.toFixed(0)}時間）</strong> の削減が見込めます。年間 <strong style="color:var(--green)">${(yv/10000).toFixed(1)}万円</strong> 相当・ROI <strong style="color:var(--yellow)">${roi}倍</strong>。`;
   document.getElementById('roiBox').style.display='block';
   const btn=document.getElementById('btnROI');
@@ -1391,8 +1474,8 @@ function showPreview(){
     const previewHtml=previewLines.map((l,i)=>`<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${l.trim().replace(/^[\d\.\-\s]+/,'')}`).join('<br>');
     document.getElementById('outDesc').innerHTML=`${ind}・${pos} 向けの業務フロー整理ガイド（PowerPoint）が生成されます。<br><br>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-top:8px;">
-        <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">入力された手順（スライドに反映されます）</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.9;">${previewHtml}${q2_1Steps.split('\n').filter(s=>s.trim()).length>5?'<br><span style="color:var(--text3);">…他 '+(q2_1Steps.split('\n').filter(s=>s.trim()).length-5)+'ステップ</span>':''}</div>
+        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">入力された手順（スライドに反映されます）</div>
+        <div style="font-size:14px;color:var(--text2);line-height:1.9;">${previewHtml}${q2_1Steps.split('\n').filter(s=>s.trim()).length>5?'<br><span style="color:var(--text3);">…他 '+(q2_1Steps.split('\n').filter(s=>s.trim()).length-5)+'ステップ</span>':''}</div>
       </div>`;
     document.getElementById('blockPPTX').style.display='block';
     console.log('manual生成データ', {pain: q2Pain, steps: q2_1Steps, reason: selectedReason});
@@ -1417,8 +1500,8 @@ function showPreview(){
     document.getElementById('blockOcr').style.display='block';
   }
   if(task.hasExcel){
-    const sheetList=`<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:2;">
-      <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">含まれるシート</div>
+    const sheetList=`<div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:2;">
+      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">含まれるシート</div>
       ✅ メイン管理シート（すぐ使える標準版）<br>
       ✅ フローチャート（自動化区分・AIヒント付き）<br>
       ✅ AI活用ポイント（工程別の指示例）<br>
@@ -1449,8 +1532,8 @@ function showActualOutput(){
     document.getElementById('dlBlockOcr').style.display='block';
   }
   if(task.hasExcel&&task.excelFn){
-    const sheetListDl=`<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:2;">
-      <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">含まれるシート</div>
+    const sheetListDl=`<div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:2;">
+      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">含まれるシート</div>
       ✅ メイン管理シート（すぐ使える標準版）<br>
       ✅ フローチャート（自動化区分・AIヒント付き）<br>
       ✅ AI活用ポイント（工程別の指示例）<br>
@@ -1897,6 +1980,28 @@ async function genExpenseExcel(ind,pos,task,ar){
   const tot1=ws1.addRow(['合計','','','',null,'','','','','','','','','']);
   tot1.getCell(5).value=fml(`SUM(E${S}:E${E})`); tot1.height=20;
   tot1.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=NC){c.fill=XS.fill(XS.C.LGRAY);c.font={bold:true,size:11,color:{argb:XS.C.NAVY}};c.border={top:{style:'medium',color:{argb:XS.C.ORANGE}}};}});
+
+  // ===== 条件付き書式（ExcelJS addConditionalFormatting） =====
+  // H列：未来日付 → 赤背景＋白太字
+  ws1.addConditionalFormatting({ref:`H${S}:H${E}`,rules:[{type:'expression',formulae:[`$H${S}="NG：未来日付"`],priority:1,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFF4444'}},font:{bold:true,color:{argb:'FFFFFFFF'}}}]});
+  // L列：NG → 赤背景
+  ws1.addConditionalFormatting({ref:`L${S}:L${E}`,rules:[{type:'expression',formulae:[`$L${S}="NG"`],priority:1,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFF4444'}},font:{bold:true,color:{argb:'FFFFFFFF'}}},{type:'expression',formulae:[`$L${S}="要確認"`],priority:2,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFFCC00'}},font:{bold:true,color:{argb:'FF663300'}}}]});
+  // I列：金額チェック 要確認 → 黄
+  ws1.addConditionalFormatting({ref:`I${S}:I${E}`,rules:[{type:'containsText',operator:'containsText',text:'要確認',priority:1,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFFEE99'}}}]});
+  // J列：添付チェック NG → 赤
+  ws1.addConditionalFormatting({ref:`J${S}:J${E}`,rules:[{type:'containsText',operator:'containsText',text:'NG',priority:1,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFF4444'}},font:{bold:true,color:{argb:'FFFFFFFF'}}}]});
+
+  // ===== データ入力規則（ドロップダウン＋必須チェック） =====
+  // C列：費目ドロップダウン
+  for(let i=0;i<rows;i++){
+    ws1.getCell(`C${S+i}`).dataValidation={type:'list',formulae:['"交通費,宿泊費,会議費,接待費,消耗品費,通信費,研修費,その他"'],showErrorMessage:true,error:'リストから選択してください',errorTitle:'入力エラー'};
+    // F列：添付書類ドロップダウン
+    ws1.getCell(`F${S+i}`).dataValidation={type:'list',formulae:['"あり,なし"'],showErrorMessage:true,error:'「あり」または「なし」を選択してください',errorTitle:'入力エラー'};
+    // G列：支払方法ドロップダウン
+    ws1.getCell(`G${S+i}`).dataValidation={type:'list',formulae:['"現金,法人カード,立替"'],showErrorMessage:true,error:'リストから選択してください',errorTitle:'入力エラー'};
+    // E列：金額は正の数値のみ
+    ws1.getCell(`E${S+i}`).dataValidation={type:'whole',operator:'greaterThan',formulae:[0],showErrorMessage:true,error:'正の整数を入力してください',errorTitle:'入力エラー'};
+  }
 
   // Sheet2: 規程設定
   const ws2=wb.addWorksheet('規程設定');
