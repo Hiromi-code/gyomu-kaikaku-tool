@@ -822,48 +822,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 // ===== APIキー設定（本番ではサーバー経由に変更すること） =====
 const WORKER_URL = 'https://anthropic-proxy.kokoda-mu.workers.dev';
 
-// ===== 堅牢なJSONパース（LLMの改行混入・末尾カンマ等に対応） =====
-function safeJsonParse(raw) {
-  // ① ```json ... ``` フェンスを除去
-  let s = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-
-  // ② 最外のJSONオブジェクト/配列を抽出（前後のゴミを除去）
-  const objStart = s.indexOf('{');
-  const arrStart = s.indexOf('[');
-  let startIdx = -1;
-  if (objStart !== -1 && (arrStart === -1 || objStart < arrStart)) startIdx = objStart;
-  else if (arrStart !== -1) startIdx = arrStart;
-  if (startIdx > 0) s = s.slice(startIdx);
-  const lastBrace = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
-  if (lastBrace !== -1) s = s.slice(0, lastBrace + 1);
-
-  // ③ まず素直にパース試行
-  try { return JSON.parse(s); } catch (_) {}
-
-  // ④ JSON文字列値内の生改行をエスケープして再試行
-  //    " ... " の間にある改行・タブ・制御文字を \n \t に置換
-  let fixed = '';
-  let inStr = false;
-  let escape = false;
-  for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    if (escape) { fixed += ch; escape = false; continue; }
-    if (ch === '\\') { fixed += ch; escape = true; continue; }
-    if (ch === '"') { inStr = !inStr; fixed += ch; continue; }
-    if (inStr) {
-      if (ch === '\n') { fixed += '\\n'; continue; }
-      if (ch === '\r') { fixed += '\\r'; continue; }
-      if (ch === '\t') { fixed += '\\t'; continue; }
-    }
-    fixed += ch;
-  }
-  try { return JSON.parse(fixed); } catch (_) {}
-
-  // ⑤ 末尾カンマ除去して再試行
-  const noTrailing = fixed.replace(/,\s*([\]}])/g, '$1');
-  return JSON.parse(noTrailing); // ここで失敗したら呼び出し元にthrow
-}
-
 // ===== リトライ付きAPI呼び出し（タイムアウト30秒・最大2回リトライ） =====
 async function fetchWithRetry(body, maxRetries=2){
   let lastErr;
@@ -1122,8 +1080,8 @@ ${rawText}
 ・曖昧な表現は具体化する（例「確認する」→「金額と品目が注文書と一致するか確認する」）`;
   try{
     const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:expandPrompt}]});
-    const raw=data.content.map(i=>i.text||'').join('');
-    const parsed=safeJsonParse(raw);
+    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(raw);
     return parsed.steps||[];
   }catch(e){return null;}
 }
@@ -1198,8 +1156,8 @@ ${q2_1Steps}
   try{
     await new Promise(r=>setTimeout(r,300));setLS(1);
     const vdata=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:validatePrompt}]});
-    const vraw=vdata.content.map(i=>i.text||'').join('');
-    const vr=safeJsonParse(vraw);
+    const vraw=vdata.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const vr=JSON.parse(vraw);
     if(!vr.is_valid && vr.issues && vr.issues.length>0){
       showValidation(vr.issues);
       return;
@@ -1278,8 +1236,8 @@ ${contextStr}困りごと：${q2Pain}
   try{
     await new Promise(r=>setTimeout(r,400));setLS(1);
     const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:matchPrompt}]});
-    const raw=data.content.map(i=>i.text||'').join('');
-    try{ar=safeJsonParse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
+    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    try{ar=JSON.parse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
     // detectCategoryで業務名優先のマッチング補正
     const detected=detectCategory(taskName,q2Pain,steps);
     if(detected.length>0){
@@ -1482,11 +1440,11 @@ function showFlowchart(){
   if(hasAuto && hasMatchedTemplate){
     const matched=ar.matched_ids.map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
     buildSelectScreen(matched);
-    const btnLabel=matched.length===1?`「${matched[0].name}」シートを生成する →`:'候補を選ぶ →';
+    const btnLabel='候補を選ぶ →';
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
       <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
-      <div class="branch-cta-title">${matched.length===1?`「${matched[0].name}」のシートを生成できます`:'まず1つ、着手する業務を選びます'}</div>
-      <div class="branch-cta-desc">${matched.length===1?'診断結果からこの業務がマッチしました。次のステップで内容を確認できます。':'診断で見つかった候補の中から、今いちばん取り組むものを1つ選んでください。'}</div>
+      <div class="branch-cta-title">まず1つ、アウトプットの方向を選びます</div>
+      <div class="branch-cta-desc">Excelテンプレートで即着手するか、PowerPointで手順を整理してから進めるか選べます。</div>
       <button class="btn-p" onclick="goSelectBeforePay()">${btnLabel}</button>
     </div>`;
   }else if(hasAuto && !hasMatchedTemplate){
@@ -1517,13 +1475,18 @@ function buildSelectScreen(tasks){
   document.getElementById('btnSelect').disabled=true;
   document.getElementById('reasonBlock').style.display='none';
   document.querySelectorAll('#reasonGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
+
+  // 1件マッチ時はPPTX手順書を2枚目として追加して選択を有意義にする
+  const showPptxAlt = tasks.length===1;
   document.getElementById('selectTitle').textContent=
     tasks.length>1?`「${tasks.map(t=>t.name).join('」か「')}」どちらから始めますか？`
-    :tasks.length===1?`「${tasks[0].name}」のシートを生成できます`:'業務を選んでください';
+    :`「${tasks[0].name}」か、まず手順書を作るか選んでください`;
   document.getElementById('selectHint').textContent=
-    tasks.length===1
-    ?'診断結果からこの業務がマッチしました。カードをタップして選択し、次に進んでください。'
-    :'診断結果から絞り込まれた候補です。1つ選んでください。';
+    tasks.length>1
+    ?'診断結果から絞り込まれた候補です。1つ選んでください。'
+    :'Excelテンプレートで即使用するか、先にPowerPointで手順を整理してから進めるか選べます。';
+
+  // Excelテンプレートカード
   tasks.forEach(task=>{
     const card=document.createElement('div');
     card.className='tool-select-card';
@@ -1540,12 +1503,37 @@ function buildSelectScreen(tasks){
     card.onclick=()=>{
       document.querySelectorAll('.tool-select-card').forEach(c=>c.classList.remove('selected'));
       card.classList.add('selected');selectedToolId=task.id;
+      payRoute='auto';
       document.getElementById('reasonBlock').style.display='block';
       document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
       checkSelectReady();
     };
     container.appendChild(card);
   });
+
+  // 1件マッチ時：PPTX手順書カードを2枚目として追加
+  if(showPptxAlt){
+    const pptxCard=document.createElement('div');
+    pptxCard.className='tool-select-card';
+    pptxCard.innerHTML=`
+      <div class="tool-select-title">まずPowerPointで手順を整理する
+        <span style="font-size:12px;background:rgba(124,92,216,.15);color:#9d7fe8;padding:2px 9px;border-radius:10px;margin-left:6px;font-weight:700;">丁寧に進める</span>
+      </div>
+      <div class="tool-select-desc">業務フローの見える化・運用ルールの言語化から始めます。例外が多い・担当者依存が強い業務に適しています。</div>
+      <div class="tool-select-items">
+        <span class="tool-chip" style="background:rgba(124,92,216,.15);color:#9d7fe8;border:1px solid rgba(124,92,216,.3);">📋 PowerPoint</span>
+        <span class="tool-chip" style="background:rgba(124,92,216,.15);color:#9d7fe8;border:1px solid rgba(124,92,216,.3);">📖 手順書</span>
+      </div>`;
+    pptxCard.onclick=()=>{
+      document.querySelectorAll('.tool-select-card').forEach(c=>c.classList.remove('selected'));
+      pptxCard.classList.add('selected');selectedToolId='pptx_manual';
+      payRoute='manual';
+      document.getElementById('reasonBlock').style.display='block';
+      document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
+      checkSelectReady();
+    };
+    container.appendChild(pptxCard);
+  }
 }
 
 function buildManualSelectScreen(){
@@ -1575,7 +1563,7 @@ function buildManualSelectScreen(){
   });
 }
 
-function goSelectBeforePay(){payRoute='auto';goS('s-select');uf(7);}
+function goSelectBeforePay(){goS('s-select');uf(7);} // payRouteはカード選択時にセット
 function goManualChoiceBeforePay(){payRoute='manual';goS('s-select');uf(7);}
 
 function selReason(btn,v){
