@@ -1875,7 +1875,7 @@ async function genManualPPTX(){
         const ss=pptx.addSlide();
         ss.background={color:bg};
         // ステップ番号アクセントバー
-        ss.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.18,h:7.2,fill:{color:accent},line:{color:accent}});
+        ss.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.18,h:7.0,fill:{color:accent},line:{color:accent}});
         ss.addText(`STEP ${index+1}：${step.title}`,{x:0.4,y:0.3,w:8.9,h:0.55,fontSize:20,bold:true,color:dark,wrap:true});
         // 目的
         ss.addShape(pptx.ShapeType.rect,{x:0.4,y:1.05,w:1.1,h:0.28,fill:{color:accent},line:{color:accent},rounding:true});
@@ -1922,7 +1922,7 @@ async function genManualPPTX(){
         return;
       }
       chunk.forEach((step,i)=>{
-        const y=1.35+i*2.8;
+        const y=1.35+i*1.65;
         const lcolor=step.automation==='◎'?accent:'D4890A';
         // ステップ名ボックス
         sImp.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.42,fill:{color:'F5F6FA'},line:{color:lcolor,pt:1.5}});
@@ -1933,14 +1933,14 @@ async function genManualPPTX(){
           {x:0.55,y:y+0.5,w:8.6,h:0.4,fontSize:10,color:lcolor,wrap:true,valign:'top'});
         // プロンプト例ボックス（高さ1.6"確保）
         const promptY=y+1.05;
-        sImp.addShape(pptx.ShapeType.rect,{x:0.4,y:promptY,w:8.9,h:1.6,fill:{color:'F0F4FF'},line:{color:blue,pt:1}});
+        sImp.addShape(pptx.ShapeType.rect,{x:0.4,y:promptY,w:8.9,h:0.85,fill:{color:'F0F4FF'},line:{color:blue,pt:1}});
         sImp.addText('▼ プロンプト例（このままコピーして使えます）',
           {x:0.55,y:promptY+0.08,w:8.5,h:0.25,fontSize:9,bold:true,color:blue});
         const promptText=step.prompt_hint
           ? safe(step.prompt_hint)
           : `以下の「${safe(step.text)}」の手順を整理し、判断基準とよくあるイレギュラー対応を箇条書きで教えてください。`;
         sImp.addText(promptText,
-          {x:0.55,y:promptY+0.4,w:8.5,h:1.1,fontSize:10,color:'1A3A7A',wrap:true,valign:'top'});
+          {x:0.55,y:promptY+0.28,w:8.5,h:0.52,fontSize:10,color:'1A3A7A',wrap:true,valign:'top'});
       });
     });
 
@@ -2005,15 +2005,15 @@ async function genManualPPTX(){
       dynSteps.push('③ 月1回、手順書を見直すタイミングをカレンダーに入れる');
     }
     dynSteps.forEach((text,i)=>{
-      const y=1.05+i*1.35;
+      const y=1.05+i*1.0;
       s7.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:0.5,h:0.5,fill:{color:accent},line:{color:accent}});
       s7.addText(String(i+1),{x:0.4,y:y,w:0.5,h:0.5,fontSize:16,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
       s7.addText(text,{x:1.05,y:y,w:8.3,h:0.5,fontSize:13,color:text2,valign:'middle',wrap:true});
     });
-    s7.addShape(pptx.ShapeType.rect,{x:0.4,y:5.2,w:9,h:0.7,fill:{color:'FFF8F3'},line:{color:accent,pt:1}});
+    s7.addShape(pptx.ShapeType.rect,{x:0.4,y:4.3,w:9,h:0.7,fill:{color:'FFF8F3'},line:{color:accent,pt:1}});
     s7.addText(
       'まず1つ目だけ今週中に終わらせてください。完璧でなくてよい。「書いた」ことが第一歩です。',
-      {x:0.6,y:5.25,w:8.7,h:0.6,fontSize:11,color:accent,valign:'middle',wrap:true}
+      {x:0.6,y:4.35,w:8.7,h:0.6,fontSize:11,color:accent,valign:'middle',wrap:true}
     );
 
     // Slide 8: 次のアクション（診断スコアと構造課題ベース）
@@ -2078,15 +2078,15 @@ async function genManualPPTX(){
         {text:'変更内容',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
         {text:'担当者',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
       ],
+      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
+      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
+      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
       [
         {text:'v1.0',options:{align:'center',color:text2}},
         {text:today,options:{align:'center',color:text2}},
         {text:'たたき台ダウンロード',options:{color:text2}},
         {text:'',options:{color:text2}},
       ],
-      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
-      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
-      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
     ];
     s9.addTable(histRows,{
       x:0.4,y:3.1,w:9.2,colW:[0.8,1.5,5.2,1.7],
