@@ -1675,6 +1675,52 @@ async function execPayment(){
   }else{
     const success=await genManualPPTX();
     if(success){
+      // 診断結果ベースで「最初の3ステップ」と「次のアクション」を動的更新
+      (function(){
+        const safe=(v)=>v?String(v):'';
+        const hiPri=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎');
+        const midPri=((ar&&ar.steps)||[]).filter(s=>s.automation==='△');
+        const allPri=[...hiPri,...midPri];
+        // 最初の3ステップ
+        const steps=[];
+        if(allPri.length>0){
+          steps.push(`① 「${safe(allPri[0].text)}」の手順を書き出し、判断基準（OK/NG）を明記する`);
+        }else{
+          steps.push('① 今の手順を5〜10ステップで書き出す（このPowerPointを埋める）');
+        }
+        if(allPri.length>1){
+          steps.push(`② 「${safe(allPri[1].text)}」によくある例外パターンを書き足す`);
+        }else{
+          steps.push('② 各ステップに「こういう時はこうする」の判断基準を追記する');
+        }
+        if(ar&&ar.structure_issue&&ar.structure_note){
+          steps.push(`③ 構造改善：${safe(ar.structure_note).slice(0,40)}…`);
+        }else{
+          steps.push('③ 月1回、手順書を見直すタイミングをカレンダーに入れる');
+        }
+        document.getElementById('manualFirstSteps').innerHTML=
+          `<strong>最初の3ステップ</strong><br><br>${steps.join('<br>')}`;
+        // 次のアクション（診断スコアで分岐）
+        const score=ar&&ar.score?ar.score:0;
+        let actions='';
+        if(score>=70){
+          const firstStep=allPri.length>0?`「${safe(allPri[0].text)}」`:'この手順';
+          actions=
+            `・今すぐ：無料のClaude.ai / Geminiで${firstStep}のプロンプトを試す<br>`+
+            `・今週中：このPowerPointの手順スライドを自分の言葉に書き直す<br>`+
+            `・来週：チームに見せて「抜けがないか」確認してもらう`;
+        }else{
+          actions=
+            `・今すぐ：このPowerPointを開いて各スライドの空欄を埋める<br>`+
+            `・今週中：「よくある例外」を付箋に書き出し後で追記する<br>`+
+            `・来週：上長または業務担当者に「現状の課題」を共有する`;
+        }
+        if(ar&&ar.structure_issue&&ar.structure_note){
+          actions+=`<br>・中期：${safe(ar.structure_note).slice(0,50)}…（社内IT・外部相談を検討）`;
+        }
+        document.getElementById('manualNextAction').innerHTML=
+          `<strong>次のアクション・相談先</strong><br><br>${actions}`;
+      })();
       goS('s-manual');uf(9);
     }else{
       alert('ファイル生成に失敗しました。入力内容を確認して再度お試しください。');
