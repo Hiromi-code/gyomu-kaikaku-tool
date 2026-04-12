@@ -571,7 +571,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <!-- ⑨ 成果物プレビュー（課金前確認） -->
 <div class="screen" id="s-output">
   <div class="card">
-    <div class="card-label">STEP 9｜プレビュー確認</div>
+    <div class="card-label">STEP 9｜これが生成されます</div>
     <div class="card-title" id="outTitle">これが生成されます</div>
     <div style="font-size:14px;color:var(--text2);line-height:1.8;" id="outDesc"></div>
   </div>
@@ -584,7 +584,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="promptDesc"></div>
-      <div class="prompt-box" id="promptTxt"></div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;">▼ プレビュー（冒頭のみ）</div>
+      <div class="prompt-box" id="promptTxt" style="opacity:.7;"></div>
+      <div style="font-size:13px;color:var(--text3);margin-top:6px;">※ 全文は購入後に表示・コピーできます</div>
     </div>
   </div>
 
@@ -595,7 +597,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div><div class="output-block-title">OCR転記プロンプト（写真→データ変換用）</div></div>
     </div>
     <div class="output-block-body">
-      <div class="prompt-box" id="ocrTxt"></div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;">▼ プレビュー（冒頭のみ）</div>
+      <div class="prompt-box" id="ocrTxt" style="opacity:.7;"></div>
+      <div style="font-size:13px;color:var(--text3);margin-top:6px;">※ 全文は購入後に表示・コピーできます</div>
     </div>
   </div>
 
@@ -607,7 +611,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="excelDesc"></div>
-
+      <div style="font-size:13px;color:var(--text3);margin-top:8px;">✅ ダウンロードは購入後に可能になります</div>
     </div>
   </div>
 
@@ -630,13 +634,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド8：次に誰に相談するか</div>
         <div style="font-size:14px;color:var(--text2);padding:6px 0;">📌 スライド9：まずこれだけやってください</div>
       </div>
-      <div style="font-size:13px;color:var(--text3);">✅ 「ダウンロードする」ボタンで生成が始まります</div>
+      <div style="font-size:13px;color:var(--text3);">✅ 購入後すぐにダウンロードが始まります</div>
     </div>
   </div>
 
   <div class="nav" style="margin-top:16px;">
-    <button class="btn-s" onclick="goS('s-select');uf(7)">← 選び直す</button>
-    <button class="btn-dl" onclick="execPayment()" style="justify-content:center;">⬇ ダウンロードする</button>
+    <button class="btn-s" onclick="goS('s-select');uf(7)">戻って選び直す</button>
+    <button class="btn-p" onclick="openPayModal()">この内容で生成する →</button>
   </div>
 </div>
 
@@ -784,12 +788,81 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
+<!-- 課金モーダル（最終確認） -->
+<div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeModal()">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:440px;width:100%;animation:fadeIn .2s ease;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">CONFIRM</div>
+    <div style="font-size:19px;font-weight:700;margin-bottom:14px;">この内容で成果物を生成しますか？</div>
+    <!-- 選択内容のサマリー -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;font-size:14px;color:var(--text2);line-height:2;" id="modalSelections"></div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:20px;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;">含まれるもの：</div>
+      <div id="modalContents" style="font-size:14px;color:var(--text2);line-height:1.9;"></div>
+    </div>
+    <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:14px;color:var(--text2);line-height:1.7;">
+      💳 <strong style="color:var(--accent);">このコンテンツは有料です（¥9,800・買い切り）</strong><br>
+      購入後、何度でも再診断・再生成できます。更新料はありません。
+    </div>
+    <div class="notice" style="margin-bottom:12px;">
+      🔁 返金について<br>
+      本商品はダウンロード形式のデジタルコンテンツのため、<br>
+      ダウンロード後の返品・返金は原則お受けできません。<br>
+      ただし、ファイルが正常に開けないなどの不具合がある場合は対応いたします。
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-s" onclick="closeModal()" style="flex:1">キャンセル</button>
+      <button class="btn-dl" id="btnExec" onclick="execPayment()" style="flex:2;justify-content:center;">⬇ 生成する</button>
+    </div>
+  </div>
+</div>
 
 </div><!-- /main -->
 
 <script>
 // ===== APIキー設定（本番ではサーバー経由に変更すること） =====
 const WORKER_URL = 'https://anthropic-proxy.kokoda-mu.workers.dev';
+
+// ===== 堅牢なJSONパース（LLMの改行混入・末尾カンマ等に対応） =====
+function safeJsonParse(raw) {
+  // ① ```json ... ``` フェンスを除去
+  let s = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+
+  // ② 最外のJSONオブジェクト/配列を抽出（前後のゴミを除去）
+  const objStart = s.indexOf('{');
+  const arrStart = s.indexOf('[');
+  let startIdx = -1;
+  if (objStart !== -1 && (arrStart === -1 || objStart < arrStart)) startIdx = objStart;
+  else if (arrStart !== -1) startIdx = arrStart;
+  if (startIdx > 0) s = s.slice(startIdx);
+  const lastBrace = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
+  if (lastBrace !== -1) s = s.slice(0, lastBrace + 1);
+
+  // ③ まず素直にパース試行
+  try { return JSON.parse(s); } catch (_) {}
+
+  // ④ JSON文字列値内の生改行をエスケープして再試行
+  //    " ... " の間にある改行・タブ・制御文字を \n \t に置換
+  let fixed = '';
+  let inStr = false;
+  let escape = false;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (escape) { fixed += ch; escape = false; continue; }
+    if (ch === '\\') { fixed += ch; escape = true; continue; }
+    if (ch === '"') { inStr = !inStr; fixed += ch; continue; }
+    if (inStr) {
+      if (ch === '\n') { fixed += '\\n'; continue; }
+      if (ch === '\r') { fixed += '\\r'; continue; }
+      if (ch === '\t') { fixed += '\\t'; continue; }
+    }
+    fixed += ch;
+  }
+  try { return JSON.parse(fixed); } catch (_) {}
+
+  // ⑤ 末尾カンマ除去して再試行
+  const noTrailing = fixed.replace(/,\s*([\]}])/g, '$1');
+  return JSON.parse(noTrailing); // ここで失敗したら呼び出し元にthrow
+}
 
 // ===== リトライ付きAPI呼び出し（タイムアウト30秒・最大2回リトライ） =====
 async function fetchWithRetry(body, maxRetries=2){
@@ -1049,8 +1122,8 @@ ${rawText}
 ・曖昧な表現は具体化する（例「確認する」→「金額と品目が注文書と一致するか確認する」）`;
   try{
     const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:expandPrompt}]});
-    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(raw);
+    const raw=data.content.map(i=>i.text||'').join('');
+    const parsed=safeJsonParse(raw);
     return parsed.steps||[];
   }catch(e){return null;}
 }
@@ -1125,8 +1198,8 @@ ${q2_1Steps}
   try{
     await new Promise(r=>setTimeout(r,300));setLS(1);
     const vdata=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:validatePrompt}]});
-    const vraw=vdata.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
-    const vr=JSON.parse(vraw);
+    const vraw=vdata.content.map(i=>i.text||'').join('');
+    const vr=safeJsonParse(vraw);
     if(!vr.is_valid && vr.issues && vr.issues.length>0){
       showValidation(vr.issues);
       return;
@@ -1205,8 +1278,8 @@ ${contextStr}困りごと：${q2Pain}
   try{
     await new Promise(r=>setTimeout(r,400));setLS(1);
     const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:matchPrompt}]});
-    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
-    try{ar=JSON.parse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
+    const raw=data.content.map(i=>i.text||'').join('');
+    try{ar=safeJsonParse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
     // detectCategoryで業務名優先のマッチング補正
     const detected=detectCategory(taskName,q2Pain,steps);
     if(detected.length>0){
@@ -1533,8 +1606,8 @@ function goROI(){
   goS('s-roi');uf(8);
 }
 
-// ===== 課金モーダル（廃止・直接ダウンロードに変更） =====
-function openPayModal(){execPayment();return;/*以下は無効化*/
+// ===== 課金モーダル =====
+function openPayModal(){
   const task=payRoute==='auto'?TOP10.find(t=>t.id===selectedToolId):null;
   const taskName=task?task.name:selectedToolId?selectedToolId.replace('manual_','STEP ')+'の整理':'選択した業務';
   // 選択内容サマリー
@@ -1569,8 +1642,9 @@ function openPayModal(){execPayment();return;/*以下は無効化*/
       '⚠️ <strong style="color:var(--red);">重要：このガイドは完成品ではなく、チーム内で修正・拡張するためのたたき台です</strong>'
     ].map(s=>`✅ ${s}`).join('<br>');
   }
+  document.getElementById('payModal').style.display='flex';
 }
-function closeModal(){/* payModal廃止済 */}
+function closeModal(){document.getElementById('payModal').style.display='none';}
 
 async function execPayment(){
   closeModal();
@@ -1652,13 +1726,15 @@ function showPreview(){
 
   if(task.hasPrompt&&task.promptText){
     const full=task.promptText(ind,pos);
+    const preview=full.split('\n').slice(0,6).join('\n')+'\n\n…（続きは購入後に全文表示されます）';
     document.getElementById('promptDesc').textContent=`このプロンプトを無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けると、${ind}向けの「${task.name}」専用Excelを自動で作成してくれます。ただし、生成されたExcelもたたき台です。自社用にカスタマイズしてください。`;
-    document.getElementById('promptTxt').textContent=full;
+    document.getElementById('promptTxt').textContent=preview;
     document.getElementById('blockPrompt').style.display='block';
   }
   if(task.hasOcr&&task.ocrText){
     const fullOcr=task.ocrText(ind);
-    document.getElementById('ocrTxt').textContent=fullOcr;
+    const previewOcr=fullOcr.split('\n').slice(0,5).join('\n')+'\n\n…（続きは購入後に表示されます）';
+    document.getElementById('ocrTxt').textContent=previewOcr;
     document.getElementById('blockOcr').style.display='block';
   }
   if(task.hasExcel){
