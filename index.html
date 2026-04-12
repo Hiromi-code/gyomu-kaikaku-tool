@@ -822,6 +822,40 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 // ===== APIキー設定（本番ではサーバー経由に変更すること） =====
 const WORKER_URL = 'https://anthropic-proxy.kokoda-mu.workers.dev';
 
+// ===== 堅牢なJSONパース（LLMの改行混入・末尾カンマ等に対応） =====
+function safeJsonParse(raw) {
+  let s = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  const objStart = s.indexOf('{');
+  const arrStart = s.indexOf('[');
+  let startIdx = -1;
+  if (objStart !== -1 && (arrStart === -1 || objStart < arrStart)) startIdx = objStart;
+  else if (arrStart !== -1) startIdx = arrStart;
+  if (startIdx > 0) s = s.slice(startIdx);
+  const lastBrace = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
+  if (lastBrace !== -1) s = s.slice(0, lastBrace + 1);
+  try { return JSON.parse(s); } catch (_) {}
+  let fixed = '';
+  let inStr = false;
+  let escape = false;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (escape) { fixed += ch; escape = false; continue; }
+    if (ch === '\\') { fixed += ch; escape = true; continue; }
+    if (ch === '"') { inStr = !inStr; fixed += ch; continue; }
+    if (inStr) {
+      if (ch === '\n') { fixed += '\\n'; continue; }
+      if (ch === '\r') { fixed += '\\r'; continue; }
+      if (ch === '\t') { fixed += '\\t'; continue; }
+    }
+    fixed += ch;
+  }
+  try { return JSON.parse(fixed); } catch (_) {}
+  const noTrailing = fixed.replace(/,\s*([\]}])/g, '$1');
+  return JSON.parse(noTrailing);
+}
+
+
+
 // ===== リトライ付きAPI呼び出し（タイムアウト30秒・最大2回リトライ） =====
 async function fetchWithRetry(body, maxRetries=2){
   let lastErr;
@@ -1080,8 +1114,8 @@ ${rawText}
 ・曖昧な表現は具体化する（例「確認する」→「金額と品目が注文書と一致するか確認する」）`;
   try{
     const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:expandPrompt}]});
-    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(raw);
+    const raw=data.content.map(i=>i.text||'').join('');
+    const parsed=safeJsonParse(raw);
     return parsed.steps||[];
   }catch(e){return null;}
 }
@@ -1156,8 +1190,8 @@ ${q2_1Steps}
   try{
     await new Promise(r=>setTimeout(r,300));setLS(1);
     const vdata=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:validatePrompt}]});
-    const vraw=vdata.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
-    const vr=JSON.parse(vraw);
+    const vraw=vdata.content.map(i=>i.text||'').join('');
+    const vr=safeJsonParse(vraw);
     if(!vr.is_valid && vr.issues && vr.issues.length>0){
       showValidation(vr.issues);
       return;
@@ -1236,8 +1270,8 @@ ${contextStr}困りごと：${q2Pain}
   try{
     await new Promise(r=>setTimeout(r,400));setLS(1);
     const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:matchPrompt}]});
-    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
-    try{ar=JSON.parse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
+    const raw=data.content.map(i=>i.text||'').join('');
+    try{ar=safeJsonParse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
     // detectCategoryで業務名優先のマッチング補正
     const detected=detectCategory(taskName,q2Pain,steps);
     if(detected.length>0){
