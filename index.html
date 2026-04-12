@@ -801,7 +801,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:14px;color:var(--text2);line-height:1.7;">
       💳 <strong style="color:var(--accent);">このコンテンツは有料です（¥9,800・買い切り）</strong><br>
-      購入後、何度でも再診断・再生成できます。更新料はありません。
+      診断を元にしっかりカスタマイズしましょう。効率化の思考を手に入れてください。
     </div>
     <div class="notice" style="margin-bottom:12px;">
       🔁 返金について<br>
@@ -1841,7 +1841,7 @@ async function genManualPPTX(){
         const ss=pptx.addSlide();
         ss.background={color:bg};
         // ステップ番号アクセントバー
-        ss.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.18,h:7.5,fill:{color:accent},line:{color:accent}});
+        ss.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.18,h:7.2,fill:{color:accent},line:{color:accent}});
         ss.addText(`STEP ${index+1}：${step.title}`,{x:0.4,y:0.3,w:8.9,h:0.55,fontSize:20,bold:true,color:dark,wrap:true});
         // 目的
         ss.addShape(pptx.ShapeType.rect,{x:0.4,y:1.05,w:1.1,h:0.28,fill:{color:accent},line:{color:accent},rounding:true});
@@ -1867,32 +1867,48 @@ async function genManualPPTX(){
       });
     }
 
-    // 整理・改善のポイント（プロンプト付き）
+    // 整理・改善のポイント（2件ずつページ分割）
     const autoSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎'||s.automation==='△');
-    const s4=pptx.addSlide();
-    s4.background={color:bg};
-    s4.addText('整理・改善のポイント',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
-    if(autoSteps.length>0){
-      s4.addText('以下の工程に改善の余地があります。まず整理から始めましょう。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
-      autoSteps.slice(0,3).forEach((step,i)=>{
-        const y=1.3+i*1.65;
+    // 2件ずつチャンクに分割
+    const autoChunks=[];
+    if(autoSteps.length===0){autoChunks.push([]);}
+    else{for(let ci=0;ci<autoSteps.length;ci+=2)autoChunks.push(autoSteps.slice(ci,ci+2));}
+    autoChunks.forEach((chunk,pageIdx)=>{
+      const sImp=pptx.addSlide();
+      sImp.background={color:bg};
+      sImp.addText(pageIdx===0?'整理・改善のポイント':'整理・改善のポイント（続き）',
+        {x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
+      if(pageIdx===0){
+        sImp.addText('以下の工程に改善の余地があります。まず整理から始めましょう。',
+          {x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
+      }
+      if(chunk.length===0){
+        sImp.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',
+          {x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text2,wrap:true});
+        return;
+      }
+      chunk.forEach((step,i)=>{
+        const y=1.35+i*2.8;
         const lcolor=step.automation==='◎'?accent:'D4890A';
         // ステップ名ボックス
-        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.38,fill:{color:'F5F6FA'},line:{color:lcolor,pt:1.5}});
-        s4.addText(`STEP ${safe(step.step)}  ${safe(step.text)}`,{x:0.55,y:y+0.06,w:8.6,h:0.26,fontSize:11,bold:true,color:dark});
-        if(step.note)s4.addText(`→ ${safe(step.note)}`,{x:0.55,y:y+0.42,w:8.6,h:0.22,fontSize:10,color:lcolor});
-        // プロンプト例
-        const promptY=y+0.7;
-        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:promptY,w:8.9,h:0.85,fill:{color:'F0F4FF'},line:{color:blue,pt:1}});
-        s4.addText('▼ プロンプト例',{x:0.55,y:promptY+0.05,w:3,h:0.22,fontSize:9,bold:true,color:blue});
-        const promptText=step.promptHint
-          ? safe(step.promptHint)
+        sImp.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.42,fill:{color:'F5F6FA'},line:{color:lcolor,pt:1.5}});
+        sImp.addText(`STEP ${safe(step.step)}  ${safe(step.text)}`,
+          {x:0.55,y:y+0.07,w:8.6,h:0.28,fontSize:12,bold:true,color:dark});
+        // noteエリア（高さ確保）
+        if(step.note)sImp.addText(`→ ${safe(step.note)}`,
+          {x:0.55,y:y+0.5,w:8.6,h:0.4,fontSize:10,color:lcolor,wrap:true,valign:'top'});
+        // プロンプト例ボックス（高さ1.6"確保）
+        const promptY=y+1.05;
+        sImp.addShape(pptx.ShapeType.rect,{x:0.4,y:promptY,w:8.9,h:1.6,fill:{color:'F0F4FF'},line:{color:blue,pt:1}});
+        sImp.addText('▼ プロンプト例（このままコピーして使えます）',
+          {x:0.55,y:promptY+0.08,w:8.5,h:0.25,fontSize:9,bold:true,color:blue});
+        const promptText=step.prompt_hint
+          ? safe(step.prompt_hint)
           : `以下の「${safe(step.text)}」の手順を整理し、判断基準とよくあるイレギュラー対応を箇条書きで教えてください。`;
-        s4.addText(promptText,{x:0.55,y:promptY+0.28,w:8.5,h:0.52,fontSize:10,color:'1A3A7A',wrap:true,valign:'top'});
+        sImp.addText(promptText,
+          {x:0.55,y:promptY+0.4,w:8.5,h:1.1,fontSize:10,color:'1A3A7A',wrap:true,valign:'top'});
       });
-    }else{
-      s4.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text2,wrap:true});
-    }
+    });
 
     // たたき台の使い方
     const s5=pptx.addSlide();
@@ -1930,37 +1946,119 @@ async function genManualPPTX(){
     });
     s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:blue,align:'center',wrap:true});
 
-    // Slide 7: 最初の3ステップ
+    // Slide 7: 最初の3ステップ（診断結果ベースで動的生成）
     const s7=pptx.addSlide();
     s7.background={color:bg};
-    s7.addText('最初の3ステップ',{x:0.6,y:0.4,w:8.5,h:0.4,fontSize:24,bold:true,color:dark});
+    s7.addText('最初の3ステップ',{x:0.4,y:0.3,w:9,h:0.5,fontSize:22,bold:true,color:dark});
+    // 診断結果から優先度の高い工程を抽出
+    const hiPri=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎');
+    const midPri=((ar&&ar.steps)||[]).filter(s=>s.automation==='△');
+    const allPri=[...hiPri,...midPri];
+    const dynSteps=[];
+    if(allPri.length>0){
+      dynSteps.push(`① 「${safe(allPri[0].text)}」の手順を書き出し、判断基準（OK/NG）を明記する`);
+    }else{
+      dynSteps.push('① 今の手順を5〜10ステップで書き出す（この資料を埋める）');
+    }
+    if(allPri.length>1){
+      dynSteps.push(`② 「${safe(allPri[1].text)}」によくある例外パターンを書き足す`);
+    }else{
+      dynSteps.push('② 各ステップに「こういう時はこうする」の判断基準を追記する');
+    }
+    if(ar&&ar.structure_issue&&ar.structure_note){
+      dynSteps.push(`③ 構造改善：${safe(ar.structure_note).slice(0,50)}…`);
+    }else{
+      dynSteps.push('③ 月1回、手順書を見直すタイミングをカレンダーに入れる');
+    }
+    dynSteps.forEach((text,i)=>{
+      const y=1.05+i*1.35;
+      s7.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:0.5,h:0.5,fill:{color:accent},line:{color:accent}});
+      s7.addText(String(i+1),{x:0.4,y:y,w:0.5,h:0.5,fontSize:16,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+      s7.addText(text,{x:1.05,y:y,w:8.3,h:0.5,fontSize:13,color:text2,valign:'middle',wrap:true});
+    });
+    s7.addShape(pptx.ShapeType.rect,{x:0.4,y:5.2,w:9,h:0.7,fill:{color:'FFF8F3'},line:{color:accent,pt:1}});
     s7.addText(
-      '① マスタを決める（どのデータが正か）\n② 更新タイミングを統一する\n③ 差分チェックを週1で実施する',
-      {x:0.8,y:1.2,w:8,h:2.6,fontSize:18,color:text2,valign:'top',wrap:true}
-    );
-    s7.addShape(pptx.ShapeType.rect,{x:0.6,y:4.0,w:8.8,h:0.9,fill:{color:'FFF8F3'},line:{color:accent,pt:1}});
-    s7.addText(
-      '※①〜③が決まったら、業務フローの先頭に\n「基本ルール」として明記してください',
-      {x:0.8,y:4.05,w:8.4,h:0.8,fontSize:13,color:accent,valign:'middle',wrap:true}
+      'まず1つ目だけ今週中に終わらせてください。完璧でなくてよい。「書いた」ことが第一歩です。',
+      {x:0.6,y:5.25,w:8.7,h:0.6,fontSize:11,color:accent,valign:'middle',wrap:true}
     );
 
-    // Slide 8: 次に誰に相談するか
+    // Slide 8: 次のアクション（診断スコアと構造課題ベース）
     const s8=pptx.addSlide();
     s8.background={color:bg};
-    s8.addText('次に誰に相談するか',{x:0.6,y:0.4,w:8.5,h:0.4,fontSize:24,bold:true,color:dark});
-    s8.addText(
-      '・業務整理 → 社内担当者 / コンサル\n・システム連携 → エンジニア\n・ツール導入 → SaaS選定担当',
-      {x:0.8,y:1.2,w:8,h:3,fontSize:18,color:text2,valign:'top',wrap:true}
-    );
+    s8.addText('次のアクション・相談先',{x:0.4,y:0.3,w:9,h:0.5,fontSize:22,bold:true,color:dark});
+    const diagScore=ar&&ar.score?ar.score:0;
+    // 行動カテゴリを診断スコアで分岐
+    const nextActions=[];
+    if(diagScore>=70){
+      nextActions.push({cat:'今すぐできる',color:green,items:[
+        `無料のClaude.ai / Geminiを使って「${safe(allPri.length>0?allPri[0].text:'手順整理')}」のプロンプトを試す`,
+        'このPowerPointの手順スライドに具体的な数字・担当者名を書き込む',
+      ]});
+      nextActions.push({cat:'社内で相談',color:blue,items:[
+        '手順書レビュー → 実際に担当している人に「抜けがないか」確認してもらう',
+        '例外パターンの共有 → チームミーティングで「よくあるイレギュラー」を集める',
+      ]});
+    }else{
+      nextActions.push({cat:'今すぐできる',color:green,items:[
+        'このPowerPointを開いて手順スライドを自分の言葉に書き直す',
+        '「よくある例外」を付箋に書き出し、後で手順書に追記する',
+      ]});
+      nextActions.push({cat:'社内で相談',color:blue,items:[
+        '業務整理 → 上長または業務担当者と「現状の課題」を共有する',
+        '手順確認 → 実際に作業している担当者に手順書を見せてフィードバックをもらう',
+      ]});
+    }
+    if(ar&&ar.structure_issue){
+      nextActions.push({cat:'構造改善（中期）',color:'8B6914',items:[
+        safe(ar.structure_note)||'データの正本を決め、二重管理をなくす設計を検討する',
+        '社内IT担当 / 外部コンサルへの相談を検討する',
+      ]});
+    }
+    nextActions.forEach((block,i)=>{
+      const y=1.05+i*1.85;
+      s8.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:2.0,h:0.32,fill:{color:block.color},line:{color:block.color}});
+      s8.addText(block.cat,{x:0.4,y:y,w:2.0,h:0.32,fontSize:10,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+      block.items.forEach((item,j)=>{
+        s8.addText(`・${item}`,{x:2.55,y:y+j*0.52,w:7.2,h:0.48,fontSize:11,color:text2,wrap:true,valign:'top'});
+      });
+    });
 
-    // Slide 9: まずこれだけやってください
+    // Slide 9: まずこれだけやってください（変更履歴テーブル付き）
     const s9=pptx.addSlide();
     s9.background={color:surface};
-    s9.addText('まずこれだけやってください',{x:0.6,y:0.4,w:8.5,h:0.4,fontSize:24,bold:true,color:dark});
-    s9.addText(
-      '「どのデータが正か」を決めることから始めてください。',
-      {x:0.8,y:1.4,w:8,h:2,fontSize:22,bold:true,color:blue,wrap:true}
-    );
+    s9.addText('まずこれだけやってください',{x:0.4,y:0.3,w:9,h:0.5,fontSize:22,bold:true,color:dark});
+    // 診断結果に合わせた動的な一言
+    const firstAction=allPri.length>0
+      ? `「${safe(allPri[0].text)}」の手順を今週中に書き出してください。`
+      : '今の手順を5〜10ステップで書き出すことから始めてください。';
+    s9.addText(firstAction,{x:0.5,y:1.05,w:9,h:1.1,fontSize:20,bold:true,color:blue,wrap:true,valign:'top'});
+    s9.addText('完璧でなくてよい。書いたものが会社の資産になります。',
+      {x:0.5,y:2.15,w:9,h:0.45,fontSize:12,color:text3,italic:true});
+    // 変更履歴テーブル
+    s9.addText('変更履歴',{x:0.4,y:2.75,w:2,h:0.3,fontSize:11,bold:true,color:text3});
+    const today=new Date().toLocaleDateString('ja-JP');
+    const histRows=[
+      [
+        {text:'版',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
+        {text:'更新日',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
+        {text:'変更内容',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
+        {text:'担当者',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
+      ],
+      [
+        {text:'v1.0',options:{align:'center',color:text2}},
+        {text:today,options:{align:'center',color:text2}},
+        {text:'たたき台ダウンロード',options:{color:text2}},
+        {text:'',options:{color:text2}},
+      ],
+      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
+      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
+      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
+    ];
+    s9.addTable(histRows,{
+      x:0.4,y:3.1,w:9.2,colW:[0.8,1.5,5.2,1.7],
+      border:{type:'solid',pt:0.5,color:'CCCCCC'},
+      fontSize:10,rowH:0.38,
+    });
 
     // ⑦ Blobダウンロード方式（最安定）
     const fname=`業務フロー整理ガイド_${safe(ind)||'診断結果'}.pptx`;
