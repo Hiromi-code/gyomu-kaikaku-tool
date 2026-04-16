@@ -186,6 +186,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .structure-warning-title{font-size:15px;font-weight:700;color:#e85a5a;margin-bottom:8px;}
 .structure-warning-body{font-size:14px;color:var(--text2);line-height:1.8;}
 
+/* 入力タイプヒント */
+.input-type-hint{display:inline-flex;align-items:center;gap:5px;font-size:12px;border-radius:20px;padding:3px 10px;margin-bottom:8px;font-weight:500;}
+.input-type-hint.click-type{color:#5aa6f5;border:1px solid rgba(58,124,232,.35);background:rgba(58,124,232,.07);}
+.input-type-hint.text-type{color:var(--green);border:1px solid rgba(58,201,138,.35);background:rgba(58,201,138,.07);}
+.all-required-note{font-size:13px;color:var(--yellow);background:rgba(232,195,58,.07);border:1px solid rgba(232,195,58,.25);border-radius:var(--radius);padding:9px 13px;margin-bottom:14px;line-height:1.7;}
+.retry-tip{background:rgba(232,195,58,.06);border:1px solid rgba(232,195,58,.22);border-radius:var(--radius);padding:12px 14px;margin-top:12px;font-size:13px;color:var(--text2);line-height:1.85;}
+.retry-tip strong{color:var(--yellow);}
+
 @media(max-width:768px){
   .choice-grid.col3{grid-template-columns:1fr 1fr;}
   .quant-grid{grid-template-columns:1fr;}
@@ -196,13 +204,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   .card-title{font-size:19px;}
   .choice-btn{font-size:15px;}
   body{font-size:17px;}
-}
-#thinkingPointsBody ul{
-  margin:0;
-  padding-left:1.2em;
-}
-#thinkingPointsBody li{
-  margin-bottom:6px;
 }
 </style>
 </head>
@@ -250,70 +251,33 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <h1 class="cover-title">業務半自動化スターターキット</h1>
     <p class="cover-sub">― ミス・ムダ・手戻りを減らす仕組みをつくる ―</p>
     <p class="cover-sub" style="font-size:14px;margin-top:-20px;">約15〜20分</p>
-
-    <!-- 2つのルート説明 -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;width:100%;max-width:420px;text-align:left;">
-      <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:12px;font-weight:700;">診断の結果によって、以下の2つのどちらかを判断します</div>
-
-      <div style="margin-bottom:14px;">
-        <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;">📋 ルートA：整理から始める</div>
-        <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:6px;">
-          手順の見える化・マニュアル化ガイド（PowerPoint）を生成します。
-        </div>
-        <div style="font-size:12px;color:var(--text3);padding:6px 10px;background:var(--surface2);border-left:2px solid var(--yellow);border-radius:2px;">
-          ✓ あなたたちが肉付けするたたき台<br>
-          ✓ チーム全体で業務理解を深める<br>
-          ✓ 継続的に改善できる基盤づくり
-        </div>
-      </div>
-
-      <div style="margin-bottom:0;">
-        <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;">⚡ ルートB：自動化できる工程から始める</div>
-        <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:6px;">
-          Excelテンプレート＋AIプロンプトを生成します。
-        </div>
-        <div style="font-size:12px;color:var(--text3);padding:6px 10px;background:var(--surface2);border-left:2px solid var(--blue);border-radius:2px;">
-          ✓ AIが自動化できる工程を特定<br>
-          ✓ すぐに使い始められる（ただしカスタマイズ必須）<br>
-          ✓ 無料AIで即実装可能
-        </div>
-      </div>
-    </div>
-
     <div class="cover-steps">
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 1</span>
-        <div><div class="cover-step-text">業界・困りごとを入力</div><div class="cover-step-time">約5分</div></div>
+        <div><div class="cover-step-text">困っている業務を入力</div><div class="cover-step-time">約3分</div></div>
       </div>
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 2</span>
-        <div><div class="cover-step-text">AIが業務を分析</div><div class="cover-step-time">自動</div></div>
+        <div><div class="cover-step-text">手順の整理・確認</div><div class="cover-step-time">約5分</div></div>
       </div>
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 3</span>
-        <div><div class="cover-step-text">ルートを選択</div><div class="cover-step-time">約3分</div></div>
+        <div><div class="cover-step-text">業務の見える化（AIが分析）</div><div class="cover-step-time">約5分</div></div>
       </div>
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 4</span>
-        <div><div class="cover-step-text">カスタマイズ用ベースを取得</div><div class="cover-step-time">約2分</div></div>
+        <div><div class="cover-step-text">改善ポイントの選択</div><div class="cover-step-time">約3分</div></div>
       </div>
       <div class="cover-step-row">
         <span class="cover-step-num">STEP 5</span>
-        <div><div class="cover-step-text">チーム内で整理・実装へ</div><div class="cover-step-time">開始</div></div>
+        <div><div class="cover-step-text">成果物の確認・取得</div><div class="cover-step-time">約2分</div></div>
       </div>
     </div>
-
     <div class="cover-msg">
-      👉 <strong>このツールは「テンプレート販売」ではありません</strong><br>
-      <br>
-      ダウンロードするファイルは「完成品」ではなく、<br>
-      <strong>あなたたちが整理・カスタマイズするための『たたき台』</strong>です。<br>
-      <br>
-      その過程で、業務の真の問題点が見えてきます。<br>
-      チーム内で「本当にこうか？」と議論しながら進めることが<br>
-      改善を定着させる最大の秘訣です。
+      👉 この診断は「考えながら進める」ことで効果が出ます。<br>
+      テンプレートを受け取る場ではなく、<strong>1つ改善を実行するための整理の場</strong>です。<br>
+      少し時間をとって取り組むことをおすすめします。
     </div>
-
     <button class="btn-p" style="padding:14px 40px;font-size:17px;" onclick="startDiagnosis()">診断をはじめる →</button>
   </div>
 </div>
@@ -324,8 +288,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="card-label">STEP 1｜あなたについて</div>
     <div class="card-title">まず業界とポジションを教えてください</div>
     <div class="card-hint">回答に合わせて、次の質問の内容が変わります。</div>
+    <div class="all-required-note">⚠ 「業界」と「ポジション」の両方を選択すると次へ進めます。</div>
     <div style="margin-bottom:18px;">
-      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:8px;">あなたの業界</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;">あなたの業界</div>
+      <div class="input-type-hint click-type">👆 クリックして選択（1つ）</div>
       <div class="choice-grid col3" id="industryGrid">
         <button class="choice-btn" onclick="selInd(this,'製造・物流')">🏭 製造・物流</button>
         <button class="choice-btn" onclick="selInd(this,'医療・介護')">🏥 医療・介護</button>
@@ -339,7 +305,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       </div>
     </div>
     <div>
-      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:8px;">あなたのポジション</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;">あなたのポジション</div>
+      <div class="input-type-hint click-type">👆 クリックして選択（1つ）</div>
       <div class="choice-grid" id="posGrid">
         <button class="choice-btn" onclick="selPos(this,'経営者・役員')">👔 経営者・役員</button>
         <button class="choice-btn" onclick="selPos(this,'管理職')">📊 管理職</button>
@@ -357,6 +324,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="card-label">STEP 2｜診断の目的</div>
     <div class="card-title">この診断で知りたいことを教えてください</div>
     <div class="card-hint">当てはまるものをすべて選んでください（複数選択OK）</div>
+    <div class="input-type-hint click-type" style="margin-bottom:10px;">👆 クリックして選択（複数OK・1つ以上）</div>
     <div class="choice-grid" id="goalsGrid">
       <button class="choice-btn multi" onclick="toggleGoal(this,'自分の仕事を減らしたい')">📉 自分の仕事を減らしたい</button>
       <button class="choice-btn multi" onclick="toggleGoal(this,'自動化できる作業を見つけたい')">⚡ 自動化できる作業を見つけたい</button>
@@ -377,6 +345,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="card-label">STEP 3｜困りごと</div>
     <div class="card-title">今一番困っていることは何でしょうか？</div>
     <div class="card-hint">業務の中で、「ここが大変・時間がかかる・なんとかしたい」と感じることを教えてください。</div>
+    <div class="input-type-hint text-type" style="margin-bottom:6px;">✏ 下のテキストボックスに入力してください</div>
     <textarea class="q-ta" id="painAns" rows="4" placeholder="例：毎月の請求書の照合に時間がかかっている&#10;例：担当者が変わるたびに引き継ぎが大変&#10;例：同じ内容を何度も別のファイルに入力している" oninput="chkPain()"></textarea>
   </div>
   <div class="nav">
@@ -391,13 +360,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="card-label">STEP 4｜業務の手順</div>
     <div class="card-title" id="stepsTitle">その業務について、手順を教えてください</div>
     <div class="card-hint">取り掛かりから完了まで、できるだけ具体的に。「誰が・何を・どの順番で」書いていただけると精度が上がります。</div>
+    <div class="all-required-note">⚠ このページには入力箇所が2つあります。<strong>①②③の3項目</strong>と、下の<strong>「手順の入力欄」</strong>の両方を入力してから「次へ」ボタンが押せます。</div>
     <div class="context-box" id="stepsContext">
       <div class="context-label">FOCUS</div>
       <div id="stepsContextText"></div>
     </div>
     <!-- 業務コンテキスト入力（新規追加） -->
     <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">TASK CONTEXT（必須）</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:.2em;margin-bottom:6px;">TASK CONTEXT（必須）</div>
+      <div class="input-type-hint text-type" style="margin-bottom:10px;">✏ 3項目すべてを入力してください</div>
       <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">① この業務は何ですか？</div>
       <input class="q-input" id="taskName" placeholder="例：給与計算業務、請求書発行、入金確認" style="margin-top:0;margin-bottom:12px;" oninput="chkSteps()">
       <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">② 誰が行いますか？</div>
@@ -405,6 +376,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">③ いつ行いますか？</div>
       <input class="q-input" id="taskTiming" placeholder="例：毎月初め、毎週金曜、毎日夕方" style="margin-top:0;" oninput="chkSteps()">
     </div>
+    <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;">📝 業務の手順（取り掛かりから完了まで）</div>
+    <div class="input-type-hint text-type" style="margin-bottom:6px;">✏ 順番に箇条書きで入力してください</div>
     <textarea class="q-ta" id="stepsAns" rows="6" placeholder="例：&#10;1. 仕入先からFAXで請求書が届く&#10;2. 金額・品目を確認してExcelに手入力する&#10;3. 上司にメールで確認を送る&#10;4. 承認後、会計ソフトに再入力する&#10;5. 振込処理をする" oninput="chkSteps()"></textarea>
   </div>
   <div class="nav">
@@ -468,12 +441,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div class="score-label">自動化ポテンシャルスコア（100点満点）</div>
       <div class="score-bar-wrap"><div class="score-bar-fill" id="fcBar" style="width:0%;background:var(--accent)"></div></div>
     </div>
-    <!-- スコア内訳ゲージ（AI出力のscore_breakdownを表示） -->
-    <div id="scoreBreakdown" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.15em;margin-bottom:12px;">SCORE BREAKDOWN</div>
-      <div id="scoreBreakdownBars"></div>
-      <div id="scoreBreakdownComment" style="display:none;font-size:13px;color:var(--text3);border-top:1px solid var(--border);padding-top:10px;margin-top:4px;line-height:1.7;"></div>
-    </div>
     <div style="font-size:15px;color:var(--text2);line-height:1.85;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;" id="fcComment"></div>
   </div>
 
@@ -493,13 +460,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="breakdown-insight" id="breakdownInsight"></div>
   </div>
 
-  <!-- 考えるポイント（複雑案件時のみ表示） -->
-  <div class="card" id="thinkingCard" style="display:none;">
-    <div class="card-label">THINKING POINTS</div>
-    <div class="card-title" style="font-size:17px;margin-bottom:12px;">考えるポイント</div>
-    <div id="thinkingPointsBody" class="output-desc" style="margin-bottom:0;"></div>
-  </div>
-
   <!-- 分岐CTA -->
   <div id="branchCta"></div>
 
@@ -514,6 +474,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="card-label">STEP 7｜候補選択</div>
     <div class="card-title" id="selectTitle">どの業務から始めますか？</div>
     <div class="card-hint" id="selectHint">診断結果から絞り込まれた候補です。1つ選んでください。</div>
+    <div class="input-type-hint click-type" style="margin-bottom:10px;">👆 カードをクリックして選択（1つ）</div>
     <div id="toolSelectCards"></div>
   </div>
   <!-- 選択理由（カード選択後に表示） -->
@@ -521,6 +482,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="card-label">STEP 7｜選択理由</div>
     <div class="card-title">この業務から始める理由を選んでください</div>
     <div class="card-hint">後半の生成内容がより的確になります。</div>
+    <div class="input-type-hint click-type" style="margin-bottom:10px;">👆 クリックして選択（1つ）</div>
     <div class="choice-grid" id="reasonGrid">
       <button class="choice-btn" onclick="selReason(this,'いちばん時間を取られている')">⏱ いちばん時間を取られている</button>
       <button class="choice-btn" onclick="selReason(this,'ミスが起きやすい')">⚠ ミスが起きやすい</button>
@@ -560,7 +522,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div class="roi-nums" id="roiNums"></div>
       <div class="roi-summary" id="roiSum"></div>
     </div>
-    <div id="roiTimeValue" class="notice" style="display:none;"></div>
   </div>
   <div class="nav">
     <button class="btn-s" onclick="goS('s-select');uf(7)">← 戻る</button>
@@ -629,10 +590,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド3：現状の業務フロー（たたき台）</div>
         <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド4：整理・改善のポイント</div>
         <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド5：このたたき台の使い方</div>
-        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド6：なぜ継続更新が必要か</div>
-        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド7：最初の3ステップ</div>
-        <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド8：次に誰に相談するか</div>
-        <div style="font-size:14px;color:var(--text2);padding:6px 0;">📌 スライド9：まずこれだけやってください</div>
+        <div style="font-size:14px;color:var(--text2);padding:6px 0;">📌 スライド6：なぜ継続更新が必要か</div>
       </div>
       <div style="font-size:13px;color:var(--text3);">✅ 購入後すぐにダウンロードが始まります</div>
     </div>
@@ -648,7 +606,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <div class="screen" id="s-download">
   <div class="card">
     <div class="card-label">COMPLETE</div>
-    <div class="card-title" id="dlTitle">カスタマイズ用たたき台が生成されました</div>
+    <div class="card-title" id="dlTitle">あなた専用の成果物が完成しました</div>
     <div style="font-size:14px;color:var(--text2);line-height:1.8;" id="dlDesc"></div>
   </div>
 
@@ -668,6 +626,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       </div>
       <div class="prompt-box" id="dlPromptTxt"></div>
       <button class="btn-copy" id="btnCopyP" onclick="doCopy('dlPromptTxt','btnCopyP')">📋 プロンプトをコピー</button>
+      <div class="retry-tip">
+        💡 <strong>思った通りの結果にならない場合：</strong><br>
+        文言を少し変えながら、何度でも試してみてください。AIは同じ指示でも毎回違う結果になることがあります。「もっと簡潔に」「表形式で出して」「項目を増やして」など一言補足するだけで大きく改善することがあります。諦めずに2〜3回試すのがコツです。
+      </div>
     </div>
   </div>
 
@@ -685,6 +647,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       </div>
       <div class="prompt-box" id="dlOcrTxt"></div>
       <button class="btn-copy" id="btnCopyO" onclick="doCopy('dlOcrTxt','btnCopyO')">📷 OCRプロンプトをコピー</button>
+      <div class="retry-tip">
+        💡 <strong>うまく読み取れない場合：</strong><br>
+        写真の明るさや角度を変えて再試行してみてください。また「読み取れなかった項目は空欄にして」「金額だけを表にして」など補足を加えると精度が上がります。
+      </div>
     </div>
   </div>
 
@@ -692,7 +658,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="output-block" id="dlBlockExcel" style="display:none;">
     <div class="output-block-header">
       <span class="output-block-icon">📊</span>
-      <div><div class="output-block-title">Excelテンプレート（カスタマイズ用たたき台）</div></div>
+      <div><div class="output-block-title">Excelテンプレート（すぐ使える標準版）</div></div>
     </div>
     <div class="output-block-body">
       <div class="output-desc" id="dlExcelDesc"></div>
@@ -702,25 +668,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div class="output-steps">
         <div class="output-step"><span class="step-num">1</span>下のボタンでExcelをダウンロードしてください</div>
         <div class="output-step"><span class="step-num">2</span>「README＆プロンプト」シートを開くと使い方・プロンプトが確認できます</div>
-        <div class="output-step"><span class="step-num">3</span>メインシートから入力を始め、自社に合わせてカスタマイズしてください</div>
-      </div>
-      <div class="notice">
-        ⚠ ダウンロード前の重要なお知らせ<br>
-        本商品は、ダウンロード形式のデジタルコンテンツです。<br>
-        一度ご提供・ダウンロードされた後は返品・返金が事実上できないため、<br>
-        特定商取引法上のクーリングオフ制度の対象となりません。<br><br>
-        また、ダウンロード完了後の返品・返金は原則としてお受けできません。<br>
-        ただし、ファイルが正常に開けない・破損しているなどの技術的な不具合がある場合には、<br>
-        対応いたしますのでお問い合わせください。
+        <div class="output-step"><span class="step-num">3</span>メインシートにそのまま入力を始めてください</div>
       </div>
       <button class="btn-dl" id="btnDL">⬇ Excelをダウンロード</button>
       <div class="notice"><strong>⚠ Excelのダウンロードは PC（Windows・Mac）を推奨しています。</strong><br>スマートフォンからは上のプロンプトのコピーをご利用ください。</div>
-      <div class="notice">
-        📩 ご購入ありがとうございました<br>
-        本商品はデジタルコンテンツのため、ダウンロード後の返品・返金は原則お受けできません。<br>
-        ただし、ファイルが正常に開けない・破損しているなどの不具合がある場合には、<br>
-        責任をもって対応いたしますので、お問い合わせフォームよりご連絡ください。
-      </div>
     </div>
   </div>
 
@@ -733,54 +684,18 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <div class="screen" id="s-manual">
   <div class="done-box">
     <div class="done-icon">📋</div>
-    <div class="done-title">業務フロー整理ガイドの準備ができました</div>
+    <div class="done-title">業務フロー整理ガイドが完成しました</div>
     <div class="done-desc">PowerPointファイルのダウンロードが始まります。<br>開けない場合は下のボタンから再ダウンロードしてください。</div>
     <button class="btn-dl" id="btnReDownload" style="margin:0 auto;display:inline-flex;">⬇ 再ダウンロード</button>
-    <div class="notice">
-      📩 ご購入ありがとうございました<br>
-      本商品はデジタルコンテンツのため、ダウンロード後の返品・返金は原則お受けできません。<br>
-      ただし、ファイルが正常に開けない・破損しているなどの不具合がある場合には、<br>
-      責任をもって対応いたしますので、お問い合わせフォームよりご連絡ください。
-    </div>
-    <div class="asset-note" id="manualFirstSteps" style="margin-bottom:14px;">
-      <strong>最初の3ステップ</strong><br><br>
-      ① マスタを決める（どのデータが正か）<br>
-      ② 更新タイミングを統一する<br>
-      ③ 差分チェックを週1で実施する
-    </div>
-
-    <div class="asset-note" id="manualNextAction" style="margin-bottom:14px;">
-      <strong>次に誰に相談するか</strong><br><br>
-      ・業務整理 → 社内担当者 / コンサル<br>
-      ・システム連携 → エンジニア<br>
-      ・ツール導入 → SaaS選定担当
-    </div>
-
     <div class="asset-note">
-      <strong>📌 ここからが本当のスタートです</strong><br><br>
-
-      このガイドは完成品ではなく、あなたたちが肉付けするための「たたき台」です。<br>
-      このたたき台を育てるほど、会社固有の資産になります。<br><br>
-
-      <strong>【1週間以内にやること】</strong><br>
-      ① 各ステップを実際の作業と照らし合わせる<br>
-      ② 抜けている工程を追加<br>
-      ③ 誤っている内容を修正<br>
-      ④ チーム内で「本当にこうだっけ？」と議論<br><br>
-
-      <strong>【1ヶ月以内にやること】</strong><br>
-      ⑤ 判断基準・グレーゾーンの扱いを追記する<br>
-      ⑥ スクリーンショットや画像を貼り付ける<br>
-      ⑦ 見て分かるドキュメントに完成させる<br><br>
-
-      <strong>【継続的にやること】</strong><br>
-      ⑧ 担当者が変わるたびに確認・更新<br>
-      ⑨ 業務ルール変更時に即座に反映<br>
-      ⑩ 3ヶ月に1回、改善点がないか見直し<br><br>
-
-      <strong>💡 重要なポイント</strong><br>
-      誰かが辞めても、業務が変わっても、<br>
-      残り続けるものを今日作り始めてください。
+      <strong>このたたき台を「資産」に変えるために：</strong><br><br>
+      このガイドは完成品ではありません。<br>
+      あなたが肉付けするほど、会社固有の資産になります。<br><br>
+      ① 各ステップを自分の言葉で書き直す<br>
+      ② 判断基準・グレーゾーンの扱いを追記する<br>
+      ③ スクリーンショットや図を貼り付ける<br>
+      ④ 担当者が変わるたびに更新する習慣をつける<br><br>
+      <strong>誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。</strong>
     </div>
   </div>
   <div style="margin-top:14px;text-align:center;">
@@ -799,15 +714,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       <div style="font-size:13px;color:var(--text3);margin-bottom:6px;">含まれるもの：</div>
       <div id="modalContents" style="font-size:14px;color:var(--text2);line-height:1.9;"></div>
     </div>
-    <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:14px;color:var(--text2);line-height:1.7;">
+    <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:12px;margin-bottom:20px;font-size:14px;color:var(--text2);line-height:1.7;">
       💳 <strong style="color:var(--accent);">このコンテンツは有料です（¥9,800・買い切り）</strong><br>
-      診断を元にしっかりカスタマイズしましょう。効率化の思考を手に入れてください。
-    </div>
-    <div class="notice" style="margin-bottom:12px;">
-      🔁 返金について<br>
-      本商品はダウンロード形式のデジタルコンテンツのため、<br>
-      ダウンロード後の返品・返金は原則お受けできません。<br>
-      ただし、ファイルが正常に開けないなどの不具合がある場合は対応いたします。
+      購入後、何度でも再診断・再生成できます。更新料はありません。
     </div>
     <div style="display:flex;gap:10px;">
       <button class="btn-s" onclick="closeModal()" style="flex:1">キャンセル</button>
@@ -821,96 +730,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <script>
 // ===== APIキー設定（本番ではサーバー経由に変更すること） =====
 const WORKER_URL = 'https://anthropic-proxy.kokoda-mu.workers.dev';
-
-// ===== 堅牢なJSONパース（LLMの改行混入・末尾カンマ等に対応） =====
-function safeJsonParse(raw) {
-  let s = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-  const objStart = s.indexOf('{');
-  const arrStart = s.indexOf('[');
-  let startIdx = -1;
-  if (objStart !== -1 && (arrStart === -1 || objStart < arrStart)) startIdx = objStart;
-  else if (arrStart !== -1) startIdx = arrStart;
-  if (startIdx > 0) s = s.slice(startIdx);
-  const lastBrace = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
-  if (lastBrace !== -1) s = s.slice(0, lastBrace + 1);
-  try { return JSON.parse(s); } catch (_) {}
-  let fixed = '';
-  let inStr = false;
-  let escape = false;
-  for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    if (escape) { fixed += ch; escape = false; continue; }
-    if (ch === '\\') { fixed += ch; escape = true; continue; }
-    if (ch === '"') { inStr = !inStr; fixed += ch; continue; }
-    if (inStr) {
-      if (ch === '\n') { fixed += '\\n'; continue; }
-      if (ch === '\r') { fixed += '\\r'; continue; }
-      if (ch === '\t') { fixed += '\\t'; continue; }
-    }
-    fixed += ch;
-  }
-  try { return JSON.parse(fixed); } catch (_) {}
-  const noTrailing = fixed.replace(/,\s*([\]}])/g, '$1');
-  return JSON.parse(noTrailing);
-}
-
-
-
-// ===== リトライ付きAPI呼び出し（タイムアウト30秒・最大2回リトライ） =====
-async function fetchWithRetry(body, maxRetries=2){
-  let lastErr;
-  for(let attempt=0;attempt<maxRetries;attempt++){
-    try{
-      const res=await Promise.race([
-        fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),
-        new Promise((_,reject)=>setTimeout(()=>reject(new Error('タイムアウト（30秒）')),30000))
-      ]);
-      if(!res.ok)throw new Error('APIエラー: HTTP '+res.status);
-      const data=await res.json();
-      if(!data||!data.content||data.content.length===0)throw new Error('レスポンス不正（contentなし）');
-      return data;
-    }catch(e){
-      lastErr=e;
-      if(attempt<maxRetries-1){
-        console.warn(`APIリトライ ${attempt+1}/${maxRetries}:`,e.message);
-        await new Promise(r=>setTimeout(r,2000*(attempt+1)));
-      }
-    }
-  }
-  throw lastErr;
-}
-
-// ===== APIエラーモーダル表示 =====
-function showApiError(e, onRetry){
-  const isTimeout=e.message.includes('タイムアウト');
-  const isNetwork=e.message.includes('Failed to fetch')||e.message.includes('NetworkError');
-  let title='AI分析に失敗しました',guide='';
-  if(isTimeout){
-    title='⏱ 応答に時間がかかっています';
-    guide='<li>ネットワーク接続を確認してください</li><li>しばらく待ってから再試行してください</li><li>手順の文字数が多い場合は短く整理してみてください</li>';
-  }else if(isNetwork){
-    title='🌐 ネットワークエラー';
-    guide='<li>インターネット接続を確認してください</li><li>VPN使用中の場合はオフにしてお試しください</li>';
-  }else{
-    guide='<li>入力内容を確認して再試行してください</li><li>問題が続く場合はページを再読み込みしてください</li>';
-  }
-  // 既存のモーダルを削除
-  document.getElementById('apiErrModal')?.remove();
-  const modal=document.createElement('div');
-  modal.id='apiErrModal';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-  modal.innerHTML=`<div style="background:var(--surface);border:1px solid var(--red);border-radius:8px;padding:28px;max-width:480px;width:100%;">
-    <div style="font-size:18px;font-weight:700;color:var(--red);margin-bottom:10px;">${title}</div>
-    <div style="font-size:13px;color:var(--text3);font-family:'IBM Plex Mono',monospace;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:8px 10px;margin-bottom:16px;word-break:break-all;">${e.message}</div>
-    <div style="font-size:14px;color:var(--text2);margin-bottom:16px;"><strong style="color:var(--text);">対処方法：</strong><ul style="margin-top:6px;padding-left:18px;line-height:2;">${guide}</ul></div>
-    <div style="display:flex;gap:10px;">
-      <button onclick="document.getElementById('apiErrModal').remove();goS('s-steps');uf(4);" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:14px;">← 手順を確認する</button>
-      <button id="apiErrRetryBtn" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">🔄 再試行する</button>
-    </div>
-  </div>`;
-  document.body.appendChild(modal);
-  document.getElementById('apiErrRetryBtn').onclick=()=>{modal.remove();onRetry&&onRetry();};
-}
 
 // ===== フォールバックマッチング（AI失敗時・matched_ids空時の補完） =====
 function fallbackMatch(pain, steps){
@@ -988,36 +807,6 @@ let roiMonthlyHours=0;
 // ===== ユーティリティ =====
 function uf(a){for(let i=0;i<10;i++){const d=document.getElementById('fd'+i),l=document.getElementById('fl'+i);if(!d||!l)continue;d.className='fd'+(i<a?' done':i===a?' active':'');l.className='fl'+(i<a?' done':i===a?' active':'');d.textContent=i<a?'✓':i===0?'◎':i;}}
 function goS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
-
-// ===== 複雑案件判定 =====
-function isComplexCase(){
-  return !!ar?.structure_issue;
-}
-
-// ===== thinking card 描画 =====
-function renderThinkingPoints(){
-  const card=document.getElementById('thinkingCard');
-  const body=document.getElementById('thinkingPointsBody');
-  if(!isComplexCase()){
-    card.style.display='none';
-    body.innerHTML='';
-    return;
-  }
-  body.innerHTML=`
-    <ul>
-      <li>どのデータが正ですか？</li>
-      <li>ズレた時、誰が気づきますか？</li>
-      <li>判断は誰がしていますか？</li>
-    </ul>
-  `;
-  card.style.display='block';
-}
-
-// ===== 複雑案件：manual preview 直行 =====
-function goManualPreview(){
-  payRoute='manual';
-  showPreview();
-}
 
 // ===== 表紙 =====
 function startDiagnosis(){goS('s-attr');uf(1);}
@@ -1113,9 +902,11 @@ ${rawText}
 ・入力に含まれない工程は推測して追加してよい
 ・曖昧な表現は具体化する（例「確認する」→「金額と品目が注文書と一致するか確認する」）`;
   try{
-    const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:expandPrompt}]});
-    const raw=data.content.map(i=>i.text||'').join('');
-    const parsed=safeJsonParse(raw);
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:expandPrompt}]})});
+    const data=await res.json();
+    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(raw);
     return parsed.steps||[];
   }catch(e){return null;}
 }
@@ -1189,9 +980,10 @@ ${q2_1Steps}
 
   try{
     await new Promise(r=>setTimeout(r,300));setLS(1);
-    const vdata=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:validatePrompt}]});
-    const vraw=vdata.content.map(i=>i.text||'').join('');
-    const vr=safeJsonParse(vraw);
+    const vres=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:validatePrompt}]})});
+    const vdata=await vres.json();
+    const vraw=vdata.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const vr=JSON.parse(vraw);
     if(!vr.is_valid && vr.issues && vr.issues.length>0){
       showValidation(vr.issues);
       return;
@@ -1253,7 +1045,7 @@ ${contextStr}困りごと：${q2Pain}
 上記の業務内容を分析し、フローチャートを作成してください。
 
 回答はJSONのみで返してください（前後の文章不要）：
-{"steps":[{"step":1,"text":"ステップの内容","automation":"×","note":"","prompt_hint":""}],"has_automation":true,"automation_count":2,"score":72,"score_breakdown":{"automation_potential":80,"structure_clarity":65,"tool_availability":75,"comment":"自動化ポテンシャルは高いが手順の明確さが課題"},"matched_ids":[],"priority_id":"","comment":"2〜3文のコメント","flavor_note":"診断目的に合わせた一言コメント","structure_issue":false,"structure_note":""}
+{"steps":[{"step":1,"text":"ステップの内容","automation":"×","note":"","prompt_hint":""}],"has_automation":true,"automation_count":2,"score":72,"matched_ids":[],"priority_id":"","comment":"2〜3文のコメント","flavor_note":"診断目的に合わせた一言コメント","structure_issue":false,"structure_note":""}
 
 ルール：
 ・stepsは入力された手順をそのまま忠実に分解してください（5〜10ステップ）
@@ -1269,9 +1061,12 @@ ${contextStr}困りごと：${q2Pain}
 
   try{
     await new Promise(r=>setTimeout(r,400));setLS(1);
-    const data=await fetchWithRetry({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:matchPrompt}]});
-    const raw=data.content.map(i=>i.text||'').join('');
-    try{ar=safeJsonParse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:matchPrompt}]})});
+    if(!res.ok){throw new Error('APIレスポンスエラー: '+res.status);}
+    const data=await res.json();
+    if(!data||!data.content||data.content.length===0){throw new Error('APIレスポンス不正: contentなし');}
+    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    try{ar=JSON.parse(raw);}catch(pe){throw new Error('JSON parseエラー: '+pe.message);}
     // detectCategoryで業務名優先のマッチング補正
     const detected=detectCategory(taskName,q2Pain,steps);
     if(detected.length>0){
@@ -1292,7 +1087,8 @@ ${contextStr}困りごと：${q2Pain}
     await new Promise(r=>setTimeout(r,300));
   }catch(e){
     console.error('AI分析エラー:', e);
-    showApiError(e, ()=>runAnalysis(steps, setLS));
+    alert('AI分析に失敗しました。入力内容を確認して再度お試しください。\n\nエラー詳細: '+e.message);
+    goS('s-steps');uf(4);
     return;
   }
   showFlowchart();
@@ -1313,34 +1109,6 @@ function showFlowchart(){
   document.getElementById('fcScore').style.color=color;
   document.getElementById('fcBar').style.width=score+'%';
   document.getElementById('fcBar').style.background=color;
-
-  // スコア内訳ゲージ（score_breakdownがある場合のみ表示）
-  const sb=ar.score_breakdown;
-  const sbEl=document.getElementById('scoreBreakdown');
-  if(sb&&sbEl){
-    const items=[
-      {label:'自動化ポテンシャル',key:'automation_potential',color:'#7c5cd8'},
-      {label:'手順の明確さ',key:'structure_clarity',color:'#3a7ce8'},
-      {label:'ツール活用しやすさ',key:'tool_availability',color:'#3ac98a'},
-    ];
-    sbEl.style.display='block';
-    document.getElementById('scoreBreakdownBars').innerHTML=items.map(item=>{
-      const val=sb[item.key]||0;
-      return `<div style="margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <span style="font-size:13px;color:var(--text2);">${item.label}</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:${item.color};">${val}</span>
-        </div>
-        <div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden;">
-          <div style="height:100%;width:${val}%;background:${item.color};border-radius:4px;transition:width 1.2s ease;"></div>
-        </div>
-      </div>`;
-    }).join('');
-    if(sb.comment){
-      document.getElementById('scoreBreakdownComment').textContent=sb.comment;
-      document.getElementById('scoreBreakdownComment').style.display='block';
-    }
-  }
 
   // 構造問題警告
   let commentHtml=`<div style="font-size:15px;color:var(--text2);line-height:1.85;">${ar.comment||''}</div>`;
@@ -1451,34 +1219,15 @@ function showFlowchart(){
 
   // 分岐CTA（ここでは売らない。「次に何を選ぶか考える」画面へ誘導）
   const ctaEl=document.getElementById('branchCta');
-
-  // 複雑案件なら manual ルート優先
-  if(isComplexCase()){
-    payRoute='manual';
-    ctaEl.innerHTML=`
-      <div class="branch-cta">
-        <div class="price-badge">複雑案件向け</div>
-        <div class="branch-cta-title">まずは整理から始めるのがおすすめです</div>
-        <div class="branch-cta-desc">
-          この業務は完成済みテンプレートよりも、
-          現状整理・判断基準の言語化・運用ルール設計が先です。
-        </div>
-        <button class="btn-p" onclick="goManualPreview()">整理ガイドを見る →</button>
-      </div>
-    `;
-    renderThinkingPoints();
-    return;
-  }
-
   const hasMatchedTemplate=ar.matched_ids && ar.matched_ids.length>0;
   if(hasAuto && hasMatchedTemplate){
     const matched=ar.matched_ids.map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
     buildSelectScreen(matched);
-    const btnLabel='候補を選ぶ →';
+    const btnLabel=matched.length===1?`「${matched[0].name}」シートを生成する →`:'候補を選ぶ →';
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
       <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
-      <div class="branch-cta-title">まず1つ、アウトプットの方向を選びます</div>
-      <div class="branch-cta-desc">Excelテンプレートで即着手するか、PowerPointで手順を整理してから進めるか選べます。</div>
+      <div class="branch-cta-title">${matched.length===1?`「${matched[0].name}」のシートを生成できます`:'まず1つ、着手する業務を選びます'}</div>
+      <div class="branch-cta-desc">${matched.length===1?'診断結果からこの業務がマッチしました。次のステップで内容を確認できます。':'診断で見つかった候補の中から、今いちばん取り組むものを1つ選んでください。'}</div>
       <button class="btn-p" onclick="goSelectBeforePay()">${btnLabel}</button>
     </div>`;
   }else if(hasAuto && !hasMatchedTemplate){
@@ -1498,7 +1247,6 @@ function showFlowchart(){
       <button class="btn-p" style="background:var(--yellow);color:#0f1117;" onclick="goManualChoiceBeforePay()">候補を選ぶ →</button>
     </div>`;
   }
-  renderThinkingPoints();
 }
 
 // ===== ツール選択画面の準備 =====
@@ -1509,18 +1257,13 @@ function buildSelectScreen(tasks){
   document.getElementById('btnSelect').disabled=true;
   document.getElementById('reasonBlock').style.display='none';
   document.querySelectorAll('#reasonGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
-
-  // 1件マッチ時はPPTX手順書を2枚目として追加して選択を有意義にする
-  const showPptxAlt = tasks.length===1;
   document.getElementById('selectTitle').textContent=
     tasks.length>1?`「${tasks.map(t=>t.name).join('」か「')}」どちらから始めますか？`
-    :`「${tasks[0].name}」か、まず手順書を作るか選んでください`;
+    :tasks.length===1?`「${tasks[0].name}」のシートを生成できます`:'業務を選んでください';
   document.getElementById('selectHint').textContent=
-    tasks.length>1
-    ?'診断結果から絞り込まれた候補です。1つ選んでください。'
-    :'Excelテンプレートで即使用するか、先にPowerPointで手順を整理してから進めるか選べます。';
-
-  // Excelテンプレートカード
+    tasks.length===1
+    ?'診断結果からこの業務がマッチしました。カードをタップして選択し、次に進んでください。'
+    :'診断結果から絞り込まれた候補です。1つ選んでください。';
   tasks.forEach(task=>{
     const card=document.createElement('div');
     card.className='tool-select-card';
@@ -1537,37 +1280,12 @@ function buildSelectScreen(tasks){
     card.onclick=()=>{
       document.querySelectorAll('.tool-select-card').forEach(c=>c.classList.remove('selected'));
       card.classList.add('selected');selectedToolId=task.id;
-      payRoute='auto';
       document.getElementById('reasonBlock').style.display='block';
       document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
       checkSelectReady();
     };
     container.appendChild(card);
   });
-
-  // 1件マッチ時：PPTX手順書カードを2枚目として追加
-  if(showPptxAlt){
-    const pptxCard=document.createElement('div');
-    pptxCard.className='tool-select-card';
-    pptxCard.innerHTML=`
-      <div class="tool-select-title">まずPowerPointで手順を整理する
-        <span style="font-size:12px;background:rgba(124,92,216,.15);color:#9d7fe8;padding:2px 9px;border-radius:10px;margin-left:6px;font-weight:700;">丁寧に進める</span>
-      </div>
-      <div class="tool-select-desc">業務フローの見える化・運用ルールの言語化から始めます。例外が多い・担当者依存が強い業務に適しています。</div>
-      <div class="tool-select-items">
-        <span class="tool-chip" style="background:rgba(124,92,216,.15);color:#9d7fe8;border:1px solid rgba(124,92,216,.3);">📋 PowerPoint</span>
-        <span class="tool-chip" style="background:rgba(124,92,216,.15);color:#9d7fe8;border:1px solid rgba(124,92,216,.3);">📖 手順書</span>
-      </div>`;
-    pptxCard.onclick=()=>{
-      document.querySelectorAll('.tool-select-card').forEach(c=>c.classList.remove('selected'));
-      pptxCard.classList.add('selected');selectedToolId='pptx_manual';
-      payRoute='manual';
-      document.getElementById('reasonBlock').style.display='block';
-      document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
-      checkSelectReady();
-    };
-    container.appendChild(pptxCard);
-  }
 }
 
 function buildManualSelectScreen(){
@@ -1597,7 +1315,7 @@ function buildManualSelectScreen(){
   });
 }
 
-function goSelectBeforePay(){goS('s-select');uf(7);} // payRouteはカード選択時にセット
+function goSelectBeforePay(){payRoute='auto';goS('s-select');uf(7);}
 function goManualChoiceBeforePay(){payRoute='manual';goS('s-select');uf(7);}
 
 function selReason(btn,v){
@@ -1638,30 +1356,13 @@ function openPayModal(){
   if(roiMonthlyHours>0)selHtml+=`<div>📌 想定削減：<strong>月 ${roiMonthlyHours} 時間</strong></div>`;
   document.getElementById('modalSelections').innerHTML=selHtml;
   // 含まれるもの
-  if(payRoute==='manual'){
-    document.getElementById('modalContents').innerHTML=`
-      ・PowerPoint整理ガイド<br>
-      ・最初の3ステップ<br>
-      ・次の相談先ガイド
-    `;
-  }else if(payRoute==='auto'&&task){
-    const items=[
-      '📊 メイン管理シート（カスタマイズ用・たたき台）',
-      '📋 AI活用プロンプト（無料Claude/Geminiで動作）',
-      '📈 業務フローチャート（自動化区分・AIヒント付き）',
-      '⚡ カスタマイズガイド（修正方法の手順書）',
-      '❓ AI質問集（困ったときのプロンプト集）',
-      '📖 README＆プロンプトシート付き',
-      '⚠️ <strong style="color:var(--red);">重要：このExcelは完成品ではなく、あなたが自社に合わせてカスタマイズするためのベースです</strong>'
-    ];
+  if(payRoute==='auto'&&task){
+    const items=['📊 メイン管理シート（すぐ使える標準版）','📋 AI活用プロンプト（無料Claude/Geminiで動作）','📈 業務フローチャート（自動化区分付き）','⚡ AI活用ポイント（工程別の指示例）','🛠 カスタマイズガイド（自社用カスタマイズ手順）','❓ AI質問集（困ったときのプロンプト集）','📖 README＆プロンプトシート付き'];
     if(task.hasOcr)items.splice(1,0,'📷 OCR転記プロンプト');
     document.getElementById('modalContents').innerHTML=items.map(s=>`✅ ${s}`).join('<br>');
   }else{
     document.getElementById('modalContents').innerHTML=[
-      '📋 業務フロー整理スライド（6枚）',
-      '✏️ たたき台の使い方・肉付けガイド',
-      '🔄 なぜ継続更新が必要かの説明ページ',
-      '⚠️ <strong style="color:var(--red);">重要：このガイドは完成品ではなく、チーム内で修正・拡張するためのたたき台です</strong>'
+      '📋 業務フロー整理スライド（6枚）','✏️ たたき台の使い方・肉付けガイド','🔄 なぜ継続更新が必要かの説明ページ'
     ].map(s=>`✅ ${s}`).join('<br>');
   }
   document.getElementById('payModal').style.display='flex';
@@ -1675,52 +1376,6 @@ async function execPayment(){
   }else{
     const success=await genManualPPTX();
     if(success){
-      // 診断結果ベースで「最初の3ステップ」と「次のアクション」を動的更新
-      (function(){
-        const safe=(v)=>v?String(v):'';
-        const hiPri=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎');
-        const midPri=((ar&&ar.steps)||[]).filter(s=>s.automation==='△');
-        const allPri=[...hiPri,...midPri];
-        // 最初の3ステップ
-        const steps=[];
-        if(allPri.length>0){
-          steps.push(`① 「${safe(allPri[0].text)}」の手順を書き出し、判断基準（OK/NG）を明記する`);
-        }else{
-          steps.push('① 今の手順を5〜10ステップで書き出す（このPowerPointを埋める）');
-        }
-        if(allPri.length>1){
-          steps.push(`② 「${safe(allPri[1].text)}」によくある例外パターンを書き足す`);
-        }else{
-          steps.push('② 各ステップに「こういう時はこうする」の判断基準を追記する');
-        }
-        if(ar&&ar.structure_issue&&ar.structure_note){
-          steps.push(`③ 構造改善：${safe(ar.structure_note).slice(0,40)}…`);
-        }else{
-          steps.push('③ 月1回、手順書を見直すタイミングをカレンダーに入れる');
-        }
-        document.getElementById('manualFirstSteps').innerHTML=
-          `<strong>最初の3ステップ</strong><br><br>${steps.join('<br>')}`;
-        // 次のアクション（診断スコアで分岐）
-        const score=ar&&ar.score?ar.score:0;
-        let actions='';
-        if(score>=70){
-          const firstStep=allPri.length>0?`「${safe(allPri[0].text)}」`:'この手順';
-          actions=
-            `・今すぐ：無料のClaude.ai / Geminiで${firstStep}のプロンプトを試す<br>`+
-            `・今週中：このPowerPointの手順スライドを自分の言葉に書き直す<br>`+
-            `・来週：チームに見せて「抜けがないか」確認してもらう`;
-        }else{
-          actions=
-            `・今すぐ：このPowerPointを開いて各スライドの空欄を埋める<br>`+
-            `・今週中：「よくある例外」を付箋に書き出し後で追記する<br>`+
-            `・来週：上長または業務担当者に「現状の課題」を共有する`;
-        }
-        if(ar&&ar.structure_issue&&ar.structure_note){
-          actions+=`<br>・中期：${safe(ar.structure_note).slice(0,50)}…（社内IT・外部相談を検討）`;
-        }
-        document.getElementById('manualNextAction').innerHTML=
-          `<strong>次のアクション・相談先</strong><br><br>${actions}`;
-      })();
       goS('s-manual');uf(9);
     }else{
       alert('ファイル生成に失敗しました。入力内容を確認して再度お試しください。');
@@ -1749,12 +1404,6 @@ function calcROI(){
   const btn=document.getElementById('btnROI');
   btn.textContent='成果物の内容を確認する →';
   btn.onclick=showPreview;
-  const roiTimeValue=document.getElementById('roiTimeValue');
-  roiTimeValue.innerHTML=`
-    通常、この整理には2〜3週間かかります。<br>
-    このツールでは約20分で土台を作成できます。
-  `;
-  roiTimeValue.style.display='block';
 }
 
 // ===== 成果物プレビュー表示（課金前） =====
@@ -1764,38 +1413,27 @@ function showPreview(){
   ['blockPrompt','blockOcr','blockExcel','blockPPTX'].forEach(id=>{document.getElementById(id).style.display='none';});
 
   if(payRoute==='manual'){
-    document.getElementById('outTitle').textContent='整理から始めるための成果物です';
-    document.getElementById('outDesc').innerHTML=`
-      この成果物は完成品ではなく、実装前の設計図です。<br>
-      そのままでは運用できませんが、整理・議論・実装準備を大幅に短縮できます。
-    `;
+    document.getElementById('outTitle').textContent='生成されるガイドの内容を確認してください';
+    const previewLines=q2_1Steps.split('\n').filter(s=>s.trim()).slice(0,5);
+    const previewHtml=previewLines.map((l,i)=>`<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${l.trim().replace(/^[\d\.\-\s]+/,'')}`).join('<br>');
+    document.getElementById('outDesc').innerHTML=`${ind}・${pos} 向けの業務フロー整理ガイド（PowerPoint）が生成されます。<br><br>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-top:8px;">
+        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">入力された手順（スライドに反映されます）</div>
+        <div style="font-size:14px;color:var(--text2);line-height:1.9;">${previewHtml}${q2_1Steps.split('\n').filter(s=>s.trim()).length>5?'<br><span style="color:var(--text3);">…他 '+(q2_1Steps.split('\n').filter(s=>s.trim()).length-5)+'ステップ</span>':''}</div>
+      </div>`;
     document.getElementById('blockPPTX').style.display='block';
-    document.getElementById('blockPrompt').style.display='none';
-    document.getElementById('blockOcr').style.display='none';
-    document.getElementById('blockExcel').style.display='none';
     console.log('manual生成データ', {pain: q2Pain, steps: q2_1Steps, reason: selectedReason});
     return;
   }
 
   const task=TOP10.find(t=>t.id===selectedToolId)||TOP10[0];
-  document.getElementById('outTitle').textContent=`「${task.name}」のカスタマイズ用たたき台`;
-  document.getElementById('outDesc').innerHTML=`
-    <div style="margin-bottom:14px;">
-      ${ind}・${pos} 向けの「${task.name}」カスタマイズ用ツールセットが生成されます。
-    </div>
-
-    <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;font-size:14px;color:var(--text2);line-height:1.8;">
-      <strong style="color:var(--accent);">⚠️ これは『完成品』ではなく『たたき台』です</strong><br><br>
-      下のExcelはあくまで標準版のたたき台です。<br>
-      あなたの業務に合わせて<strong>列の追加・削除、ドロップダウンの変更、関数のカスタマイズが必須</strong>です。<br><br>
-      その整理プロセスを通じて、「本当の問題」が見えてきます。
-    </div>
-  `;
+  document.getElementById('outTitle').textContent=`「${task.name}」の生成内容を確認してください`;
+  document.getElementById('outDesc').textContent=`${ind}・${pos} 向けの専用ツールセットが生成されます。内容を確認してから購入できます。`;
 
   if(task.hasPrompt&&task.promptText){
     const full=task.promptText(ind,pos);
     const preview=full.split('\n').slice(0,6).join('\n')+'\n\n…（続きは購入後に全文表示されます）';
-    document.getElementById('promptDesc').textContent=`このプロンプトを無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けると、${ind}向けの「${task.name}」専用Excelを自動で作成してくれます。ただし、生成されたExcelもたたき台です。自社用にカスタマイズしてください。`;
+    document.getElementById('promptDesc').textContent=`このプロンプトを無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けると、${ind}向けの「${task.name}」専用Excelを自動で作成してくれます。`;
     document.getElementById('promptTxt').textContent=preview;
     document.getElementById('blockPrompt').style.display='block';
   }
@@ -1808,10 +1446,10 @@ function showPreview(){
   if(task.hasExcel){
     const sheetList=`<div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:2;">
       <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">含まれるシート</div>
-      ✅ メイン管理シート（カスタマイズ用）<br>
+      ✅ メイン管理シート（すぐ使える標準版）<br>
       ✅ フローチャート（自動化区分・AIヒント付き）<br>
       ✅ AI活用ポイント（工程別の指示例）<br>
-      ✅ カスタマイズガイド（修正手順を記載）<br>
+      ✅ カスタマイズガイド（自社用カスタマイズ手順）<br>
       ✅ AI質問集（困ったときのプロンプト集）<br>
       ✅ README＆プロンプト（使い方・全文プロンプト）
     </div>`;
@@ -1840,10 +1478,10 @@ function showActualOutput(){
   if(task.hasExcel&&task.excelFn){
     const sheetListDl=`<div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:2;">
       <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">含まれるシート</div>
-      ✅ メイン管理シート（カスタマイズ用）<br>
+      ✅ メイン管理シート（すぐ使える標準版）<br>
       ✅ フローチャート（自動化区分・AIヒント付き）<br>
       ✅ AI活用ポイント（工程別の指示例）<br>
-      ✅ カスタマイズガイド（修正手順を記載）<br>
+      ✅ カスタマイズガイド（自社用カスタマイズ手順）<br>
       ✅ AI質問集（困ったときのプロンプト集）<br>
       ✅ README＆プロンプト（使い方・全文プロンプト）
     </div>`;
@@ -1887,110 +1525,49 @@ async function genManualPPTX(){
     s1.addText('このたたき台を育てて、会社の資産にしてください',{x:0.5,y:2.7,w:9,h:0.5,fontSize:11,color:text3,align:'center'});
     s1.addText(`作成日：${new Date().toLocaleDateString('ja-JP')}`,{x:0.5,y:4.8,w:9,h:0.4,fontSize:10,color:text3,align:'center'});
 
-    // Slide 2: 課題・困りごと ＋ 現在の運用状態
+    // Slide 2: 課題・困りごと
     const s2=pptx.addSlide();
     s2.background={color:bg};
     s2.addText('課題・困りごと',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
-    s2.addShape(pptx.ShapeType.rect,{x:0.4,y:0.85,w:0.05,h:1.0,fill:{color:accent},line:{color:accent}});
-    s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:1.0,fontSize:13,color:text2,valign:'top',wrap:true});
-    s2.addText('現在の運用状態',{x:0.8,y:2.1,w:8,h:0.4,fontSize:16,bold:true,color:dark});
-    s2.addShape(pptx.ShapeType.rect,{x:0.4,y:2.1,w:0.05,h:3.5,fill:{color:blue},line:{color:blue}});
-    s2.addText(
-      '・管理場所：店舗 / EC / 事務所\n' +
-      '・正データ：未決定 / Excel / POS / EC\n' +
-      '・更新頻度：都度 / 毎日 / 週次\n' +
-      '・課題：ズレ / 二重入力 / 属人化',
-      {x:1.0,y:2.55,w:8,h:2.0,fontSize:13,color:text2,valign:'top',wrap:true}
-    );
+    s2.addShape(pptx.ShapeType.rect,{x:0.4,y:0.85,w:0.05,h:3.5,fill:{color:accent},line:{color:accent}});
+    s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:3.4,fontSize:13,color:text2,valign:'top',wrap:true});
 
-    // Slide 3〜n: 現状の業務フロー（1工程1スライド）
-    const rawSteps=(q2_1Steps||'').split('\n').filter(s=>s.trim());
-    // ar.stepsがあればそちらを優先、なければrawStepsを使用
-    const arSteps=(ar&&ar.steps&&ar.steps.length>0)?ar.steps:null;
-    const stepSlides=arSteps
-      ? arSteps.map(st=>({title:safe(st.text)||`ステップ${st.step}`,purpose:safe(st.note)||'',detail:'',automation:st.automation||''}))
-      : rawSteps.map((st,i)=>({title:safe(st).trim().replace(/^[\d.\-\s]+/,'')||`ステップ${i+1}`,purpose:'',detail:'',automation:''}));
-
-    if(stepSlides.length===0){
-      const sEmpty=pptx.addSlide();
-      sEmpty.background={color:bg};
-      sEmpty.addText('現状の業務フロー（たたき台）',{x:0.6,y:0.4,w:8.5,h:0.4,fontSize:24,bold:true,color:dark});
-      sEmpty.addText('（手順の入力なし）',{x:0.8,y:1.5,w:8,h:0.5,fontSize:14,color:text3});
+    // Slide 3: 現状の業務フロー
+    const rawSteps=(q2_1Steps||'').split('\n').filter(s=>s.trim()).slice(0,9);
+    const s3=pptx.addSlide();
+    s3.background={color:bg};
+    s3.addText('現状の業務フロー（たたき台）',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
+    s3.addText('※ ステップを確認し、抜け・漏れがあれば追記してください',{x:0.4,y:0.85,w:9,h:0.35,fontSize:10,color:text3,italic:true});
+    if(rawSteps.length===0){
+      s3.addText('（手順の入力なし）',{x:0.4,y:1.3,w:9,h:0.5,fontSize:12,color:text3});
     }else{
-      stepSlides.forEach((step,index)=>{
-        const ss=pptx.addSlide();
-        ss.background={color:bg};
-        // ステップ番号アクセントバー
-        ss.addShape(pptx.ShapeType.rect,{x:0,y:0,w:0.18,h:7.0,fill:{color:accent},line:{color:accent}});
-        ss.addText(`STEP ${index+1}：${step.title}`,{x:0.4,y:0.3,w:8.9,h:0.55,fontSize:20,bold:true,color:dark,wrap:true});
-        // 目的
-        ss.addShape(pptx.ShapeType.rect,{x:0.4,y:1.05,w:1.1,h:0.28,fill:{color:accent},line:{color:accent},rounding:true});
-        ss.addText('目的',{x:0.4,y:1.05,w:1.1,h:0.28,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
-        ss.addText(step.purpose||'（記入してください）',{x:1.6,y:1.05,w:7.8,h:0.28,fontSize:12,color:text2,valign:'middle'});
-        // 手順
-        ss.addShape(pptx.ShapeType.rect,{x:0.4,y:1.55,w:1.1,h:0.28,fill:{color:blue},line:{color:blue},rounding:true});
-        ss.addText('手順',{x:0.4,y:1.55,w:1.1,h:0.28,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
-        ss.addText(step.detail||'（具体的に記載してください）',{x:1.6,y:1.55,w:7.8,h:0.28,fontSize:12,color:text2,valign:'middle'});
-        // 判断基準
-        ss.addShape(pptx.ShapeType.rect,{x:0.4,y:2.35,w:1.1,h:0.28,fill:{color:green},line:{color:green},rounding:true});
-        ss.addText('判断基準',{x:0.4,y:2.35,w:1.1,h:0.28,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
-        ss.addText('（OK/NGの条件を記載）',{x:1.6,y:2.35,w:7.8,h:0.28,fontSize:12,color:text3,valign:'middle'});
-        // 例外対応
-        ss.addShape(pptx.ShapeType.rect,{x:0.4,y:3.15,w:1.1,h:0.28,fill:{color:'8B6914'},line:{color:'8B6914'},rounding:true});
-        ss.addText('例外対応',{x:0.4,y:3.15,w:1.1,h:0.28,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
-        ss.addText('（イレギュラー対応を記載）',{x:1.6,y:3.15,w:7.8,h:0.28,fontSize:12,color:text3,valign:'middle'});
-        // フッター注記
-        ss.addText(
-          '※まとめ方は「このたたき台の使い方」を参考にしてください',
-          {x:0.4,y:6.5,w:9,h:0.3,fontSize:10,color:text3,italic:true}
-        );
+      rawSteps.forEach((step,i)=>{
+        const y=1.25+i*0.44;
+        s3.addShape(pptx.ShapeType.rect,{x:0.4,y:y+0.04,w:0.3,h:0.3,fill:{color:accent},line:{color:accent},rounding:true});
+        s3.addText(`${i+1}`,{x:0.4,y:y+0.04,w:0.3,h:0.3,fontSize:10,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+        s3.addText(safe(step).trim().replace(/^[\d.\-\s]+/,'')||`ステップ${i+1}`,{x:0.85,y:y,w:8.6,h:0.42,fontSize:12,color:text2,valign:'middle'});
       });
     }
 
-    // 整理・改善のポイント（2件ずつページ分割）
+    // Slide 4: 整理のポイント（AIの分析から）
     const autoSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎'||s.automation==='△');
-    // 2件ずつチャンクに分割
-    const autoChunks=[];
-    if(autoSteps.length===0){autoChunks.push([]);}
-    else{for(let ci=0;ci<autoSteps.length;ci+=2)autoChunks.push(autoSteps.slice(ci,ci+2));}
-    autoChunks.forEach((chunk,pageIdx)=>{
-      const sImp=pptx.addSlide();
-      sImp.background={color:bg};
-      sImp.addText(pageIdx===0?'整理・改善のポイント':'整理・改善のポイント（続き）',
-        {x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
-      if(pageIdx===0){
-        sImp.addText('以下の工程に改善の余地があります。まず整理から始めましょう。',
-          {x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
-      }
-      if(chunk.length===0){
-        sImp.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',
-          {x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text2,wrap:true});
-        return;
-      }
-      chunk.forEach((step,i)=>{
-        const y=1.3+i*1.65;
+    const s4=pptx.addSlide();
+    s4.background={color:bg};
+    s4.addText('整理・改善のポイント',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
+    if(autoSteps.length>0){
+      s4.addText('以下の工程に改善の余地があります。まず整理から始めましょう。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
+      autoSteps.slice(0,5).forEach((step,i)=>{
+        const y=1.3+i*0.62;
         const lcolor=step.automation==='◎'?accent:'D4890A';
-        // ステップ名ボックス
-        sImp.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.38,fill:{color:'F5F6FA'},line:{color:lcolor,pt:1.5}});
-        sImp.addText(`STEP ${safe(step.step)}  ${safe(step.text)}`,
-          {x:0.55,y:y+0.06,w:8.6,h:0.26,fontSize:11,bold:true,color:dark});
-        // noteエリア（高さ確保）
-        if(step.note)sImp.addText(`→ ${safe(step.note)}`,
-          {x:0.55,y:y+0.42,w:8.6,h:0.22,fontSize:10,color:lcolor,wrap:true,valign:'top'});
-        // プロンプト例ボックス（高さ1.6"確保）
-        const promptY=y+0.7;
-        sImp.addShape(pptx.ShapeType.rect,{x:0.4,y:promptY,w:8.9,h:0.85,fill:{color:'F0F4FF'},line:{color:blue,pt:1}});
-        sImp.addText('▼ プロンプト例（このままコピーして使えます）',
-          {x:0.55,y:promptY+0.05,w:8.5,h:0.22,fontSize:9,bold:true,color:blue});
-        const promptText=step.prompt_hint
-          ? safe(step.prompt_hint)
-          : `以下の「${safe(step.text)}」の手順を整理し、判断基準とよくあるイレギュラー対応を箇条書きで教えてください。`;
-        sImp.addText(promptText,
-          {x:0.55,y:promptY+0.28,w:8.5,h:0.52,fontSize:10,color:'1A3A7A',wrap:true,valign:'top'});
+        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.52,fill:{color:'F5F6FA'},line:{color:lcolor,pt:1.5}});
+        s4.addText(`STEP ${safe(step.step)}  ${safe(step.text)}`,{x:0.55,y:y+0.05,w:8.6,h:0.25,fontSize:11,bold:true,color:dark});
+        if(step.note)s4.addText(`→ ${safe(step.note)}`,{x:0.55,y:y+0.28,w:8.6,h:0.2,fontSize:10,color:lcolor});
       });
-    });
+    }else{
+      s4.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text2,wrap:true});
+    }
 
-    // たたき台の使い方
+    // Slide 5: たたき台の使い方
     const s5=pptx.addSlide();
     s5.background={color:bg};
     s5.addText('このたたき台の使い方',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
@@ -2025,120 +1602,7 @@ async function genManualPPTX(){
       s6.addText(r.body,{x:1.1,y:y+0.33,w:8.2,h:0.35,fontSize:11,color:text3});
     });
     s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:blue,align:'center',wrap:true});
-
-    // Slide 7: 最初の3ステップ（診断結果ベースで動的生成）
-    const s7=pptx.addSlide();
-    s7.background={color:bg};
-    s7.addText('最初の3ステップ',{x:0.4,y:0.3,w:9,h:0.5,fontSize:22,bold:true,color:dark});
-    // 診断結果から優先度の高い工程を抽出
-    const hiPri=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎');
-    const midPri=((ar&&ar.steps)||[]).filter(s=>s.automation==='△');
-    const allPri=[...hiPri,...midPri];
-    const dynSteps=[];
-    if(allPri.length>0){
-      dynSteps.push(`① 「${safe(allPri[0].text)}」の手順を書き出し、判断基準（OK/NG）を明記する`);
-    }else{
-      dynSteps.push('① 今の手順を5〜10ステップで書き出す（この資料を埋める）');
-    }
-    if(allPri.length>1){
-      dynSteps.push(`② 「${safe(allPri[1].text)}」によくある例外パターンを書き足す`);
-    }else{
-      dynSteps.push('② 各ステップに「こういう時はこうする」の判断基準を追記する');
-    }
-    if(ar&&ar.structure_issue&&ar.structure_note){
-      dynSteps.push(`③ 構造改善：${safe(ar.structure_note).slice(0,50)}…`);
-    }else{
-      dynSteps.push('③ 月1回、手順書を見直すタイミングをカレンダーに入れる');
-    }
-    dynSteps.forEach((text,i)=>{
-      const y=1.05+i*1.0;
-      s7.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:0.5,h:0.5,fill:{color:accent},line:{color:accent}});
-      s7.addText(String(i+1),{x:0.4,y:y,w:0.5,h:0.5,fontSize:16,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
-      s7.addText(text,{x:1.05,y:y,w:8.3,h:0.5,fontSize:13,color:text2,valign:'middle',wrap:true});
-    });
-    s7.addShape(pptx.ShapeType.rect,{x:0.4,y:4.3,w:9,h:0.7,fill:{color:'FFF8F3'},line:{color:accent,pt:1}});
-    s7.addText(
-      'まず1つ目だけ今週中に終わらせてください。完璧でなくてよい。「書いた」ことが第一歩です。',
-      {x:0.6,y:4.35,w:8.7,h:0.6,fontSize:11,color:accent,valign:'middle',wrap:true}
-    );
-
-    // Slide 8: 次のアクション（診断スコアと構造課題ベース）
-    const s8=pptx.addSlide();
-    s8.background={color:bg};
-    s8.addText('次のアクション・相談先',{x:0.4,y:0.3,w:9,h:0.5,fontSize:22,bold:true,color:dark});
-    const diagScore=ar&&ar.score?ar.score:0;
-    // 行動カテゴリを診断スコアで分岐
-    const nextActions=[];
-    if(diagScore>=70){
-      nextActions.push({cat:'今すぐできる',color:green,items:[
-        `無料のClaude.ai / Geminiを使って「${safe(allPri.length>0?allPri[0].text:'手順整理')}」のプロンプトを試す`,
-        'このPowerPointの手順スライドに具体的な数字・担当者名を書き込む',
-      ]});
-      nextActions.push({cat:'社内で相談',color:blue,items:[
-        '手順書レビュー → 実際に担当している人に「抜けがないか」確認してもらう',
-        '例外パターンの共有 → チームミーティングで「よくあるイレギュラー」を集める',
-      ]});
-    }else{
-      nextActions.push({cat:'今すぐできる',color:green,items:[
-        'このPowerPointを開いて手順スライドを自分の言葉に書き直す',
-        '「よくある例外」を付箋に書き出し、後で手順書に追記する',
-      ]});
-      nextActions.push({cat:'社内で相談',color:blue,items:[
-        '業務整理 → 上長または業務担当者と「現状の課題」を共有する',
-        '手順確認 → 実際に作業している担当者に手順書を見せてフィードバックをもらう',
-      ]});
-    }
-    if(ar&&ar.structure_issue){
-      nextActions.push({cat:'構造改善（中期）',color:'8B6914',items:[
-        safe(ar.structure_note)||'データの正本を決め、二重管理をなくす設計を検討する',
-        '社内IT担当 / 外部コンサルへの相談を検討する',
-      ]});
-    }
-    nextActions.forEach((block,i)=>{
-      const y=1.05+i*1.85;
-      s8.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:2.0,h:0.32,fill:{color:block.color},line:{color:block.color}});
-      s8.addText(block.cat,{x:0.4,y:y,w:2.0,h:0.32,fontSize:10,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
-      block.items.forEach((item,j)=>{
-        s8.addText(`・${item}`,{x:2.55,y:y+j*0.52,w:7.2,h:0.48,fontSize:11,color:text2,wrap:true,valign:'top'});
-      });
-    });
-
-    // Slide 9: まずこれだけやってください（変更履歴テーブル付き）
-    const s9=pptx.addSlide();
-    s9.background={color:surface};
-    s9.addText('まずこれだけやってください',{x:0.4,y:0.3,w:9,h:0.5,fontSize:22,bold:true,color:dark});
-    // 診断結果に合わせた動的な一言
-    const firstAction=allPri.length>0
-      ? `「${safe(allPri[0].text)}」の手順を今週中に書き出してください。`
-      : '今の手順を5〜10ステップで書き出すことから始めてください。';
-    s9.addText(firstAction,{x:0.5,y:1.05,w:9,h:1.1,fontSize:20,bold:true,color:blue,wrap:true,valign:'top'});
-    s9.addText('完璧でなくてよい。書いたものが会社の資産になります。',
-      {x:0.5,y:2.15,w:9,h:0.45,fontSize:12,color:text3,italic:true});
-    // 変更履歴テーブル
-    s9.addText('変更履歴',{x:0.4,y:2.75,w:2,h:0.3,fontSize:11,bold:true,color:text3});
-    const today=new Date().toLocaleDateString('ja-JP');
-    const histRows=[
-      [
-        {text:'版',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
-        {text:'更新日',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
-        {text:'変更内容',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
-        {text:'担当者',options:{bold:true,align:'center',color:'FFFFFF',fill:{type:'solid',color:'1A4FA0'}}},
-      ],
-      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
-      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
-      [{text:'',options:{}},{text:'',options:{}},{text:'',options:{}},{text:'',options:{}}],
-      [
-        {text:'v1.0',options:{align:'center',color:text2}},
-        {text:today,options:{align:'center',color:text2}},
-        {text:'たたき台ダウンロード',options:{color:text2}},
-        {text:'',options:{color:text2}},
-      ],
-    ];
-    s9.addTable(histRows,{
-      x:0.4,y:3.1,w:9.2,colW:[0.8,1.5,5.2,1.7],
-      border:{type:'solid',pt:0.5,color:'CCCCCC'},
-      fontSize:10,rowH:0.38,
-    });
+    s6.addText('このファイルは、Glocal Labが提供する「業務半自動化スターターキット」をもとに生成されています。',{x:0.4,y:5.2,w:9,h:0.25,fontSize:8,color:'AAAAAA',align:'center',italic:true});
 
     // ⑦ Blobダウンロード方式（最安定）
     const fname=`業務フロー整理ガイド_${safe(ind)||'診断結果'}.pptx`;
@@ -2254,37 +1718,6 @@ function addReadme(wb,task,ind,pos,ar,promptTxt,ocrTxt){
   ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
   dr.height=16; dr.getCell(1).fill=XS.fill(XS.C.LGRAY); dr.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
 
-  // このExcelについてセクション
-  ws.addRow([]);
-  xSection(ws,'【このExcelについて - 重要】',NC);
-
-  const intro=ws.addRow([
-    '⚠️ このExcelは「完成品」ではありません\n\n'
-    +'このシートは、あなたの業務をベースに生成された「カスタマイズ用たたき台」です。\n'
-    +'以下の点に注意してください：\n\n'
-    +'【必ずやること】\n'
-    +'✓ そのまま使うのではなく、修正が必須です\n'
-    +'✓ 不要な列・項目は削除してください\n'
-    +'✓ 不足している項目は追加してください\n'
-    +'✓ ドロップダウン・関数を自社ルールに合わせてください\n'
-    +'✓ チーム内で「本当にこうか？」と議論しながら整理することが大事です\n\n'
-    +'【このプロセスのメリット】\n'
-    +'→ 完成品を導入するより定着率が高い\n'
-    +'→ 業務の真の問題点が見える\n'
-    +'→ 業務が変わった時、自分たちで改善できる体質になる\n\n'
-    +'【推奨される進め方】\n'
-    +'1. 各シートを一度見て、「これ、本当にこう？」と確認\n'
-    +'2. 不要な列を削除、不足分を追加\n'
-    +'3. 関数・ドロップダウンを自社ルールにカスタマイズ\n'
-    +'4. チーム全体で「なぜこの項目が必要か」を議論\n'
-    +'5. 実装開始（ここから本番です）'
-  ]);
-  intro.height=180;
-  ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
-  intro.getCell(1).alignment={wrapText:true,vertical:'top'};
-  intro.getCell(1).fill=XS.fill(XS.C.LORANGE);
-  intro.getCell(1).font={size:10,color:{argb:XS.C.ORANGE}};
-
   ws.addRow([]);
   xSection(ws,'【AIプロンプトの使い方】',NC);
   const u1=ws.addRow(['以下のプロンプトを 無料のClaude（claude.ai）または Gemini（gemini.google.com）にコピーして貼り付けてください。']);
@@ -2326,6 +1759,11 @@ function addReadme(wb,task,ind,pos,ar,promptTxt,ocrTxt){
     ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
     s4.getCell(1).fill=XS.fill(XS.C.LORANGE); s4.getCell(1).font={bold:true,size:10,color:{argb:XS.C.AMBER}};
   }
+  ws.addRow([]);
+  const cr=ws.addRow(['このファイルは、Glocal Labが提供する「業務半自動化スターターキット」をもとに生成されています。']);
+  ws.mergeCells(ws.rowCount,1,ws.rowCount,NC);
+  cr.height=16; cr.getCell(1).font={size:9,italic:true,color:{argb:'FF999999'}};
+  cr.getCell(1).alignment={horizontal:'right'};
 }
 
 // ===== 共通追加シート（フローチャート・AI活用・カスタマイズ・AI質問集）=====
@@ -2492,28 +1930,6 @@ async function genExpenseExcel(ind,pos,task,ar){
   const tot1=ws1.addRow(['合計','','','',null,'','','','','','','','','']);
   tot1.getCell(5).value=fml(`SUM(E${S}:E${E})`); tot1.height=20;
   tot1.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=NC){c.fill=XS.fill(XS.C.LGRAY);c.font={bold:true,size:11,color:{argb:XS.C.NAVY}};c.border={top:{style:'medium',color:{argb:XS.C.ORANGE}}};}});
-
-  // ===== 条件付き書式（ExcelJS addConditionalFormatting） =====
-  // H列：未来日付 → 赤背景＋白太字
-  ws1.addConditionalFormatting({ref:`H${S}:H${E}`,rules:[{type:'expression',formulae:[`$H${S}="NG：未来日付"`],priority:1,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFF4444'}},font:{bold:true,color:{argb:'FFFFFFFF'}}}]});
-  // L列：NG → 赤背景
-  ws1.addConditionalFormatting({ref:`L${S}:L${E}`,rules:[{type:'expression',formulae:[`$L${S}="NG"`],priority:1,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFF4444'}},font:{bold:true,color:{argb:'FFFFFFFF'}}},{type:'expression',formulae:[`$L${S}="要確認"`],priority:2,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFFCC00'}},font:{bold:true,color:{argb:'FF663300'}}}]});
-  // I列：金額チェック 要確認 → 黄
-  ws1.addConditionalFormatting({ref:`I${S}:I${E}`,rules:[{type:'containsText',operator:'containsText',text:'要確認',priority:1,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFFEE99'}}}]});
-  // J列：添付チェック NG → 赤
-  ws1.addConditionalFormatting({ref:`J${S}:J${E}`,rules:[{type:'containsText',operator:'containsText',text:'NG',priority:1,fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFF4444'}},font:{bold:true,color:{argb:'FFFFFFFF'}}}]});
-
-  // ===== データ入力規則（ドロップダウン＋必須チェック） =====
-  // C列：費目ドロップダウン
-  for(let i=0;i<rows;i++){
-    ws1.getCell(`C${S+i}`).dataValidation={type:'list',formulae:['"交通費,宿泊費,会議費,接待費,消耗品費,通信費,研修費,その他"'],showErrorMessage:true,error:'リストから選択してください',errorTitle:'入力エラー'};
-    // F列：添付書類ドロップダウン
-    ws1.getCell(`F${S+i}`).dataValidation={type:'list',formulae:['"あり,なし"'],showErrorMessage:true,error:'「あり」または「なし」を選択してください',errorTitle:'入力エラー'};
-    // G列：支払方法ドロップダウン
-    ws1.getCell(`G${S+i}`).dataValidation={type:'list',formulae:['"現金,法人カード,立替"'],showErrorMessage:true,error:'リストから選択してください',errorTitle:'入力エラー'};
-    // E列：金額は正の数値のみ
-    ws1.getCell(`E${S+i}`).dataValidation={type:'whole',operator:'greaterThan',formulae:[0],showErrorMessage:true,error:'正の整数を入力してください',errorTitle:'入力エラー'};
-  }
 
   // Sheet2: 規程設定
   const ws2=wb.addWorksheet('規程設定');
@@ -2757,7 +2173,6 @@ function restart(){
   document.getElementById('btnROI').onclick=calcROI;
   document.getElementById('roiBox').style.display='none';
   document.getElementById('roiContext').style.display='none';
-  const rtv=document.getElementById('roiTimeValue');if(rtv)rtv.style.display='none';
   document.getElementById('reasonBlock').style.display='none';
   document.getElementById('breakdownCard').style.display='none';
   ['blockPrompt','blockOcr','blockExcel','blockPPTX','dlBlockPrompt','dlBlockOcr','dlBlockExcel'].forEach(id=>{
