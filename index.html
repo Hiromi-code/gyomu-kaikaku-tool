@@ -1051,8 +1051,13 @@ ${contextStr}困りごと：${q2Pain}
 ルール：
 ・stepsは入力された手順をそのまま忠実に分解してください（5〜10ステップ）
 ・automation：◎=今すぐ無料AIツールで自動化できる、△=ルール化・整理すれば自動化できる、×=人の判断が必要
+・【必須】以下のステップは必ず×にすること（例外なし）：
+  - 外部サービス・販売サイト・ECサイト等へのログイン・アクセス・ファイルダウンロード操作
+  - 販売管理ソフト・会計ソフト・ERPシステム等の専用アプリケーションへのデータ入力・登録・操作（ソフト固有の機能はAIでは代替不可）
+  - 実物の確認・梱包・発送・検品・署名・押印など物理的作業
+  - 電話・対面での顧客対応
 ・noteは◎△のステップのみ。「無料のClaude（claude.ai）」「無料のGemini（gemini.google.com）」「NotebookLM（完全無料）」のいずれかを使った具体的な方法を書く。有料ツール・有料プランは絶対に書かない
-・prompt_hint：◎△のステップのみ。ユーザーがそのままAIに貼れる具体的な指示文を書く。×のステップは空文字
+・prompt_hint：◎△のステップのみ。ユーザーがそのままAIに貼れる具体的な指示文を書く。×のステップは必ず空文字("")にする
 ・has_automationは◎または△が1つ以上あればtrue
 ・matched_ids：業務名を最優先でテンプレートを選ぶ。業務名に「給与・給料・賃金・明細」があればpayrollだが現在のテンプレートにないため[]。業務名に「経費・精算・領収書」があればexpense。業務名に「入金・消込・売掛」があればreconcile。業務名に「請求書」があればinvoiceを優先。業務名・困りごと・手順の三者が全て無関係な場合のみ[]。最大2件。
 ・priority_idはmatched_idsの最優先1件。当てはまらない場合は""
@@ -1123,7 +1128,11 @@ function showFlowchart(){
 
   // 凡例
   const flavorEl=document.getElementById('fcFlavorNote');
-  flavorEl.innerHTML=`<div class="fc-legend">
+  flavorEl.innerHTML=`<div style="background:rgba(58,124,232,.08);border:1px solid rgba(58,124,232,.25);border-radius:var(--radius);padding:11px 14px;margin-bottom:12px;font-size:14px;color:var(--text2);line-height:1.8;">
+    <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#5a9cf8;letter-spacing:.15em;margin-bottom:5px;">📋 この画面の見方</div>
+    STEP 4で入力いただいた手順を解析しました。各工程を色で分類しています。<strong style="color:var(--text);">紫・黄の工程の下</strong>には、もしAIを活用する場合の<strong style="color:var(--text);">AIへの指示文（プロンプト）の例</strong>を提案しています。そのままコピーして参考にしてください。
+  </div>
+  <div class="fc-legend">
     <div class="fc-legend-item"><div class="fc-legend-dot" style="background:#e87c3a;"></div>人が行う工程</div>
     <div class="fc-legend-item"><div class="fc-legend-dot" style="background:#e8c33a;"></div>整理すれば自動化できる</div>
     <div class="fc-legend-item"><div class="fc-legend-dot" style="background:#7c5cd8;"></div>無料AIで今すぐ自動化できる</div>
@@ -1281,11 +1290,21 @@ function buildSelectScreen(tasks){
     card.onclick=()=>{
       document.querySelectorAll('.tool-select-card').forEach(c=>c.classList.remove('selected'));
       card.classList.add('selected');selectedToolId=task.id;
-      document.getElementById('reasonBlock').style.display='block';
-      document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
+      if(tasks.length>1){
+        document.getElementById('reasonBlock').style.display='block';
+        document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
+      }
       checkSelectReady();
     };
     container.appendChild(card);
+    // カードが1件のみの場合は自動選択して理由選択をスキップ
+    if(tasks.length===1){
+      card.classList.add('selected');
+      selectedToolId=task.id;
+      selectedReason='自動選択';
+      document.getElementById('reasonBlock').style.display='none';
+      checkSelectReady();
+    }
   });
 }
 
@@ -1308,11 +1327,20 @@ function buildManualSelectScreen(){
     card.onclick=()=>{
       document.querySelectorAll('.tool-select-card').forEach(c=>c.classList.remove('selected'));
       card.classList.add('selected');selectedToolId='manual_'+step.step;
-      document.getElementById('reasonBlock').style.display='block';
-      document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
+      if(items.length>1){
+        document.getElementById('reasonBlock').style.display='block';
+        document.getElementById('reasonBlock').scrollIntoView({behavior:'smooth',block:'nearest'});
+      }
       checkSelectReady();
     };
     container.appendChild(card);
+    if(items.length===1){
+      card.classList.add('selected');
+      selectedToolId='manual_'+step.step;
+      selectedReason='自動選択';
+      document.getElementById('reasonBlock').style.display='none';
+      checkSelectReady();
+    }
   });
 }
 
