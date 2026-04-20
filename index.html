@@ -345,7 +345,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <!-- JS で renderPain() が描画 -->
   </div>
   <div class="nav">
-    <button class="btn-s" onclick="goS('s-goals');uf(2)">← 戻る</button>
+    <button class="btn-s" onclick="painBack()">← 戻る</button>
     <button class="btn-p" id="btnPain" onclick="onPainNext()" disabled>次へ →</button>
   </div>
 </div>
@@ -683,11 +683,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 <!-- ⑦-B マニュアルルート完了 -->
 <div class="screen" id="s-manual">
   <div class="done-box">
-    <div class="done-icon">📋</div>
-    <div class="done-title">業務フロー整理ガイドが完成しました</div>
-    <div class="done-desc">PowerPointファイルのダウンロードが始まります。<br>開けない場合は下のボタンから再ダウンロードしてください。</div>
+    <div class="done-icon" id="manualDoneIcon">📋</div>
+    <div class="done-title" id="manualDoneTitle">業務フロー整理ガイドが完成しました</div>
+    <div class="done-desc" id="manualDoneDesc">PowerPointファイルのダウンロードが始まります。<br>開けない場合は下のボタンから再ダウンロードしてください。</div>
     <button class="btn-dl" id="btnReDownload" style="margin:0 auto;display:inline-flex;">⬇ 再ダウンロード</button>
-    <div class="asset-note">
+    <div class="asset-note" id="manualDoneNote">
       <strong>このたたき台を「資産」に変えるために：</strong><br><br>
       このガイドは完成品ではありません。<br>
       あなたが肉付けするほど、会社固有の資産になります。<br><br>
@@ -838,27 +838,60 @@ function renderPain(){
   else{step3Sub='default';card.innerHTML=defaultPainHtml();}
 }
 
+function painBack(){
+  if(step3Sub==='staff_pick'){
+    // staff_pick → staff_list
+    step3Sub='staff_list';
+    staffCandidateTasks=[];
+    outputIntent='';
+    document.getElementById('painCard').innerHTML=staffListHtml();
+    document.getElementById('btnPain').disabled=true;
+  }else if(step3Sub==='staff_list'){
+    // staff_list → staff_q2
+    step3Sub='staff_q2';
+    outputIntent='';
+    document.getElementById('painCard').innerHTML=staffQ2Html();
+    document.getElementById('btnPain').disabled=true;
+  }else if(step3Sub==='staff_q2'){
+    // staff_q2 → staff_q1
+    step3Sub='staff_q1';
+    outputIntent='';
+    document.getElementById('painCard').innerHTML=staffQ1Html();
+    document.getElementById('btnPain').disabled=true;
+  }else{
+    goS('s-goals');uf(2);
+  }
+}
+
 function staffQ1Html(){return `
   <div class="card-label">STEP 3｜進め方の確認</div>
   <div class="card-title">スタッフに任せるためのマニュアルのたたき台を制作しますが、よいですか？</div>
   <div class="card-hint" style="margin-bottom:18px;">AIがヒアリング内容をもとに、スライド形式のマニュアルたたき台（PowerPoint）を生成します。</div>
   <div style="display:flex;gap:12px;margin-top:8px;">
-    <button class="choice-btn" style="flex:1;" onclick="staffQ1Yes()">✅ はい、作ります</button>
-    <button class="choice-btn" style="flex:1;" onclick="staffQ1No()">🔄 別の方法で整理したい</button>
+    <button class="choice-btn" style="flex:1;" onclick="staffQ1Yes(this)">✅ はい、作ります</button>
+    <button class="choice-btn" style="flex:1;" onclick="staffQ1No(this)">🔄 別の方法で整理したい</button>
   </div>`;}
-function staffQ1Yes(){outputIntent='staff_manual';document.getElementById('btnPain').disabled=false;}
-function staffQ1No(){step3Sub='staff_q2';document.getElementById('painCard').innerHTML=staffQ2Html();document.getElementById('btnPain').disabled=true;}
+function staffQ1Yes(btn){
+  document.querySelectorAll('#painCard .choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  outputIntent='staff_manual';document.getElementById('btnPain').disabled=false;
+}
+function staffQ1No(btn){step3Sub='staff_q2';document.getElementById('painCard').innerHTML=staffQ2Html();document.getElementById('btnPain').disabled=true;}
 
 function staffQ2Html(){return `
   <div class="card-label">STEP 3｜整理の仕方</div>
   <div class="card-title">スタッフにどこを任せられるか、まず整理したいですか？</div>
   <div class="card-hint" style="margin-bottom:18px;">今すぐマニュアルを作る前に、「任せられる業務」を洗い出すところから始める方法です。</div>
   <div style="display:flex;gap:12px;margin-top:8px;">
-    <button class="choice-btn" style="flex:1;" onclick="staffQ2Yes()">✅ はい、整理から始める</button>
-    <button class="choice-btn" style="flex:1;" onclick="staffQ2No()">⏩ 直接手順入力へ進む</button>
+    <button class="choice-btn" style="flex:1;" onclick="staffQ2Yes(this)">✅ はい、整理から始める</button>
+    <button class="choice-btn" style="flex:1;" onclick="staffQ2No(this)">⏩ 直接手順入力へ進む</button>
   </div>`;}
-function staffQ2Yes(){step3Sub='staff_list';document.getElementById('painCard').innerHTML=staffListHtml();document.getElementById('btnPain').disabled=true;}
-function staffQ2No(){outputIntent='staff_manual';document.getElementById('btnPain').disabled=false;}
+function staffQ2Yes(btn){step3Sub='staff_list';document.getElementById('painCard').innerHTML=staffListHtml();document.getElementById('btnPain').disabled=true;}
+function staffQ2No(btn){
+  document.querySelectorAll('#painCard .choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  outputIntent='staff_checklist';document.getElementById('btnPain').disabled=false;
+}
 
 function staffListHtml(){return `
   <div class="card-label">STEP 3｜業務の洗い出し</div>
@@ -887,14 +920,15 @@ async function analyzeStaffTasks(){
   document.getElementById('btnPain').disabled=true;
 }
 function staffPickHtml(){
-  const btns=staffCandidateTasks.map((t,i)=>`<button class="choice-btn" style="width:100%;text-align:left;margin-bottom:10px;" onclick="pickStaffTask(${JSON.stringify(t)},this)">${i===0?'①':'②'} ${t}</button>`).join('');
+  const btns=staffCandidateTasks.map((t,i)=>`<button class="choice-btn" style="width:100%;text-align:left;margin-bottom:10px;" onclick="pickStaffTask(${i},this)">${i===0?'①':'②'} ${t}</button>`).join('');
   return `<div class="card-label">STEP 3｜業務を選んでください</div>
   <div class="card-title">まず取り組む業務を1つ選んでください</div>
   <div class="card-hint" style="margin-bottom:14px;">※いきなり全てを任せずに、できるところから刻んでいきましょう。</div>${btns}`;}
-function pickStaffTask(taskText,btn){
+function pickStaffTask(idx,btn){
   document.querySelectorAll('#painCard .choice-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
   outputIntent='staff_organize';
+  const taskText=staffCandidateTasks[idx]||'';
   const nameEl=document.getElementById('taskName');if(nameEl)nameEl.value=taskText;
   document.getElementById('btnPain').disabled=false;
 }
@@ -954,7 +988,7 @@ function applyStep4Layout(){
     hint.textContent='✏ ②③を入力してください';
     note.innerHTML='⚠ <strong>②③の2項目</strong>と、下の<strong>「手順の入力欄」</strong>の両方を入力してから「次へ」ボタンが押せます。';
     document.getElementById('taskName').value=itBusinessDesc;
-  }else if(outputIntent==='staff_manual'||outputIntent==='staff_organize'||outputIntent==='visualization'){
+  }else if(outputIntent==='staff_manual'||outputIntent==='staff_organize'||outputIntent==='staff_checklist'||outputIntent==='visualization'){
     nameWrap.style.display='';ownerWrap.style.display='none';
     hint.textContent='✏ ①③を入力してください';
     note.innerHTML='⚠ <strong>①③の2項目</strong>と、下の<strong>「手順の入力欄」</strong>の両方を入力してから「次へ」ボタンが押せます。';
@@ -1167,7 +1201,7 @@ async function runAnalysis(steps, setLS){
   let flavorInstr='';
   if(outputIntent==='staff_manual'||outputIntent==='staff_organize')flavorInstr='属人化している工程・マニュアル化すれば任せられる工程を中心に。';
   else if(outputIntent==='it_service')flavorInstr='無料AIツール（Claude無料/Gemini無料/NotebookLM）や市販サービスで代替できる工程を明示して。';
-  else if(outputIntent==='it_excel')flavorInstr='Excelやスプレッドシートで効率化できる工程を中心に特定して。';
+  else if(outputIntent==='it_excel')flavorInstr='Excelやスプレッドシートで効率化できる工程を特定する。さらに【重要】前後のステップが「同じ情報を扱っている・片方の結果がもう片方のインプットになっている」場合は、それらをひとつのExcelファイル内の別シートとして統合管理することを提案せよ。個別バラバラに管理するより連動シートにまとめると手入力の重複が減り・情報の転記ミスが防げる・担当者の画面切り替えが不要になる。step_groupsフィールドに連動可能なステップの組み合わせと統合するメリットを必ず記述すること。';
   else if(outputIntent==='visualization')flavorInstr='フロー全体のムダ・重複・順番の非効率を指摘する視点で。';
   else flavorInstr='改善効果が最大になる視点で。';
 
@@ -1189,7 +1223,7 @@ ${contextStr}困りごと：${q2Pain}
 上記の業務内容を分析し、フローチャートを作成してください。
 
 回答はJSONのみで返してください（前後の文章不要）：
-{"steps":[{"step":1,"text":"ステップの内容","automation":"×","note":"","prompt_hint":""}],"has_automation":true,"automation_count":2,"score":72,"matched_ids":[],"priority_id":"","comment":"2〜3文のコメント","flavor_note":"診断目的に合わせた一言コメント","structure_issue":false,"structure_note":""}
+{"steps":[{"step":1,"text":"ステップの内容","automation":"×","note":"","prompt_hint":""}],"has_automation":true,"automation_count":2,"score":72,"matched_ids":[],"priority_id":"","comment":"2〜3文のコメント","flavor_note":"診断目的に合わせた一言コメント","structure_issue":false,"structure_note":"","step_groups":[]}
 
 ルール：
 ・stepsは入力された手順をそのまま忠実に分解してください（5〜10ステップ）
@@ -1206,6 +1240,7 @@ ${contextStr}困りごと：${q2Pain}
 ・priority_idはmatched_idsの最優先1件。当てはまらない場合は""
 ・structure_issue：同じファイルを毎月コピーしている/月次と年次データが分断/本来は元データ蓄積で集計すべきなのにコピペ運用/累積管理すべきデータが分割 などの構造的非効率がある場合はtrue
 ・structure_note：structure_issue=trueの場合、具体的な構造見直し提案を書く
+・step_groups（it_excelルートのみ必須）：前後のステップが情報的に連動している組み合わせを配列で列挙する。形式：[{"steps":[1,2],"label":"ステップ1〜2を1ファイルで管理","benefit":"〇〇のデータが〇〇に自動引き継ぎられ、転記ミスと画面切り替えが不要になる"}]。連動する組み合わせがなければ[]。it_excel以外は必ず[]。
 ・flavor指示：${flavorInstr}`;
 
   try{
@@ -1370,6 +1405,32 @@ function showFlowchart(){
     document.getElementById('breakdownInsight').innerHTML=insightMsg;
   }
 
+  // it_excelルート：step_groups（連動ステップ統合提案）の表示
+  if(outputIntent==='it_excel' && ar.step_groups && ar.step_groups.length>0){
+    const ctaEl=document.getElementById('branchCta');
+    let groupsHtml=ar.step_groups.map(g=>{
+      const stepLabels=(g.steps||[]).map(n=>`STEP ${n}`).join('・');
+      return `<div style="background:var(--surface2);border:1px solid rgba(58,201,138,.35);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;">
+        <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--green);letter-spacing:.1em;margin-bottom:4px;">🔗 ${stepLabels} は1ファイルで管理できます</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">${g.label||'連動する工程の統合'}</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7;">${g.benefit||'前後の工程を同一ファイルの別シートにまとめると、転記ミスの削減・画面切り替えの不要化・情報の一元管理が実現します。'}</div>
+      </div>`;
+    }).join('');
+    // breakdownCardの後に差し込む
+    const breakdownCard=document.getElementById('breakdownCard');
+    const groupCard=document.createElement('div');
+    groupCard.className='card';
+    groupCard.innerHTML=`<div class="card-label">EXCEL INTEGRATION HINT</div>
+      <div class="card-title" style="font-size:17px;margin-bottom:6px;">前後のステップをまとめると効率が上がります</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:14px;">バラバラのシートで管理すると「Aシートで出した結果をBシートに手入力」という二度手間が発生します。連動するステップを1ファイルに統合することで、その手間がなくなります。</div>
+      ${groupsHtml}`;
+    // 既存のgroupCardがあれば削除してから追加
+    const existingGroup=document.getElementById('stepGroupCard');
+    if(existingGroup)existingGroup.remove();
+    groupCard.id='stepGroupCard';
+    breakdownCard.after(groupCard);
+  }
+
   // 分岐CTA（ここでは売らない。「次に何を選ぶか考える」画面へ誘導）
   const ctaEl=document.getElementById('branchCta');
   const hasMatchedTemplate=ar.matched_ids && ar.matched_ids.length>0;
@@ -1491,13 +1552,66 @@ function goSelectBeforePay(){
   // outputIntentによるroute上書き
   if(outputIntent==='it_excel'||outputIntent==='automation')payRoute='auto';
   else if(outputIntent==='staff_manual'||outputIntent==='staff_organize'||outputIntent==='visualization'||outputIntent==='it_service')payRoute='manual';
+  else if(outputIntent==='staff_checklist')payRoute='checklist';
   else payRoute='auto';
+  // staff系はPPTXまたはチェックリストカードを専用表示
+  if(outputIntent==='staff_manual'||outputIntent==='staff_organize'){buildStaffManualSelectScreen();}
+  else if(outputIntent==='staff_checklist'){buildStaffChecklistSelectScreen();}
   goS('s-select');uf(7);
 }
 function goManualChoiceBeforePay(){
   if(outputIntent==='it_excel'||outputIntent==='automation')payRoute='auto';
+  else if(outputIntent==='staff_checklist')payRoute='checklist';
   else payRoute='manual';
+  if(outputIntent==='staff_manual'||outputIntent==='staff_organize'){buildStaffManualSelectScreen();}
+  else if(outputIntent==='staff_checklist'){buildStaffChecklistSelectScreen();}
   goS('s-select');uf(7);
+}
+
+// スタッフマニュアル（PPTX）専用選択画面
+function buildStaffManualSelectScreen(){
+  const container=document.getElementById('toolSelectCards');
+  container.innerHTML='';
+  selectedToolId=null;selectedReason='';
+  document.getElementById('btnSelect').disabled=true;
+  document.getElementById('reasonBlock').style.display='none';
+  document.getElementById('selectTitle').textContent='スタッフ向け業務マニュアルたたき台を生成します';
+  document.getElementById('selectHint').textContent='入力いただいた手順をもとに、PowerPoint形式のマニュアルたたき台を生成します。';
+  const card=document.createElement('div');
+  card.className='tool-select-card selected';
+  card.innerHTML=`<div class="tool-select-title">📋 業務マニュアルたたき台（PowerPoint）</div>
+    <div class="tool-select-desc">入力した業務手順を6枚のスライドに整理します。チームで肉付けして引き継ぎ・教育用資産にしてください。</div>
+    <div class="tool-select-items">
+      <span class="tool-chip" style="background:rgba(232,124,58,.12);color:var(--accent);border:1px solid rgba(232,124,58,.25);">📋 PowerPoint</span>
+    </div>`;
+  container.appendChild(card);
+  selectedToolId='staff_manual_pptx';
+  selectedReason='自動選択';
+  document.getElementById('reasonBlock').style.display='none';
+  checkSelectReady();
+}
+
+// スタッフチェックリスト（Excel）専用選択画面
+function buildStaffChecklistSelectScreen(){
+  const container=document.getElementById('toolSelectCards');
+  container.innerHTML='';
+  selectedToolId=null;selectedReason='';
+  document.getElementById('btnSelect').disabled=true;
+  document.getElementById('reasonBlock').style.display='none';
+  document.getElementById('selectTitle').textContent='スタッフ向けTodoリスト＆チェックリストを生成します';
+  document.getElementById('selectHint').textContent='入力いただいた手順をもとに、Excel形式のチェックリストたたき台を生成します。';
+  const card=document.createElement('div');
+  card.className='tool-select-card selected';
+  card.innerHTML=`<div class="tool-select-title">✅ Todoリスト＆チェックリストたたき台（Excel）</div>
+    <div class="tool-select-desc">手順をチェックリスト形式に整理します。自分でアレンジできるよう解説付き。スタッフへの引き渡し・業務確認に使えます。</div>
+    <div class="tool-select-items">
+      <span class="tool-chip chip-excel">📊 Excel</span>
+    </div>`;
+  container.appendChild(card);
+  selectedToolId='staff_checklist_excel';
+  selectedReason='自動選択';
+  document.getElementById('reasonBlock').style.display='none';
+  checkSelectReady();
 }
 
 function selReason(btn,v){
@@ -1542,6 +1656,12 @@ function openPayModal(){
     const items=['📊 メイン管理シート（すぐ使える標準版）','📋 AI活用プロンプト（無料Claude/Geminiで動作）','📈 業務フローチャート（自動化区分付き）','⚡ AI活用ポイント（工程別の指示例）','🛠 カスタマイズガイド（自社用カスタマイズ手順）','❓ AI質問集（困ったときのプロンプト集）','📖 README＆プロンプトシート付き'];
     if(task.hasOcr)items.splice(1,0,'📷 OCR転記プロンプト');
     document.getElementById('modalContents').innerHTML=items.map(s=>`✅ ${s}`).join('<br>');
+  }else if(payRoute==='checklist'){
+    document.getElementById('modalContents').innerHTML=[
+      '✅ リストシート（Todoリスト形式）',
+      '✅ チェックリストシート（確認チェック形式）',
+      '✅ アレンジ解説シート（カスタマイズ方法の説明付き）',
+    ].join('<br>');
   }else{
     document.getElementById('modalContents').innerHTML=[
       '📋 業務フロー整理スライド（6枚）','✏️ たたき台の使い方・肉付けガイド','🔄 なぜ継続更新が必要かの説明ページ'
@@ -1555,9 +1675,26 @@ async function execPayment(){
   closeModal();
   if(payRoute==='auto'){
     showActualOutput();
+  }else if(payRoute==='checklist'){
+    const success=await genChecklistExcel();
+    if(success){
+      document.getElementById('manualDoneIcon').textContent='✅';
+      document.getElementById('manualDoneTitle').textContent='チェックリストたたき台が完成しました';
+      document.getElementById('manualDoneDesc').textContent='Excelファイルのダウンロードが始まります。開けない場合は下のボタンから再ダウンロードしてください。';
+      document.getElementById('manualDoneNote').innerHTML='<strong>このたたき台のアレンジ方法：</strong><br><br>「アレンジ解説」シートに使い方が書いてあります。<br><br>① 不要な行は削除、必要な行を追加する<br>② 担当者や期日の列を増やしてもOK<br>③ Claude / Geminiに「このチェックリストを改善して」と貼り付けるとAIが手伝ってくれます（無料プランOK）<br><br><strong>まず1回使ってみて、使いにくいと感じた箇所を直してください。</strong>';
+      document.getElementById('btnReDownload').style.display='none';
+      goS('s-manual');uf(9);
+    }else{
+      alert('ファイル生成に失敗しました。入力内容を確認して再度お試しください。');
+    }
   }else{
     const success=await genManualPPTX();
     if(success){
+      document.getElementById('manualDoneIcon').textContent='📋';
+      document.getElementById('manualDoneTitle').textContent='業務フロー整理ガイドが完成しました';
+      document.getElementById('manualDoneDesc').textContent='PowerPointファイルのダウンロードが始まります。開けない場合は下のボタンから再ダウンロードしてください。';
+      document.getElementById('manualDoneNote').innerHTML='<strong>このたたき台を「資産」に変えるために：</strong><br><br>このガイドは完成品ではありません。<br>あなたが肉付けするほど、会社固有の資産になります。<br><br>① 各ステップを自分の言葉で書き直す<br>② 判断基準・グレーゾーンの扱いを追記する<br>③ スクリーンショットや図を貼り付ける<br>④ 担当者が変わるたびに更新する習慣をつける<br><br><strong>誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。</strong>';
+      document.getElementById('btnReDownload').style.display='inline-flex';
       goS('s-manual');uf(9);
     }else{
       alert('ファイル生成に失敗しました。入力内容を確認して再度お試しください。');
@@ -1605,6 +1742,20 @@ function showPreview(){
       </div>`;
     document.getElementById('blockPPTX').style.display='block';
     console.log('manual生成データ', {pain: q2Pain, steps: q2_1Steps, reason: selectedReason});
+    return;
+  }
+
+  if(payRoute==='checklist'){
+    document.getElementById('outTitle').textContent='生成されるチェックリストの内容を確認してください';
+    const previewLines=q2_1Steps.split('\n').filter(s=>s.trim()).slice(0,5);
+    const previewHtml=previewLines.map((l,i)=>`☐ ${l.trim().replace(/^[\d\.\-\s]+/,'')}`).join('<br>');
+    document.getElementById('outDesc').innerHTML=`${ind}・${pos} 向けの業務チェックリスト（Excel）が生成されます。<br><br>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-top:8px;">
+        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">チェックリストに変換される手順（一部）</div>
+        <div style="font-size:14px;color:var(--text2);line-height:1.9;">${previewHtml}${q2_1Steps.split('\n').filter(s=>s.trim()).length>5?'<br><span style="color:var(--text3);">…他 '+(q2_1Steps.split('\n').filter(s=>s.trim()).length-5)+'ステップ</span>':''}</div>
+      </div>`;
+    document.getElementById('blockExcel').style.display='block';
+    document.getElementById('excelDesc').innerHTML='✅ Todoリスト ✅ チェックリスト ✅ アレンジ解説シートの3シート構成。スタッフへの引き渡し・確認作業にそのまま使えます。';
     return;
   }
 
@@ -1693,6 +1844,35 @@ async function genManualPPTX(){
     // nullチェックヘルパー
     const safe=(v)=>v?String(v):'';
 
+    // it_serviceルートのみ：AIでサービス提案を事前取得（△ステップ対象）
+    let aiServiceRecs=[];
+    if(outputIntent==='it_service'){
+      const semiSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='△').slice(0,3);
+      const targetSteps=semiSteps.length>0?semiSteps:((ar&&ar.steps)||[]).filter(s=>s.automation==='◎').slice(0,3);
+      if(targetSteps.length>0){
+        try{
+          const recPrompt=`業務「${itBusinessDesc||q2Pain}」において、以下の工程を自動化または効率化できる日本で使える市販サービス・アプリをそれぞれ2〜3個提案してください（無料プランがあるものを優先）。
+
+工程リスト：
+${targetSteps.map((s,i)=>`${i+1}. ${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}`).join('\n')}
+
+回答はJSONのみ（前後の文章不要）：
+{"recommendations":[{"step":"工程名（短く）","category":"カテゴリ（例：不正検知・帳票管理など）","services":[{"name":"サービス名","desc":"一言説明（20字以内）"}]}]}
+
+ルール：
+・実在するサービスのみ
+・日本語対応があるものを優先
+・無料プランがあれば先に挙げる
+・1工程2〜3サービス`;
+          const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:recPrompt}]})});
+          const data=await res.json();
+          const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+          aiServiceRecs=JSON.parse(raw).recommendations||[];
+        }catch(e){console.warn('サービス提案取得失敗（フォールバックに移行）',e);}
+      }
+    }
+
     const pptx=new PptxGenJS();
     // 印刷対応カラー（白背景・黒系テキスト）
     const bg='FFFFFF',surface='F5F6FA',accent='E87C3A',blue='1A4FA0',
@@ -1742,18 +1922,32 @@ async function genManualPPTX(){
     const s4Title=outputIntent==='it_service'?'代替できるサービス・ツール案':outputIntent==='staff_manual'||outputIntent==='staff_organize'?'マニュアル化の優先ポイント':'整理・改善のポイント';
     s4.addText(s4Title,{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     if(outputIntent==='it_service'){
-      // it_service: 代替サービス提案スライド
-      s4.addText('下記を参考に、自社の規模・予算に合ったツールを比較検討してください。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
-      const aiAutoSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎').slice(0,3);
-      const serviceHints=aiAutoSteps.length>0
-        ?aiAutoSteps.map(s=>`・${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}：${safe(s.note)||'ツールで効率化できる可能性があります'}`)
-        :['・業務内容から代替できるサービスを検討してください'];
-      serviceHints.forEach((hint,i)=>{
-        const y=1.3+i*0.62;
-        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.52,fill:{color:'F5F6FA'},line:{color:accent,pt:1.5}});
-        s4.addText(hint,{x:0.55,y:y+0.1,w:8.6,h:0.35,fontSize:11,color:text2,wrap:true});
-      });
-      s4.addText('※ Claude（claude.ai）やGemini（gemini.google.com）に「〇〇業務に使えるサービスを3つ教えて」と聞くとリンク付きで提案してもらえます',{x:0.4,y:4.5,w:9,h:0.45,fontSize:10,color:text3,italic:true,wrap:true});
+      // it_service: △ステップを対象に市販サービス提案
+      const semiSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='△').slice(0,3);
+      s4.addText('「整理すれば自動化できる」工程を代替できる市販サービスの候補です。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
+      if(aiServiceRecs.length>0){
+        // AI生成サービス提案を表示
+        aiServiceRecs.slice(0,3).forEach((rec,i)=>{
+          const y=1.28+i*1.2;
+          const catColor=i===0?accent:i===1?blue:green;
+          s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:1.08,fill:{color:'F5F6FA'},line:{color:catColor,pt:1.5}});
+          s4.addText(`▼ ${safe(rec.step)} — ${safe(rec.category)}`,{x:0.55,y:y+0.04,w:8.6,h:0.26,fontSize:10,bold:true,color:catColor});
+          const svcLine=(rec.services||[]).map(s=>`${safe(s.name)}（${safe(s.desc)}）`).join('　/　');
+          s4.addText(svcLine||'該当サービスを検索してください',{x:0.55,y:y+0.3,w:8.6,h:0.65,fontSize:11,color:text2,wrap:true});
+        });
+        s4.addText(`※ 上記は候補です。claude.ai / gemini.google.com に「${(aiServiceRecs[0]&&aiServiceRecs[0].category)||'業務'}に使える日本のサービスを教えて」と聞くと最新情報を取得できます`,{x:0.4,y:4.9,w:9,h:0.35,fontSize:9,color:text3,italic:true,wrap:true});
+      }else if(semiSteps.length>0){
+        // AI失敗時フォールバック：△ステップ名＋検索ヒント
+        semiSteps.forEach((step,i)=>{
+          const y=1.3+i*0.9;
+          s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.78,fill:{color:'F5F6FA'},line:{color:'D4890A',pt:1.5}});
+          s4.addText(`▼ ${safe(step.text).replace(/^STEP\s*\d+\s*/,'')}`,{x:0.55,y:y+0.05,w:8.6,h:0.25,fontSize:11,bold:true,color:dark});
+          s4.addText(`→ claude.ai に「${safe(step.text).replace(/^STEP\s*\d+\s*/,'').slice(0,20)}に使える日本の市販サービスを3つ教えて」と聞いてみてください`,{x:0.55,y:y+0.3,w:8.6,h:0.38,fontSize:10,color:'D4890A',wrap:true});
+        });
+      }else{
+        s4.addText('入力された業務内容をもとにサービスを検索してください。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text2,wrap:true});
+        s4.addText(`claude.ai に「${itBusinessDesc||q2Pain}に使える市販サービスを3つ紹介して」と聞くとリンク付きで提案してもらえます`,{x:0.4,y:1.8,w:9,h:0.5,fontSize:11,color:text3,italic:true,wrap:true});
+      }
     }else if(autoSteps.length>0){
       s4.addText('以下の工程に改善の余地があります。まず整理から始めましょう。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
       autoSteps.slice(0,5).forEach((step,i)=>{
@@ -1851,7 +2045,93 @@ async function genManualPPTX(){
   }
 }
 
-// ===== ExcelJS スタイルユーティリティ =====
+// ===== チェックリストExcel生成（staff_checklistルート） =====
+async function genChecklistExcel(){
+  try{
+    if(typeof ExcelJS==='undefined'){throw new Error('ExcelJSライブラリが読み込まれていません。');}
+    const wb=new ExcelJS.Workbook();
+    const today=new Date().toLocaleDateString('ja-JP');
+    const steps=q2_1Steps.split('\n').filter(s=>s.trim()).map(s=>s.replace(/^[\d\.\-\s]+/,'').trim());
+    const tName=taskName||q2Pain||'業務';
+
+    // Sheet1: Todoリスト
+    const ws1=wb.addWorksheet('Todoリスト');
+    ws1.columns=[{width:6},{width:46},{width:14},{width:20},{width:16}];
+    const t1=ws1.addRow([`Todoリスト｜${tName}`]);
+    ws1.mergeCells(1,1,1,5); t1.height=28;
+    t1.getCell(1).fill=XS.fill(XS.C.NAVY); t1.getCell(1).font={bold:true,size:14,color:{argb:XS.C.WHITE}};
+    t1.getCell(1).alignment={vertical:'middle'};
+    const t1sub=ws1.addRow([`作成日: ${today}　担当: ${taskOwner||'スタッフ'}　頻度: ${taskTiming||''}`]);
+    ws1.mergeCells(2,1,2,5); t1sub.height=16;
+    t1sub.getCell(1).fill=XS.fill(XS.C.LGRAY); t1sub.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
+    const hint1=ws1.addRow(['※ 「状態」列のドロップダウンから「完了」を選ぶと行全体が色変わりします。自分用にアレンジしてください。']);
+    ws1.mergeCells(3,1,3,5); hint1.height=18;
+    hint1.getCell(1).fill=XS.fill(XS.C.LORANGE); hint1.getCell(1).font={size:10,color:{argb:XS.C.ORANGE}};
+    hint1.getCell(1).alignment={wrapText:true};
+    ws1.addRow([]);
+    xHeader(ws1,['No.','やること（Todoアイテム）','状態','担当者','メモ']);
+    steps.forEach((s,i)=>{
+      const r=ws1.addRow([i+1,s,'未着手','','']);
+      r.height=18;
+      r.getCell(1).font={bold:true,color:{argb:XS.C.ORANGE}};
+      r.getCell(1).alignment={horizontal:'center'};
+      r.getCell(3).dataValidation={type:'list',formulae:['"未着手,進行中,完了,保留"'],showErrorMessage:true};
+      if(i%2===1)r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=5)c.fill=XS.fill(XS.C.XGRAY);});
+    });
+
+    // Sheet2: チェックリスト
+    const ws2=wb.addWorksheet('チェックリスト');
+    ws2.columns=[{width:6},{width:46},{width:10},{width:30}];
+    const t2=ws2.addRow([`作業チェックリスト｜${tName}`]);
+    ws2.mergeCells(1,1,1,4); t2.height=28;
+    t2.getCell(1).fill=XS.fill(XS.C.NAVY); t2.getCell(1).font={bold:true,size:14,color:{argb:XS.C.WHITE}};
+    t2.getCell(1).alignment={vertical:'middle'};
+    const t2sub=ws2.addRow([`作成日: ${today}　使用前に担当者名と実施日を記入してください`]);
+    ws2.mergeCells(2,1,2,4); t2sub.height=16;
+    t2sub.getCell(1).fill=XS.fill(XS.C.LGRAY); t2sub.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
+    // 担当者・実施日入力欄
+    ws2.addRow([]);
+    const infoRow=ws2.addRow(['担当者：','','実施日：','']);
+    infoRow.height=20;
+    infoRow.getCell(1).font={bold:true,size:11,color:{argb:XS.C.NAVY}};
+    infoRow.getCell(3).font={bold:true,size:11,color:{argb:XS.C.NAVY}};
+    ws2.addRow([]);
+    xHeader(ws2,['No.','確認項目','チェック','備考・特記事項']);
+    steps.forEach((s,i)=>{
+      const r=ws2.addRow([i+1,s,'','']);
+      r.height=18;
+      r.getCell(1).font={bold:true,color:{argb:XS.C.ORANGE}};
+      r.getCell(1).alignment={horizontal:'center'};
+      r.getCell(3).dataValidation={type:'list',formulae:['"✓,—"'],showErrorMessage:false};
+      if(i%2===1)r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=4)c.fill=XS.fill(XS.C.XGRAY);});
+    });
+
+    // Sheet3: アレンジ解説
+    const ws3=wb.addWorksheet('アレンジ解説');
+    ws3.columns=[{width:28},{width:52}];
+    xTitle(ws3,'このたたき台のアレンジ方法',2);
+    const notes=[
+      ['【このシートについて】','このExcelは「たたき台」です。そのまま使うのではなく、実際の業務に合わせて書き直してください。'],
+      ['①項目を追加・削除する','不要な行は削除、追加したい手順は行を挿入して書き加えてください。'],
+      ['②ステップを細かく分ける','「1行1アクション」になるよう分割すると、チェックが明確になります。'],
+      ['③担当者を分ける','工程ごとに担当者が異なる場合は「担当者」列に名前を入力してください。'],
+      ['④スクリーンショットを貼る','「この画面でここをクリック」という手順は画像を貼るとわかりやすくなります。'],
+      ['⑤定期的に見直す','業務が変わったらチェックリストも更新してください。更新日を記録しておくと便利です。'],
+      ['【Claude / Gemini活用ヒント】','「このチェックリストを改善してください」とAIに貼り付けるだけで、項目の洗い出しや言い直しを手伝ってもらえます（無料プランでOK）。'],
+    ];
+    notes.forEach(([title,body],i)=>{
+      ws3.addRow([]);
+      const r=ws3.addRow([title,body]);
+      r.height=50; r.getCell(1).font={bold:true,size:11,color:{argb:XS.C.ORANGE}};
+      r.getCell(1).alignment={vertical:'top',wrapText:true};
+      r.getCell(2).alignment={vertical:'top',wrapText:true}; r.getCell(2).font={size:11,color:{argb:XS.C.TEXT}};
+      if(i%2===0)r.getCell(1).fill=XS.fill(XS.C.LORANGE);
+    });
+
+    await saveWb(wb,`チェックリストたたき台_${tName}`);
+    return true;
+  }catch(e){console.error('ChecklistExcel生成エラー:',e);alert('チェックリスト生成エラー：'+e.message);return false;}
+}
 const XS = {
   fill:(argb)=>({type:'pattern',pattern:'solid',fgColor:{argb}}),
   C:{
@@ -2367,6 +2647,64 @@ async function genStockExcel(ind,pos,task,ar){
 
   addReadme(wb,task,ind,pos,ar,task.promptText(ind,pos),null);
   addCommonSheets(wb,task,ind,ar);
+
+  // it_excelルート：受注×在庫 照合シートを追加
+  if(outputIntent==='it_excel'){
+    const wsRec=wb.addWorksheet('受注×在庫　照合');
+    wsRec.columns=[{width:26},{width:12},{width:12},{width:12},{width:14},{width:18},{width:20}];
+    const tR=wsRec.addRow([`受注×在庫 照合シート　${ind}`]);
+    wsRec.mergeCells(1,1,1,7); tR.height=28;
+    tR.getCell(1).fill=XS.fill(XS.C.NAVY); tR.getCell(1).font={bold:true,size:14,color:{argb:XS.C.WHITE}}; tR.getCell(1).alignment={vertical:'middle'};
+    const nR=wsRec.addRow([`作成日: ${today}`]);
+    wsRec.mergeCells(2,1,2,7); nR.height=16; nR.getCell(1).fill=XS.fill(XS.C.LGRAY); nR.getCell(1).font={size:10,color:{argb:XS.C.TEXT}};
+    const hintR=wsRec.addRow(['※ 品目名・現在庫数・受注数を入力すると、欠品の有無と欠品数が自動で判定されます。赤行は欠品対応が必要です。']);
+    wsRec.mergeCells(3,1,3,7); hintR.height=20;
+    hintR.getCell(1).fill=XS.fill(XS.C.LORANGE); hintR.getCell(1).font={size:10,color:{argb:XS.C.ORANGE}}; hintR.getCell(1).alignment={wrapText:true};
+    wsRec.addRow([]);
+    xHeader(wsRec,['品目名','現在庫数','受注数','在庫差引','欠品判定','欠品数','対応メモ']);
+    const RS=6, Rrows=25, RE=RS+Rrows-1;
+    for(let i=0;i<Rrows;i++){
+      const r=RS+i;
+      const dr=wsRec.addRow(['','','',
+        fml(`IF(OR(B${r}="",C${r}=""),"",B${r}-C${r})`),
+        fml(`IF(OR(B${r}="",C${r}=""),"",IF(B${r}<C${r},"★欠品","OK"))`),
+        fml(`IF(OR(B${r}="",C${r}=""),"",IF(B${r}<C${r},C${r}-B${r},0))`),
+        ''
+      ]);
+      dr.height=16;
+      const judgeCell=dr.getCell(5); judgeCell.font={bold:true};
+      if(i%2===1)dr.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=7)c.fill=XS.fill(XS.C.XGRAY);});
+    }
+    // 欠品行を赤でハイライト（条件付き書式の代わりに注釈で案内）
+    const noteR=wsRec.addRow(['💡 ヒント：「欠品判定」列が「★欠品」の行を確認して仕入先への発注・出荷調整を行ってください。']);
+    wsRec.mergeCells(wsRec.rowCount,1,wsRec.rowCount,7); noteR.height=20;
+    noteR.getCell(1).fill=XS.fill(XS.C.LGREEN); noteR.getCell(1).font={size:10,color:{argb:XS.C.DGREEN}}; noteR.getCell(1).alignment={wrapText:true};
+    // 欠品リストシート
+    const wsList=wb.addWorksheet('欠品リスト（自動抽出用プロンプト）');
+    wsList.columns=[{width:70}];
+    xTitle(wsList,'欠品リスト自動抽出プロンプト（Claude / Gemini用）',1);
+    const promptLines=[
+      '以下の表を貼り付けると、欠品商品だけを抽出してリスト化してくれます。',
+      '【手順】',
+      '1. 「受注×在庫 照合」シートの表を全選択してコピー',
+      '2. claude.ai または gemini.google.com を開く',
+      '3. 以下のプロンプトを貼り付け、続けて表データを貼り付けて送信',
+      '',
+      '---------- プロンプトここから ----------',
+      '以下の在庫×受注照合データから、「欠品判定」が「★欠品」の行だけを抽出して、',
+      '品目名・欠品数・緊急度（欠品数が多い順）の順に並べた表にしてください。',
+      '緊急度が高い順にTop5も教えてください。（無料版Claude / Geminiで動作します）',
+      '---------- プロンプトここまで ----------',
+    ];
+    promptLines.forEach(line=>{
+      const r=wsList.addRow([line]); r.height=18;
+      if(line.startsWith('------'))r.getCell(1).font={bold:true,color:{argb:XS.C.ORANGE}};
+      else if(line.startsWith('【'))r.getCell(1).font={bold:true,color:{argb:XS.C.NAVY}};
+      else r.getCell(1).font={size:11,color:{argb:XS.C.TEXT}};
+      r.getCell(1).alignment={wrapText:true};
+    });
+  }
+
   await saveWb(wb,'在庫発注管理シート');
 }
 
