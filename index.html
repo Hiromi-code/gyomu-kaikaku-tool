@@ -324,14 +324,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="card">
     <div class="card-label">STEP 2｜診断の目的</div>
     <div class="card-title">この診断で知りたいことを教えてください</div>
-    <div class="card-hint">当てはまるものをすべて選んでください（複数選択OK）</div>
-    <div class="input-type-hint click-type" style="margin-bottom:10px;">👆 クリックして選択（複数OK・1つ以上）</div>
+    <div class="card-hint">最も当てはまるものを1つ選んでください</div>
+    <div class="input-type-hint click-type" style="margin-bottom:10px;">👆 クリックして選択（1つ）</div>
     <div class="choice-grid" id="goalsGrid">
-      <button class="choice-btn multi" onclick="toggleGoal(this,'自分の仕事を減らしたい')">📉 自分の仕事を減らしたい</button>
-      <button class="choice-btn multi" onclick="toggleGoal(this,'自動化できる作業を見つけたい')">⚡ 自動化できる作業を見つけたい</button>
-      <button class="choice-btn multi" onclick="toggleGoal(this,'スタッフに任せる仕組みを作りたい')">👥 スタッフに任せる仕組みを作りたい</button>
-      <button class="choice-btn multi" onclick="toggleGoal(this,'業務を整理・見える化したい')">🗺 業務を整理・見える化したい</button>
-      <button class="choice-btn multi" onclick="toggleGoal(this,'AIやITツールの導入を検討している')">🤖 AIやITツールの導入を検討している</button>
+      <button class="choice-btn" onclick="selGoal(this,'自動化できる作業を見つけたい')">⚡ 自動化できる作業を見つけたい</button>
+      <button class="choice-btn" onclick="selGoal(this,'スタッフに任せる仕組みを作りたい')">👥 スタッフに任せる仕組みを作りたい</button>
+      <button class="choice-btn" onclick="selGoal(this,'業務を整理・見える化したい')">🗺 業務を整理・見える化したい</button>
+      <button class="choice-btn" onclick="selGoal(this,'AIやITツールの導入を検討している')">🤖 AIやITツールの導入を検討している</button>
     </div>
   </div>
   <div class="nav">
@@ -340,18 +339,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
-<!-- ③ 困りごと Q2 -->
+<!-- ③ 目的別ブランチQ（Step 3） -->
 <div class="screen" id="s-pain">
-  <div class="card">
-    <div class="card-label">STEP 3｜困りごと</div>
-    <div class="card-title">今一番困っていることは何でしょうか？</div>
-    <div class="card-hint">業務の中で、「ここが大変・時間がかかる・なんとかしたい」と感じることを教えてください。</div>
-    <div class="input-type-hint text-type" style="margin-bottom:6px;">✏ 下のテキストボックスに入力してください</div>
-    <textarea class="q-ta" id="painAns" rows="4" placeholder="例：毎月の請求書の照合に時間がかかっている&#10;例：担当者が変わるたびに引き継ぎが大変&#10;例：同じ内容を何度も別のファイルに入力している" oninput="chkPain()"></textarea>
+  <div class="card" id="painCard">
+    <!-- JS で renderPain() が描画 -->
   </div>
   <div class="nav">
     <button class="btn-s" onclick="goS('s-goals');uf(2)">← 戻る</button>
-    <button class="btn-p" id="btnPain" onclick="goSteps()" disabled>次へ →</button>
+    <button class="btn-p" id="btnPain" onclick="onPainNext()" disabled>次へ →</button>
   </div>
 </div>
 
@@ -361,7 +356,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="card-label">STEP 4｜業務の手順</div>
     <div class="card-title" id="stepsTitle">その業務について、手順を教えてください</div>
     <div class="card-hint">取り掛かりから完了まで、できるだけ具体的に。「誰が・何を・どの順番で」書いていただけると精度が上がります。</div>
-    <div class="all-required-note">⚠ このページには入力箇所が2つあります。<strong>①②③の3項目</strong>と、下の<strong>「手順の入力欄」</strong>の両方を入力してから「次へ」ボタンが押せます。</div>
+    <div class="all-required-note" id="stepsRequiredNote">⚠ このページには入力箇所が2つあります。<strong>①②③の3項目</strong>と、下の<strong>「手順の入力欄」</strong>の両方を入力してから「次へ」ボタンが押せます。</div>
     <div class="context-box" id="stepsContext">
       <div class="context-label">FOCUS</div>
       <div id="stepsContextText"></div>
@@ -369,11 +364,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <!-- 業務コンテキスト入力（新規追加） -->
     <div style="background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;">
       <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:.2em;margin-bottom:6px;">TASK CONTEXT（必須）</div>
-      <div class="input-type-hint text-type" style="margin-bottom:10px;">✏ 3項目すべてを入力してください</div>
-      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">① この業務は何ですか？</div>
-      <input class="q-input" id="taskName" placeholder="例：給与計算業務、請求書発行、入金確認" style="margin-top:0;margin-bottom:12px;" oninput="chkSteps()">
-      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">② 誰が行いますか？</div>
-      <input class="q-input" id="taskOwner" placeholder="例：自分、経理担当、事務スタッフ" style="margin-top:0;margin-bottom:12px;" oninput="chkSteps()">
+      <div class="input-type-hint text-type" style="margin-bottom:10px;" id="stepsContextHint">✏ 3項目すべてを入力してください</div>
+      <div id="taskNameWrap">
+        <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">① この業務は何ですか？</div>
+        <input class="q-input" id="taskName" placeholder="例：給与計算業務、請求書発行、入金確認" style="margin-top:0;margin-bottom:12px;" oninput="chkSteps()">
+      </div>
+      <div id="taskOwnerWrap">
+        <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">② 誰が行いますか？</div>
+        <input class="q-input" id="taskOwner" placeholder="例：自分、経理担当、事務スタッフ" style="margin-top:0;margin-bottom:12px;" oninput="chkSteps()">
+      </div>
       <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px;">③ いつ行いますか？</div>
       <input class="q-input" id="taskTiming" placeholder="例：毎月初め、毎週金曜、毎日夕方" style="margin-top:0;" oninput="chkSteps()">
     </div>
@@ -818,18 +817,158 @@ function selPos(btn,v){document.querySelectorAll('#posGrid .choice-btn').forEach
 function chkAttr(){const ok=ind!==''&&(ind!=='その他'||document.getElementById('otherInput').value.trim()!=='');document.getElementById('btnA').disabled=!(ok&&pos!=='');}
 function goGoals(){if(ind==='その他'){const v=document.getElementById('otherInput').value.trim();if(v)ind=v;}goS('s-goals');uf(2);}
 
-// ===== Q1: 目的 =====
-function toggleGoal(btn,v){
-  btn.classList.toggle('selected');
-  if(btn.classList.contains('selected')){if(!q1Goals.includes(v))q1Goals.push(v);}
-  else q1Goals=q1Goals.filter(x=>x!==v);
-  document.getElementById('btnGoals').disabled=q1Goals.length===0;
+// ===== Q1: 目的（単一選択） =====
+function selGoal(btn,v){
+  document.querySelectorAll('#goalsGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  q1Goals=[v];
+  document.getElementById('btnGoals').disabled=false;
 }
-function goPain(){goS('s-pain');uf(3);}
+function goPain(){renderPain();goS('s-pain');uf(3);}
 
-// ===== Q2: 困りごと =====
-function chkPain(){document.getElementById('btnPain').disabled=document.getElementById('painAns').value.trim()==='';
+// ===== Step3 ブランチ状態 =====
+let step3Sub='',itServiceType='',itBusinessDesc='',staffCandidateTasks=[],outputIntent='';
+
+function renderPain(){
+  const goal=q1Goals[0]||'';
+  const card=document.getElementById('painCard');
+  document.getElementById('btnPain').disabled=true;
+  if(goal==='スタッフに任せる仕組みを作りたい'){step3Sub='staff_q1';card.innerHTML=staffQ1Html();}
+  else if(goal==='AIやITツールの導入を検討している'){step3Sub='it_form';card.innerHTML=itFormHtml();}
+  else{step3Sub='default';card.innerHTML=defaultPainHtml();}
 }
+
+function staffQ1Html(){return `
+  <div class="card-label">STEP 3｜進め方の確認</div>
+  <div class="card-title">スタッフに任せるためのマニュアルのたたき台を制作しますが、よいですか？</div>
+  <div class="card-hint" style="margin-bottom:18px;">AIがヒアリング内容をもとに、スライド形式のマニュアルたたき台（PowerPoint）を生成します。</div>
+  <div style="display:flex;gap:12px;margin-top:8px;">
+    <button class="choice-btn" style="flex:1;" onclick="staffQ1Yes()">✅ はい、作ります</button>
+    <button class="choice-btn" style="flex:1;" onclick="staffQ1No()">🔄 別の方法で整理したい</button>
+  </div>`;}
+function staffQ1Yes(){outputIntent='staff_manual';document.getElementById('btnPain').disabled=false;}
+function staffQ1No(){step3Sub='staff_q2';document.getElementById('painCard').innerHTML=staffQ2Html();document.getElementById('btnPain').disabled=true;}
+
+function staffQ2Html(){return `
+  <div class="card-label">STEP 3｜整理の仕方</div>
+  <div class="card-title">スタッフにどこを任せられるか、まず整理したいですか？</div>
+  <div class="card-hint" style="margin-bottom:18px;">今すぐマニュアルを作る前に、「任せられる業務」を洗い出すところから始める方法です。</div>
+  <div style="display:flex;gap:12px;margin-top:8px;">
+    <button class="choice-btn" style="flex:1;" onclick="staffQ2Yes()">✅ はい、整理から始める</button>
+    <button class="choice-btn" style="flex:1;" onclick="staffQ2No()">⏩ 直接手順入力へ進む</button>
+  </div>`;}
+function staffQ2Yes(){step3Sub='staff_list';document.getElementById('painCard').innerHTML=staffListHtml();document.getElementById('btnPain').disabled=true;}
+function staffQ2No(){outputIntent='staff_manual';document.getElementById('btnPain').disabled=false;}
+
+function staffListHtml(){return `
+  <div class="card-label">STEP 3｜業務の洗い出し</div>
+  <div class="card-title">スタッフに任せることを考えている業務を、全て箇条書きにしてください</div>
+  <div class="card-hint">この中からAIが「指示が少なくてもできる繰り返し業務」を最大2つ選び出します。</div>
+  <div class="input-type-hint text-type" style="margin-bottom:6px;">✏ 1行1業務で入力してください</div>
+  <textarea class="q-ta" id="staffListAns" rows="6" placeholder="例：&#10;・毎朝のメール確認と振り分け&#10;・週次の売上データ入力&#10;・請求書のPDFをフォルダに保存&#10;・在庫のカウントと記録" oninput="chkStaffList()"></textarea>
+  <div style="margin-top:12px;">
+    <button class="btn-p" id="btnStaffAnalyze" onclick="analyzeStaffTasks()" disabled>AIに繰り返し業務を探してもらう →</button>
+  </div>`;}
+function chkStaffList(){const v=(document.getElementById('staffListAns')||{value:''}).value.trim();const btn=document.getElementById('btnStaffAnalyze');if(btn)btn.disabled=v==='';}
+async function analyzeStaffTasks(){
+  const listText=document.getElementById('staffListAns').value.trim();
+  const btn=document.getElementById('btnStaffAnalyze');
+  btn.disabled=true;btn.textContent='AIが分析中…';
+  try{
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:`以下の業務リストの中から、「指示がなくてもできる繰り返し作業」を最大2つ選んでください。\n\n${listText}\n\n回答はJSONのみ：\n{"tasks":["業務A","業務B"]}\n\n選ぶ基準：定期的に発生する・手順が決まっている・判断が少ない・最も任せやすい`}]})});
+    const data=await res.json();
+    const raw=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    staffCandidateTasks=JSON.parse(raw).tasks||[];
+  }catch(e){staffCandidateTasks=[];}
+  if(staffCandidateTasks.length===0){btn.disabled=false;btn.textContent='AIに繰り返し業務を探してもらう →';alert('分析に失敗しました。もう少し詳しく業務を記載して再試行してください。');return;}
+  step3Sub='staff_pick';
+  document.getElementById('painCard').innerHTML=staffPickHtml();
+  document.getElementById('btnPain').disabled=true;
+}
+function staffPickHtml(){
+  const btns=staffCandidateTasks.map((t,i)=>`<button class="choice-btn" style="width:100%;text-align:left;margin-bottom:10px;" onclick="pickStaffTask(${JSON.stringify(t)},this)">${i===0?'①':'②'} ${t}</button>`).join('');
+  return `<div class="card-label">STEP 3｜業務を選んでください</div>
+  <div class="card-title">まず取り組む業務を1つ選んでください</div>
+  <div class="card-hint" style="margin-bottom:14px;">※いきなり全てを任せずに、できるところから刻んでいきましょう。</div>${btns}`;}
+function pickStaffTask(taskText,btn){
+  document.querySelectorAll('#painCard .choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  outputIntent='staff_organize';
+  const nameEl=document.getElementById('taskName');if(nameEl)nameEl.value=taskText;
+  document.getElementById('btnPain').disabled=false;
+}
+
+function itFormHtml(){return `
+  <div class="card-label">STEP 3｜導入の詳細</div>
+  <div class="card-title">どの業務でAI・ITツールの導入を考えていますか？</div>
+  <div class="card-hint" style="margin-bottom:14px;">業務内容と、検討しているツールの種類を教えてください。</div>
+  <div class="input-type-hint text-type" style="margin-bottom:6px;">① 業務内容</div>
+  <input class="q-input" id="itBizInput" placeholder="例：顧客からの問い合わせ対応、請求書の作成と送付" oninput="chkItForm()" style="margin-bottom:16px;">
+  <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:10px;">② 何を導入したいですか？</div>
+  <div class="input-type-hint click-type" style="margin-bottom:8px;">👆 1つ選んでください</div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <button class="choice-btn" onclick="selItType('service',this)">🛒 市販のサービスやアプリを探したい<br><span style="font-size:12px;font-weight:400;color:var(--text3);">→ 代替できるサービスを3つ提案します</span></button>
+    <button class="choice-btn" onclick="selItType('excel',this)">📊 ExcelやGoogleスプレッドシートで効率化したい<br><span style="font-size:12px;font-weight:400;color:var(--text3);">→ 業務専用のExcelテンプレートを生成します</span></button>
+  </div>`;}
+function selItType(type,btn){
+  document.querySelectorAll('#painCard .choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  itServiceType=type;outputIntent=type==='service'?'it_service':'it_excel';
+  chkItForm();
+}
+function chkItForm(){const biz=(document.getElementById('itBizInput')||{value:''}).value.trim();document.getElementById('btnPain').disabled=!(biz&&itServiceType);}
+
+function defaultPainHtml(){return `
+  <div class="card-label">STEP 3｜対象業務</div>
+  <div class="card-title">改善したい業務を教えてください</div>
+  <div class="card-hint">「時間がかかる・手間がかかる・ミスが起きやすい」と感じている業務を具体的に記入してください。</div>
+  <div class="input-type-hint text-type" style="margin-bottom:6px;">✏ 下のテキストボックスに入力してください</div>
+  <textarea class="q-ta" id="painAns" rows="4" placeholder="例：毎月の請求書の照合に時間がかかっている&#10;例：担当者が変わるたびに引き継ぎが大変&#10;例：同じ内容を何度も別のファイルに入力している" oninput="chkDefaultPain()"></textarea>`;}
+function chkDefaultPain(){const v=(document.getElementById('painAns')||{value:''}).value.trim();document.getElementById('btnPain').disabled=v==='';}
+
+function onPainNext(){
+  const goal=q1Goals[0]||'';
+  if(goal==='AIやITツールの導入を検討している'){
+    itBusinessDesc=document.getElementById('itBizInput').value.trim();q2Pain=itBusinessDesc;
+  }else if(goal==='自動化できる作業を見つけたい'){
+    q2Pain=document.getElementById('painAns').value.trim();outputIntent='automation';
+  }else if(goal==='業務を整理・見える化したい'){
+    q2Pain=document.getElementById('painAns').value.trim();outputIntent='visualization';
+  }else{
+    q2Pain=q2Pain||'スタッフへの業務移管';
+  }
+  applyStep4Layout();
+  document.getElementById('stepsContextText').textContent=q2Pain||('目標：'+goal);
+  document.getElementById('stepsTitle').textContent='その業務について、手順を教えてください';
+  goS('s-steps');uf(4);
+}
+
+function applyStep4Layout(){
+  const nameWrap=document.getElementById('taskNameWrap');
+  const ownerWrap=document.getElementById('taskOwnerWrap');
+  const hint=document.getElementById('stepsContextHint');
+  const note=document.getElementById('stepsRequiredNote');
+  if(outputIntent==='it_service'||outputIntent==='it_excel'){
+    nameWrap.style.display='none';ownerWrap.style.display='';
+    hint.textContent='✏ ②③を入力してください';
+    note.innerHTML='⚠ <strong>②③の2項目</strong>と、下の<strong>「手順の入力欄」</strong>の両方を入力してから「次へ」ボタンが押せます。';
+    document.getElementById('taskName').value=itBusinessDesc;
+  }else if(outputIntent==='staff_manual'||outputIntent==='staff_organize'||outputIntent==='visualization'){
+    nameWrap.style.display='';ownerWrap.style.display='none';
+    hint.textContent='✏ ①③を入力してください';
+    note.innerHTML='⚠ <strong>①③の2項目</strong>と、下の<strong>「手順の入力欄」</strong>の両方を入力してから「次へ」ボタンが押せます。';
+    document.getElementById('taskOwner').value='スタッフ';
+  }else{
+    nameWrap.style.display='';ownerWrap.style.display='';
+    hint.textContent='✏ 3項目すべてを入力してください';
+    note.innerHTML='⚠ このページには入力箇所が2つあります。<strong>①②③の3項目</strong>と、下の<strong>「手順の入力欄」</strong>の両方を入力してから「次へ」ボタンが押せます。';
+  }
+  if(outputIntent==='staff_organize')chkSteps();
+}
+
+// ===== Q2: 困りごと（互換性のため） =====
+function chkPain(){const el=document.getElementById('painAns');if(el)document.getElementById('btnPain').disabled=el.value.trim()==='';}
 function goSteps(){
   q2Pain=document.getElementById('painAns').value.trim();
   document.getElementById('stepsContextText').textContent=q2Pain;
@@ -839,11 +978,15 @@ function goSteps(){
 
 // ===== Q2-1: 手順 =====
 function chkSteps(){
-  const taskName=document.getElementById('taskName').value.trim();
-  const taskOwner=document.getElementById('taskOwner').value.trim();
-  const taskTiming=document.getElementById('taskTiming').value.trim();
-  const steps=document.getElementById('stepsAns').value.trim();
-  document.getElementById('btnSteps').disabled=!(taskName&&taskOwner&&taskTiming&&steps);
+  const nameWrap=document.getElementById('taskNameWrap');
+  const ownerWrap=document.getElementById('taskOwnerWrap');
+  const nameVal=document.getElementById('taskName').value.trim();
+  const ownerVal=document.getElementById('taskOwner').value.trim();
+  const timingVal=document.getElementById('taskTiming').value.trim();
+  const stepsVal=document.getElementById('stepsAns').value.trim();
+  const nameOk=(nameWrap&&nameWrap.style.display==='none')||nameVal!=='';
+  const ownerOk=(ownerWrap&&ownerWrap.style.display==='none')||ownerVal!=='';
+  document.getElementById('btnSteps').disabled=!(nameOk&&ownerOk&&timingVal&&stepsVal);
 }
 function chkRevised(){document.getElementById('btnRevised').disabled=document.getElementById('stepsAnsRevised').value.trim()=='';}
 
@@ -1022,11 +1165,11 @@ async function proceedAfterValidation(){
 async function runAnalysis(steps, setLS){
   const goalsStr=q1Goals.join('、')||'未選択';
   let flavorInstr='';
-  if(q1Goals.includes('自分の仕事を減らしたい'))flavorInstr+='どの工程をあなたでなくても良いか（手放せるか）を中心に。';
-  if(q1Goals.includes('スタッフに任せる仕組みを作りたい'))flavorInstr+='属人化している工程・マニュアル化すれば任せられる工程を中心に。';
-  if(q1Goals.includes('業務を整理・見える化したい'))flavorInstr+='フロー全体のムダ・重複・順番の非効率を指摘する視点で。';
-  if(q1Goals.includes('AIやITツールの導入を検討している'))flavorInstr+='無料AIツール（Claude無料/Gemini無料/NotebookLM）で代替できる工程を明示して。';
-  if(!flavorInstr)flavorInstr='改善効果が最大になる視点で。';
+  if(outputIntent==='staff_manual'||outputIntent==='staff_organize')flavorInstr='属人化している工程・マニュアル化すれば任せられる工程を中心に。';
+  else if(outputIntent==='it_service')flavorInstr='無料AIツール（Claude無料/Gemini無料/NotebookLM）や市販サービスで代替できる工程を明示して。';
+  else if(outputIntent==='it_excel')flavorInstr='Excelやスプレッドシートで効率化できる工程を中心に特定して。';
+  else if(outputIntent==='visualization')flavorInstr='フロー全体のムダ・重複・順番の非効率を指摘する視点で。';
+  else flavorInstr='改善効果が最大になる視点で。';
 
   // テンプレートの説明をAIに渡してマッチング精度を上げる
   const templateDesc=`
@@ -1344,8 +1487,18 @@ function buildManualSelectScreen(){
   });
 }
 
-function goSelectBeforePay(){payRoute='auto';goS('s-select');uf(7);}
-function goManualChoiceBeforePay(){payRoute='manual';goS('s-select');uf(7);}
+function goSelectBeforePay(){
+  // outputIntentによるroute上書き
+  if(outputIntent==='it_excel'||outputIntent==='automation')payRoute='auto';
+  else if(outputIntent==='staff_manual'||outputIntent==='staff_organize'||outputIntent==='visualization'||outputIntent==='it_service')payRoute='manual';
+  else payRoute='auto';
+  goS('s-select');uf(7);
+}
+function goManualChoiceBeforePay(){
+  if(outputIntent==='it_excel'||outputIntent==='automation')payRoute='auto';
+  else payRoute='manual';
+  goS('s-select');uf(7);
+}
 
 function selReason(btn,v){
   document.querySelectorAll('#reasonGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
@@ -1549,15 +1702,18 @@ async function genManualPPTX(){
     const s1=pptx.addSlide();
     s1.background={color:bg};
     s1.addShape(pptx.ShapeType.rect,{x:0,y:2.4,w:10,h:0.05,fill:{color:accent},line:{color:accent}});
-    s1.addText('業務フロー整理ガイド',{x:0.5,y:0.6,w:9,h:1.2,fontSize:30,bold:true,color:dark,align:'center'});
+    const pptxTitle=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'業務マニュアル　たたき台':outputIntent==='it_service'?'ツール選定ガイド':'業務フロー整理ガイド';
+    const pptxSub=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'このたたき台をチームで育てて、引き継ぎ・教育に使える資産にしてください':outputIntent==='it_service'?'あなたの業務に合ったツールを比較・検討するためのたたき台です':'このたたき台を育てて、会社の資産にしてください';
+    s1.addText(pptxTitle,{x:0.5,y:0.6,w:9,h:1.2,fontSize:30,bold:true,color:dark,align:'center'});
     s1.addText(`${safe(ind)} / ${safe(pos)}`,{x:0.5,y:1.8,w:9,h:0.5,fontSize:14,color:accent,align:'center'});
-    s1.addText('このたたき台を育てて、会社の資産にしてください',{x:0.5,y:2.7,w:9,h:0.5,fontSize:11,color:text3,align:'center'});
+    s1.addText(pptxSub,{x:0.5,y:2.7,w:9,h:0.5,fontSize:11,color:text3,align:'center'});
     s1.addText(`作成日：${new Date().toLocaleDateString('ja-JP')}`,{x:0.5,y:4.8,w:9,h:0.4,fontSize:10,color:text3,align:'center'});
 
     // Slide 2: 課題・困りごと
     const s2=pptx.addSlide();
     s2.background={color:bg};
-    s2.addText('課題・困りごと',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
+    const s2Label=outputIntent==='it_service'?'検討業務・導入の目的':outputIntent==='staff_manual'||outputIntent==='staff_organize'?'マニュアル化したい業務':'課題・困りごと';
+    s2.addText(s2Label,{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     s2.addShape(pptx.ShapeType.rect,{x:0.4,y:0.85,w:0.05,h:3.5,fill:{color:accent},line:{color:accent}});
     s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:3.4,fontSize:13,color:text2,valign:'top',wrap:true});
 
@@ -1565,7 +1721,8 @@ async function genManualPPTX(){
     const rawSteps=(q2_1Steps||'').split('\n').filter(s=>s.trim()).slice(0,9);
     const s3=pptx.addSlide();
     s3.background={color:bg};
-    s3.addText('現状の業務フロー（たたき台）',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
+    const s3Title=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'業務の手順（たたき台）':outputIntent==='it_service'?'現状の業務フロー':'現状の業務フロー（たたき台）';
+    s3.addText(s3Title,{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     s3.addText('※ ステップを確認し、抜け・漏れがあれば追記してください',{x:0.4,y:0.85,w:9,h:0.35,fontSize:10,color:text3,italic:true});
     if(rawSteps.length===0){
       s3.addText('（手順の入力なし）',{x:0.4,y:1.3,w:9,h:0.5,fontSize:12,color:text3});
@@ -1582,8 +1739,22 @@ async function genManualPPTX(){
     const autoSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎'||s.automation==='△');
     const s4=pptx.addSlide();
     s4.background={color:bg};
-    s4.addText('整理・改善のポイント',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
-    if(autoSteps.length>0){
+    const s4Title=outputIntent==='it_service'?'代替できるサービス・ツール案':outputIntent==='staff_manual'||outputIntent==='staff_organize'?'マニュアル化の優先ポイント':'整理・改善のポイント';
+    s4.addText(s4Title,{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
+    if(outputIntent==='it_service'){
+      // it_service: 代替サービス提案スライド
+      s4.addText('下記を参考に、自社の規模・予算に合ったツールを比較検討してください。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
+      const aiAutoSteps=((ar&&ar.steps)||[]).filter(s=>s.automation==='◎').slice(0,3);
+      const serviceHints=aiAutoSteps.length>0
+        ?aiAutoSteps.map(s=>`・${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}：${safe(s.note)||'ツールで効率化できる可能性があります'}`)
+        :['・業務内容から代替できるサービスを検討してください'];
+      serviceHints.forEach((hint,i)=>{
+        const y=1.3+i*0.62;
+        s4.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.52,fill:{color:'F5F6FA'},line:{color:accent,pt:1.5}});
+        s4.addText(hint,{x:0.55,y:y+0.1,w:8.6,h:0.35,fontSize:11,color:text2,wrap:true});
+      });
+      s4.addText('※ Claude（claude.ai）やGemini（gemini.google.com）に「〇〇業務に使えるサービスを3つ教えて」と聞くとリンク付きで提案してもらえます',{x:0.4,y:4.5,w:9,h:0.45,fontSize:10,color:text3,italic:true,wrap:true});
+    }else if(autoSteps.length>0){
       s4.addText('以下の工程に改善の余地があります。まず整理から始めましょう。',{x:0.4,y:0.88,w:9,h:0.35,fontSize:11,color:text3});
       autoSteps.slice(0,5).forEach((step,i)=>{
         const y=1.3+i*0.62;
@@ -1596,11 +1767,24 @@ async function genManualPPTX(){
       s4.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text2,wrap:true});
     }
 
-    // Slide 5: たたき台の使い方
+    // Slide 5: たたき台の使い方（outputIntentで切り替え）
     const s5=pptx.addSlide();
     s5.background={color:bg};
-    s5.addText('このたたき台の使い方',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
-    const tips=[
+    const s5Title=outputIntent==='it_service'?'ツール選定時に確認すべき観点':outputIntent==='staff_manual'||outputIntent==='staff_organize'?'このマニュアルの育て方':'このたたき台の使い方';
+    s5.addText(s5Title,{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
+    const tips=outputIntent==='it_service'?[
+      ['① 無料プランで試せるか','まず費用をかけずに試用できるか確認する'],
+      ['② 既存ツール（Excel・メール・会計ソフト）と連携できるか','移行コストを最小限にするために確認する'],
+      ['③ スタッフが使いこなせる難易度か','導入後に使われなければ意味がない'],
+      ['④ サポート・日本語対応があるか','困ったときに相談できる体制があるか'],
+      ['⑤ 価格体系と継続コストを確認する','初期費用だけでなく月額・ユーザー数課金に注意'],
+    ]:outputIntent==='staff_manual'||outputIntent==='staff_organize'?[
+      ['① 各ステップを自分の言葉で書き直す','実際の作業と合っているか確認しながら修正する'],
+      ['② 判断基準（OK/NG）を書き足す','「こういう時はこうする」を具体的に記載する'],
+      ['③ スタッフに渡して抜け漏れを確認してもらう','実際にやる人の視点でチェックしてもらう'],
+      ['④ スクリーンショット・画像を貼り付ける','見て分かる資料にする'],
+      ['⑤ 定期的に見直す','業務が変わったら更新する習慣をつける'],
+    ]:[
       ['① 各ステップを自分の言葉で書き直す','実際の作業と合っているか確認しながら修正する'],
       ['② 判断基準（OK/NG）を書き足す','「こういう時はこうする」を具体的に記載する'],
       ['③ 例外パターンを追記する','イレギュラーな対応もここに記録する'],
@@ -1634,7 +1818,8 @@ async function genManualPPTX(){
     s6.addText('このファイルは、Glocal Labが提供する「業務半自動化スターターキット」をもとに生成されています。',{x:0.4,y:5.2,w:9,h:0.25,fontSize:8,color:'AAAAAA',align:'center',italic:true});
 
     // ⑦ Blobダウンロード方式（最安定）
-    const fname=`業務フロー整理ガイド_${safe(ind)||'診断結果'}.pptx`;
+    const fnameBase=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'業務マニュアルたたき台':outputIntent==='it_service'?'ツール選定ガイド':'業務フロー整理ガイド';
+    const fname=`${fnameBase}_${safe(ind)||'診断結果'}.pptx`;
     const blob=await pptx.write('blob');
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
@@ -2187,7 +2372,7 @@ async function genStockExcel(ind,pos,task,ar){
 
 // ===== リセット =====
 function restart(){
-  ind='';pos='';q1Goals=[];q2Pain='';q2_1Steps='';taskName='';taskOwner='';taskTiming='';ar=null;selectedToolId=null;selectedReason='';payRoute='';roiMonthlyHours=0;expandedSteps=[];
+  ind='';pos='';q1Goals=[];q2Pain='';q2_1Steps='';taskName='';taskOwner='';taskTiming='';ar=null;selectedToolId=null;selectedReason='';payRoute='';roiMonthlyHours=0;expandedSteps=[];outputIntent='';itServiceType='';itBusinessDesc='';staffCandidateTasks=[];step3Sub='';
   document.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('otherInput').value='';
   document.getElementById('otherWrap').style.display='none';
