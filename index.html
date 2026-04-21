@@ -676,7 +676,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </div>
 
   <div style="margin-top:14px;text-align:center;">
-    <button class="btn-s" onclick="restart()">最初からやり直す</button>
   </div>
 </div>
 
@@ -699,7 +698,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
   </div>
   <div style="margin-top:14px;text-align:center;">
-    <button class="btn-s" onclick="restart()">最初からやり直す</button>
   </div>
 </div>
 
@@ -1434,7 +1432,16 @@ function showFlowchart(){
   // 分岐CTA（ここでは売らない。「次に何を選ぶか考える」画面へ誘導）
   const ctaEl=document.getElementById('branchCta');
   const hasMatchedTemplate=ar.matched_ids && ar.matched_ids.length>0;
-  if(hasAuto && hasMatchedTemplate){
+  // it_serviceルートは専用CTA（「在庫・備品管理」等テンプレート名が出ないようにする）
+  if(outputIntent==='it_service'){
+    buildItServiceSelectScreen();
+    ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
+      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
+      <div class="branch-cta-title">「ツール選定ガイド」を生成できます</div>
+      <div class="branch-cta-desc">診断結果からこの業務がマッチしました。市販サービスを比較・検討できるPowerPointたたき台（AIプロンプト付き）を生成します。</div>
+      <button class="btn-p" onclick="goSelectBeforePay()">ツール選定ガイドを生成する →</button>
+    </div>`;
+  }else if(hasAuto && hasMatchedTemplate){
     const matched=ar.matched_ids.map(id=>TOP10.find(t=>t.id===id)).filter(Boolean);
     buildSelectScreen(matched);
     const btnLabel=matched.length===1?`「${matched[0].name}」シートを生成する →`:'候補を選ぶ →';
@@ -1614,6 +1621,29 @@ function buildStaffChecklistSelectScreen(){
   checkSelectReady();
 }
 
+// ツール選定ガイド（PPTX）専用選択画面
+function buildItServiceSelectScreen(){
+  const container=document.getElementById('toolSelectCards');
+  container.innerHTML='';
+  selectedToolId=null;selectedReason='';
+  document.getElementById('btnSelect').disabled=true;
+  document.getElementById('reasonBlock').style.display='none';
+  document.getElementById('selectTitle').textContent='ツール選定ガイドを生成します';
+  document.getElementById('selectHint').textContent='診断結果をもとに、市販サービスを比較・検討できるPowerPointたたき台を生成します。';
+  const card=document.createElement('div');
+  card.className='tool-select-card selected';
+  card.innerHTML=`<div class="tool-select-title">📋 ツール選定ガイド（PowerPoint）</div>
+    <div class="tool-select-desc">診断でフラグのついた工程ごとに代替サービスを提案します。チームで比較・検討するためのたたき台です。AIプロンプト活用ガイドも収録。</div>
+    <div class="tool-select-items">
+      <span class="tool-chip" style="background:rgba(232,124,58,.12);color:var(--accent);border:1px solid rgba(232,124,58,.25);">📋 PowerPoint</span>
+    </div>`;
+  container.appendChild(card);
+  selectedToolId='it_service_pptx';
+  selectedReason='自動選択';
+  document.getElementById('reasonBlock').style.display='none';
+  checkSelectReady();
+}
+
 function selReason(btn,v){
   document.querySelectorAll('#reasonGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
@@ -1662,6 +1692,14 @@ function openPayModal(){
       '✅ チェックリストシート（確認チェック形式）',
       '✅ アレンジ解説シート（カスタマイズ方法の説明付き）',
     ].join('<br>');
+  }else if(outputIntent==='it_service'){
+    document.getElementById('modalContents').innerHTML=[
+      '📋 ツール選定ガイド（PowerPoint・7スライド）',
+      '🛒 工程別・代替サービス提案',
+      '💡 AIプロンプト活用ガイド（フローチャートより）',
+      '🔍 ツール選定時の確認観点リスト',
+      '🔄 なぜ継続更新が必要かの説明ページ',
+    ].map(s=>`✅ ${s}`).join('<br>');
   }else{
     document.getElementById('modalContents').innerHTML=[
       '📋 業務フロー整理スライド（6枚）','✏️ たたき台の使い方・肉付けガイド','🔄 なぜ継続更新が必要かの説明ページ'
@@ -1732,14 +1770,46 @@ function showPreview(){
   ['blockPrompt','blockOcr','blockExcel','blockPPTX'].forEach(id=>{document.getElementById(id).style.display='none';});
 
   if(payRoute==='manual'){
-    document.getElementById('outTitle').textContent='生成されるガイドの内容を確認してください';
-    const previewLines=q2_1Steps.split('\n').filter(s=>s.trim()).slice(0,5);
-    const previewHtml=previewLines.map((l,i)=>`<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${l.trim().replace(/^[\d\.\-\s]+/,'')}`).join('<br>');
-    document.getElementById('outDesc').innerHTML=`${ind}・${pos} 向けの業務フロー整理ガイド（PowerPoint）が生成されます。<br><br>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-top:8px;">
-        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">入力された手順（スライドに反映されます）</div>
-        <div style="font-size:14px;color:var(--text2);line-height:1.9;">${previewHtml}${q2_1Steps.split('\n').filter(s=>s.trim()).length>5?'<br><span style="color:var(--text3);">…他 '+(q2_1Steps.split('\n').filter(s=>s.trim()).length-5)+'ステップ</span>':''}</div>
-      </div>`;
+    if(outputIntent==='it_service'){
+      document.getElementById('outTitle').textContent='生成されるツール選定ガイドの内容を確認してください';
+      document.getElementById('outDesc').innerHTML=`${ind}・${pos} 向けのツール選定ガイド（PowerPoint）が生成されます。`;
+      document.querySelector('#blockPPTX .output-block-title').textContent='ツール選定ガイド（PowerPoint）';
+      document.querySelector('#blockPPTX .output-desc').textContent='診断結果と入力いただいた手順をもとにPowerPointを生成します。';
+      document.querySelector('#blockPPTX .output-block-body').innerHTML=`
+        <div class="output-desc">診断結果と入力いただいた手順をもとにPowerPointを生成します。</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド1：表紙（業種・ポジション）</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド2：検討業務・導入の目的</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド3：現状の業務フロー</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド4：代替できるサービス・ツール案</div>
+          <div style="font-size:14px;color:var(--accent);padding:6px 0;border-bottom:1px solid var(--border);font-weight:700;">📌 スライド5：AIプロンプト活用ガイド（フローチャートより）</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド6：ツール選定時に確認すべき観点</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;">📌 スライド7：なぜ継続更新が必要か</div>
+        </div>
+        <div style="font-size:13px;color:var(--text3);">✅ 購入後すぐにダウンロードが始まります</div>`;
+    }else{
+      document.getElementById('outTitle').textContent='生成されるガイドの内容を確認してください';
+      const previewLines=q2_1Steps.split('\n').filter(s=>s.trim()).slice(0,5);
+      const previewHtml=previewLines.map((l,i)=>`<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${l.trim().replace(/^[\d\.\-\s]+/,'')}`).join('<br>');
+      document.getElementById('outDesc').innerHTML=`${ind}・${pos} 向けの業務フロー整理ガイド（PowerPoint）が生成されます。<br><br>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 13px;margin-top:8px;">
+          <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">入力された手順（スライドに反映されます）</div>
+          <div style="font-size:14px;color:var(--text2);line-height:1.9;">${previewHtml}${q2_1Steps.split('\n').filter(s=>s.trim()).length>5?'<br><span style="color:var(--text3);">…他 '+(q2_1Steps.split('\n').filter(s=>s.trim()).length-5)+'ステップ</span>':''}</div>
+        </div>`;
+      // reset blockPPTX to default content
+      document.querySelector('#blockPPTX .output-block-title').textContent='業務フロー整理ガイド（PowerPoint）';
+      document.querySelector('#blockPPTX .output-block-body').innerHTML=`
+        <div class="output-desc">入力いただいた手順と診断結果をもとにPowerPointを生成します。</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド1：表紙（業種・ポジション）</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド2：課題・困りごと</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド3：現状の業務フロー（たたき台）</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド4：整理・改善のポイント</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border);">📌 スライド5：このたたき台の使い方</div>
+          <div style="font-size:14px;color:var(--text2);padding:6px 0;">📌 スライド6：なぜ継続更新が必要か</div>
+        </div>
+        <div style="font-size:13px;color:var(--text3);">✅ 購入後すぐにダウンロードが始まります</div>`;
+    }
     document.getElementById('blockPPTX').style.display='block';
     console.log('manual生成データ', {pain: q2Pain, steps: q2_1Steps, reason: selectedReason});
     return;
@@ -1959,6 +2029,25 @@ ${targetSteps.map((s,i)=>`${i+1}. ${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}`)
       });
     }else{
       s4.addText('現在の手順を整理し、各ステップの判断基準を言語化することから始めましょう。',{x:0.4,y:1.1,w:9,h:0.5,fontSize:13,color:text2,wrap:true});
+    }
+
+    // Slide 4.5: AIプロンプト活用ガイド（it_serviceルートのみ）
+    if(outputIntent==='it_service'){
+      const promptSteps=((ar&&ar.steps)||[]).filter(s=>(s.automation==='◎'||s.automation==='△')&&s.prompt_hint);
+      if(promptSteps.length>0){
+        const sP=pptx.addSlide();
+        sP.background={color:bg};
+        sP.addText('AIプロンプト活用ガイド',{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
+        sP.addText('フローチャートで特定した工程に、そのまま使えるAIへの指示文です。無料のClaude（claude.ai）またはGemini（gemini.google.com）に貼り付けてください。',{x:0.4,y:0.86,w:9,h:0.42,fontSize:10,color:text3,wrap:true});
+        promptSteps.slice(0,4).forEach((step,i)=>{
+          const y=1.38+i*0.9;
+          const lcolor=step.automation==='◎'?blue:accent;
+          sP.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:8.9,h:0.8,fill:{color:'F5F6FA'},line:{color:lcolor,pt:1.2}});
+          sP.addText(`${step.automation==='◎'?'⚡ ':'🔧 '}STEP ${safe(step.step)}  ${safe(step.text)}`,{x:0.55,y:y+0.05,w:8.6,h:0.24,fontSize:10,bold:true,color:lcolor});
+          sP.addText(safe(step.prompt_hint),{x:0.55,y:y+0.3,w:8.6,h:0.42,fontSize:9.5,color:text2,wrap:true});
+        });
+        sP.addText('※ 上記プロンプトは無料プランのClaude / Geminiで動作します',{x:0.4,y:4.88,w:9,h:0.25,fontSize:8.5,color:text3,italic:true,align:'center'});
+      }
     }
 
     // Slide 5: たたき台の使い方（outputIntentで切り替え）
