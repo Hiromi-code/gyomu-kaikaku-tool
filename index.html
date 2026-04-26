@@ -1658,7 +1658,7 @@ function checkSelectReady(){
 function goROI(){
   // ROIコンテキスト表示
   const task=payRoute==='auto'?TOP10.find(t=>t.id===selectedToolId):null;
-  const taskName=task?task.name:selectedToolId?selectedToolId.replace('manual_','STEP ')+'の整理':'選択した業務';
+  const taskName=task?task.name:selectedToolId==='it_service_pptx'?'ツール選定ガイド':selectedToolId==='staff_manual_pptx'?'業務マニュアルたたき台':selectedToolId==='staff_checklist_excel'?'スタッフ向けチェックリスト':selectedToolId?selectedToolId.replace('manual_','STEP ')+'の整理':'選択した業務';
   const ctx=document.getElementById('roiContext');
   const ctxContent=document.getElementById('roiContextContent');
   ctxContent.innerHTML=`<span style="color:var(--text3);">選んだ業務：</span><strong>${taskName}</strong><br>
@@ -1675,7 +1675,7 @@ function goROI(){
 // ===== 課金モーダル =====
 function openPayModal(){
   const task=payRoute==='auto'?TOP10.find(t=>t.id===selectedToolId):null;
-  const taskName=task?task.name:selectedToolId?selectedToolId.replace('manual_','STEP ')+'の整理':'選択した業務';
+  const taskName=task?task.name:selectedToolId==='it_service_pptx'?'ツール選定ガイド':selectedToolId==='staff_manual_pptx'?'業務マニュアルたたき台':selectedToolId==='staff_checklist_excel'?'スタッフ向けチェックリスト':selectedToolId?selectedToolId.replace('manual_','STEP ')+'の整理':'選択した業務';
   // 選択内容サマリー
   let selHtml=`<div>📌 選んだ業務：<strong>${taskName}</strong></div>`;
   if(selectedReason)selHtml+=`<div>📌 選んだ理由：<strong>${selectedReason}</strong></div>`;
@@ -2046,7 +2046,9 @@ ${targetSteps.map((s,i)=>`${i+1}. ${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}`)
           sP.addText(`${step.automation==='◎'?'⚡ ':'🔧 '}STEP ${safe(step.step)}  ${safe(step.text)}`,{x:0.55,y:y+0.05,w:8.6,h:0.24,fontSize:10,bold:true,color:lcolor});
           sP.addText(safe(step.prompt_hint),{x:0.55,y:y+0.3,w:8.6,h:0.42,fontSize:9.5,color:text2,wrap:true});
         });
-        sP.addText('※ 上記プロンプトは無料プランのClaude / Geminiで動作します',{x:0.4,y:4.88,w:9,h:0.25,fontSize:8.5,color:text3,italic:true,align:'center'});
+        sP.addShape(pptx.ShapeType.rect,{x:0.4,y:4.55,w:8.9,h:0.55,fill:{color:'FFF7F0'},line:{color:accent,pt:1}});
+        sP.addText('💡 思った結果と違った場合は、どこが合っていてどこが違うかをAIに伝えてください。より欲しい結果に近づきます。一度であきらめずに何度か試してコツをつかんでください。',{x:0.55,y:4.57,w:8.6,h:0.5,fontSize:9,color:dark,wrap:true});
+        sP.addText('※ 上記プロンプトは無料プランのClaude（claude.ai）/ Gemini（gemini.google.com）で動作します',{x:0.4,y:5.12,w:9,h:0.2,fontSize:8,color:text3,italic:true,align:'center'});
       }
     }
 
