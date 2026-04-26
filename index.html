@@ -701,33 +701,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
-<!-- 課金モーダル（最終確認） -->
-<div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeModal()">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:440px;width:100%;animation:fadeIn .2s ease;">
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:.2em;margin-bottom:10px;">CONFIRM</div>
-    <div style="font-size:19px;font-weight:700;margin-bottom:14px;">この内容で成果物を生成しますか？</div>
-    <!-- 選択内容のサマリー -->
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;font-size:14px;color:var(--text2);line-height:2;" id="modalSelections"></div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:20px;">
-      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;">含まれるもの：</div>
-      <div id="modalContents" style="font-size:14px;color:var(--text2);line-height:1.9;"></div>
-    </div>
-    <div style="background:rgba(232,124,58,.08);border:1px solid rgba(232,124,58,.25);border-radius:var(--radius);padding:12px;margin-bottom:20px;font-size:14px;color:var(--text2);line-height:1.7;">
-      💳 <strong style="color:var(--accent);">このコンテンツは有料です（¥9,800・買い切り）</strong><br>
-      購入後、何度でも再診断・再生成できます。更新料はありません。
-    </div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn-s" onclick="closeModal()" style="flex:1">キャンセル</button>
-      <button class="btn-dl" id="btnExec" onclick="execPayment()" style="flex:2;justify-content:center;">⬇ 生成する</button>
-    </div>
-  </div>
-</div>
-
 </div><!-- /main -->
 
 <script>
 // ===== APIキー設定（本番ではサーバー経由に変更すること） =====
 const WORKER_URL = 'https://anthropic-proxy.kokoda-mu.workers.dev';
+const STRIPE_WORKER_URL = 'https://stripe-checkout.kokoda-mu.workers.dev';
 
 // ===== フォールバックマッチング（AI失敗時・matched_ids空時の補完） =====
 function fallbackMatch(pain, steps){
@@ -1672,71 +1651,104 @@ function goROI(){
   goS('s-roi');uf(8);
 }
 
-// ===== 課金モーダル =====
-function openPayModal(){
-  const task=payRoute==='auto'?TOP10.find(t=>t.id===selectedToolId):null;
-  const taskName=task?task.name:selectedToolId==='it_service_pptx'?'ツール選定ガイド':selectedToolId==='staff_manual_pptx'?'業務マニュアルたたき台':selectedToolId==='staff_checklist_excel'?'スタッフ向けチェックリスト':selectedToolId?selectedToolId.replace('manual_','STEP ')+'の整理':'選択した業務';
-  // 選択内容サマリー
-  let selHtml=`<div>📌 選んだ業務：<strong>${taskName}</strong></div>`;
-  if(selectedReason)selHtml+=`<div>📌 選んだ理由：<strong>${selectedReason}</strong></div>`;
-  if(roiMonthlyHours>0)selHtml+=`<div>📌 想定削減：<strong>月 ${roiMonthlyHours} 時間</strong></div>`;
-  document.getElementById('modalSelections').innerHTML=selHtml;
-  // 含まれるもの
-  if(payRoute==='auto'&&task){
-    const items=['📊 メイン管理シート（すぐ使える標準版）','📋 AI活用プロンプト（無料Claude/Geminiで動作）','📈 業務フローチャート（自動化区分付き）','⚡ AI活用ポイント（工程別の指示例）','🛠 カスタマイズガイド（自社用カスタマイズ手順）','❓ AI質問集（困ったときのプロンプト集）','📖 README＆プロンプトシート付き'];
-    if(task.hasOcr)items.splice(1,0,'📷 OCR転記プロンプト');
-    document.getElementById('modalContents').innerHTML=items.map(s=>`✅ ${s}`).join('<br>');
-  }else if(payRoute==='checklist'){
-    document.getElementById('modalContents').innerHTML=[
-      '✅ リストシート（Todoリスト形式）',
-      '✅ チェックリストシート（確認チェック形式）',
-      '✅ アレンジ解説シート（カスタマイズ方法の説明付き）',
-    ].join('<br>');
-  }else if(outputIntent==='it_service'){
-    document.getElementById('modalContents').innerHTML=[
-      '📋 ツール選定ガイド（PowerPoint・7スライド）',
-      '🛒 工程別・代替サービス提案',
-      '💡 AIプロンプト活用ガイド（フローチャートより）',
-      '🔍 ツール選定時の確認観点リスト',
-      '🔄 なぜ継続更新が必要かの説明ページ',
-    ].map(s=>`✅ ${s}`).join('<br>');
-  }else{
-    document.getElementById('modalContents').innerHTML=[
-      '📋 業務フロー整理スライド（6枚）','✏️ たたき台の使い方・肉付けガイド','🔄 なぜ継続更新が必要かの説明ページ'
-    ].map(s=>`✅ ${s}`).join('<br>');
-  }
-  document.getElementById('payModal').style.display='flex';
+// ===== Stripe 状態保存・復元 =====
+function saveStateForStripe(){
+  const state={
+    ind,pos,q1Goals,q2Pain,q2_1Steps,
+    taskName,taskOwner,taskTiming,
+    selectedToolId,selectedReason,payRoute,
+    outputIntent,itServiceType,itBusinessDesc,
+    roiMonthlyHours,
+    ar:ar?JSON.stringify(ar):null
+  };
+  sessionStorage.setItem('gyomu_state',JSON.stringify(state));
 }
-function closeModal(){document.getElementById('payModal').style.display='none';}
 
-async function execPayment(){
-  closeModal();
-  if(payRoute==='auto'){
-    showActualOutput();
-  }else if(payRoute==='checklist'){
-    const success=await genChecklistExcel();
-    if(success){
-      document.getElementById('manualDoneIcon').textContent='✅';
-      document.getElementById('manualDoneTitle').textContent='チェックリストたたき台が完成しました';
-      document.getElementById('manualDoneDesc').textContent='Excelファイルのダウンロードが始まります。開けない場合は下のボタンから再ダウンロードしてください。';
-      document.getElementById('manualDoneNote').innerHTML='<strong>このたたき台のアレンジ方法：</strong><br><br>「アレンジ解説」シートに使い方が書いてあります。<br><br>① 不要な行は削除、必要な行を追加する<br>② 担当者や期日の列を増やしてもOK<br>③ Claude / Geminiに「このチェックリストを改善して」と貼り付けるとAIが手伝ってくれます（無料プランOK）<br><br><strong>まず1回使ってみて、使いにくいと感じた箇所を直してください。</strong>';
-      document.getElementById('btnReDownload').style.display='none';
-      goS('s-manual');uf(9);
+function restoreStateFromStripe(){
+  const raw=sessionStorage.getItem('gyomu_state');
+  if(!raw)return false;
+  try{
+    const s=JSON.parse(raw);
+    ind=s.ind||''; pos=s.pos||''; q1Goals=s.q1Goals||[];
+    q2Pain=s.q2Pain||''; q2_1Steps=s.q2_1Steps||'';
+    taskName=s.taskName||''; taskOwner=s.taskOwner||''; taskTiming=s.taskTiming||'';
+    selectedToolId=s.selectedToolId||null; selectedReason=s.selectedReason||'';
+    payRoute=s.payRoute||''; outputIntent=s.outputIntent||'';
+    itServiceType=s.itServiceType||''; itBusinessDesc=s.itBusinessDesc||'';
+    roiMonthlyHours=s.roiMonthlyHours||0;
+    ar=s.ar?JSON.parse(s.ar):null;
+    sessionStorage.removeItem('gyomu_state');
+    return true;
+  }catch(e){return false;}
+}
+
+// ===== Stripe Checkout へリダイレクト =====
+async function openPayModal(){
+  const btn=document.querySelector('#s-output .nav .btn-p');
+  if(btn){btn.textContent='決済画面へ移動中…';btn.disabled=true;}
+  saveStateForStripe();
+  try{
+    const res=await fetch(`${STRIPE_WORKER_URL}/create-checkout`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'}
+    });
+    const data=await res.json();
+    if(data.url){
+      window.location.href=data.url;
     }else{
-      alert('ファイル生成に失敗しました。入力内容を確認して再度お試しください。');
+      alert('決済画面の表示に失敗しました。もう一度お試しください。\n\nエラー：'+(data.error||'不明'));
+      if(btn){btn.textContent='この内容で生成する →';btn.disabled=false;}
     }
-  }else{
-    const success=await genManualPPTX();
-    if(success){
-      document.getElementById('manualDoneIcon').textContent='📋';
-      document.getElementById('manualDoneTitle').textContent='業務フロー整理ガイドが完成しました';
-      document.getElementById('manualDoneDesc').textContent='PowerPointファイルのダウンロードが始まります。開けない場合は下のボタンから再ダウンロードしてください。';
-      document.getElementById('manualDoneNote').innerHTML='<strong>このたたき台を「資産」に変えるために：</strong><br><br>このガイドは完成品ではありません。<br>あなたが肉付けするほど、会社固有の資産になります。<br><br>① 各ステップを自分の言葉で書き直す<br>② 判断基準・グレーゾーンの扱いを追記する<br>③ スクリーンショットや図を貼り付ける<br>④ 担当者が変わるたびに更新する習慣をつける<br><br><strong>誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。</strong>';
-      document.getElementById('btnReDownload').style.display='inline-flex';
-      goS('s-manual');uf(9);
+  }catch(e){
+    alert('通信エラーが発生しました。ネットワークを確認してください。\n\n'+e.message);
+    if(btn){btn.textContent='この内容で生成する →';btn.disabled=false;}
+  }
+}
+
+// ===== 決済完了後の復帰処理 =====
+async function checkPurchaseSession(){
+  const params=new URLSearchParams(window.location.search);
+  const sessionId=params.get('session_id');
+  if(!sessionId)return;
+  window.history.replaceState({},'',window.location.pathname);
+  const restored=restoreStateFromStripe();
+  if(!restored){
+    alert('セッション情報が見つかりませんでした。\nもう一度診断を行ってください。');
+    return;
+  }
+  goS('s-analyzing');uf(5);
+  document.getElementById('ls1').className='ls active';
+  document.getElementById('ls1').textContent='▶ 決済を確認しています…';
+  try{
+    const res=await fetch(`${STRIPE_WORKER_URL}/verify-token`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({session_id:sessionId})
+    });
+    const data=await res.json();
+    if(data.valid){
+      if(payRoute==='auto'){
+        showActualOutput();
+      }else if(payRoute==='checklist'){
+        const success=await genChecklistExcel();
+        if(success){
+          document.getElementById('manualDoneIcon').textContent='✅';
+          document.getElementById('manualDoneTitle').textContent='チェックリストたたき台が完成しました';
+          document.getElementById('manualDoneDesc').textContent='Excelファイルのダウンロードが始まります。開けない場合は下のボタンから再ダウンロードしてください。';
+          document.getElementById('btnReDownload').style.display='none';
+          goS('s-manual');uf(9);
+        }
+      }else{
+        const success=await genManualPPTX();
+        if(success){goS('s-manual');uf(9);}
+      }
     }else{
-      alert('ファイル生成に失敗しました。入力内容を確認して再度お試しください。');
+      alert('決済の確認ができませんでした。\nしばらく待ってから再度お試しいただくか、お問い合わせください。');
+      goS('s-cover');uf(0);
     }
+  }catch(e){
+    alert('確認中にエラーが発生しました。\n'+e.message);
+    goS('s-cover');uf(0);
   }
 }
 
@@ -2823,6 +2835,7 @@ function restart(){
   });
   goS('s-cover');uf(0);
 }
+window.addEventListener('load', checkPurchaseSession);
 </script>
 </body>
 </html>
