@@ -1412,7 +1412,15 @@ function showFlowchart(){
   const ctaEl=document.getElementById('branchCta');
   const hasMatchedTemplate=ar.matched_ids && ar.matched_ids.length>0;
   // it_serviceルートは専用CTA（「在庫・備品管理」等テンプレート名が出ないようにする）
-  if(outputIntent==='it_service'){
+  if(outputIntent==='visualization'){
+    buildManualSelectScreen();
+    ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
+      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
+      <div class="branch-cta-title">業務フロー整理ガイドを生成できます</div>
+      <div class="branch-cta-desc">診断結果をもとに、業務手順をPowerPointのたたき台として整理します。</div>
+      <button class="btn-p" onclick="goSelectBeforePay()">業務フロー整理ガイドを生成する →</button>
+    </div>`;
+  }else if(outputIntent==='it_service'){
     buildItServiceSelectScreen();
     ctaEl.innerHTML=`<div class="branch-cta" style="border-color:var(--accent);">
       <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.2em;margin-bottom:8px;">NEXT STEP</div>
