@@ -1692,6 +1692,25 @@ function restoreStateFromStripe(){
 
 // ===== Stripe Checkout へリダイレクト =====
 async function openPayModal(){
+  // ★ベータトークンチェック（追加）
+  const urlParams = new URLSearchParams(window.location.search);
+  const BETA_TOKEN = 'beta2026june'; // 秘密トークン（自分で決める）
+  const isBeta = urlParams.get('beta') === BETA_TOKEN;
+
+  if(isBeta){
+    // Stripeをスキップして直接生成へ
+    if(payRoute === 'auto'){
+      showActualOutput();
+    } else if(payRoute === 'checklist'){
+      const ok = await genChecklistExcel();
+      if(ok){ /* マニュアル完了画面へ */ goS('s-manual'); uf(9); }
+    } else {
+      const ok = await genManualPPTX();
+      if(ok){ goS('s-manual'); uf(9); }
+    }
+    return; // ← Stripeへ進まない
+  }
+  // 以下、既存のStripe処理そのまま
   const btn=document.querySelector('#s-output .nav .btn-p');
   if(btn){btn.textContent='決済画面へ移動中…';btn.disabled=true;}
   saveStateForStripe();
