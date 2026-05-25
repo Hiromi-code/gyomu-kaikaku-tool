@@ -1994,7 +1994,20 @@ ${targetSteps.map((s,i)=>`${i+1}. ${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}`)
     const s2Label=outputIntent==='it_service'?'検討業務・導入の目的':outputIntent==='staff_manual'||outputIntent==='staff_organize'?'マニュアル化したい業務':'課題・困りごと';
     s2.addText(s2Label,{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
     s2.addShape(pptx.ShapeType.rect,{x:0.4,y:0.85,w:0.05,h:3.5,fill:{color:accent},line:{color:accent}});
-    s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:3.4,fontSize:13,color:text2,valign:'top',wrap:true});
+    s2.addText(safe(q2Pain)||'（入力なし）',{x:0.65,y:0.9,w:8.7,h:0.62,fontSize:13,color:text2,valign:'top',wrap:true});
+    // 変更履歴テーブル（見える化・マニュアル化ルート）
+    if(outputIntent!=='it_service'){
+      const _vhC=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'1C559A':'168788';
+      const _vhBg=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'EFF4FB':'F0F8F8';
+      s2.addText('\u{1F4CB} \u5909\u66f4\u5c65\u6b74',{x:0.55,y:1.62,w:2.5,h:0.25,fontSize:9,bold:true,color:_vhC});
+      s2.addTable([
+        [{text:'\u30d0\u30fc\u30b8\u30e7\u30f3',options:{bold:true,color:'FFFFFF',fill:_vhC,align:'center'}},{text:'\u66f4\u65b0\u65e5',options:{bold:true,color:'FFFFFF',fill:_vhC,align:'center'}},{text:'\u66f4\u65b0\u8005',options:{bold:true,color:'FFFFFF',fill:_vhC,align:'center'}},{text:'\u5909\u66f4\u5185\u5bb9',options:{bold:true,color:'FFFFFF',fill:_vhC,align:'center'}}],
+        [{text:'v1.0',options:{align:'center',fill:_vhBg}},{text:new Date().toLocaleDateString('ja-JP'),options:{align:'center',fill:_vhBg}},{text:'\u4f5c\u6210\u8005\u540d',options:{align:'center',fill:_vhBg}},{text:'\u521d\u7248\u4f5c\u6210',options:{fill:_vhBg}}],
+        [{text:''},{text:''},{text:''},{text:''}],
+        [{text:'',options:{fill:_vhBg}},{text:'',options:{fill:_vhBg}},{text:'',options:{fill:_vhBg}},{text:'',options:{fill:_vhBg}}],
+        [{text:''},{text:''},{text:''},{text:''}],
+      ],{x:0.55,y:1.90,w:9.2,colW:[0.9,1.5,1.5,5.3],border:{pt:0.5,color:'C8E2E0'},fontSize:8.5,color:text2,valign:'middle',rowH:0.28});
+    }
 
     // Slide 3: 現状の業務フロー
     const rawSteps=(q2_1Steps||'').split('\n').filter(s=>s.trim()).slice(0,9);
@@ -2086,31 +2099,36 @@ ${targetSteps.map((s,i)=>`${i+1}. ${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}`)
     s5.background={color:bg};
     const s5Title=outputIntent==='it_service'?'ツール選定時に確認すべき観点':outputIntent==='staff_manual'||outputIntent==='staff_organize'?'このマニュアルの育て方':'このたたき台の使い方';
     s5.addText(s5Title,{x:0.4,y:0.3,w:9,h:0.55,fontSize:18,bold:true,color:dark});
+    const _scHint='\u{1F4F8} Win+Shift+S\uff08Win\uff09\uff0f \u2318+Shift+4\uff08Mac\uff09\u2192 \u5404STEP\u30b9\u30e9\u30a4\u30c9\u53f3\u5074\u306b\u8cbc\u308a\u4ed8\u3051';
     const tips=outputIntent==='it_service'?[
-      ['① 無料プランで試せるか','まず費用をかけずに試用できるか確認する'],
-      ['② 既存ツール（Excel・メール・会計ソフト）と連携できるか','移行コストを最小限にするために確認する'],
-      ['③ スタッフが使いこなせる難易度か','導入後に使われなければ意味がない'],
-      ['④ サポート・日本語対応があるか','困ったときに相談できる体制があるか'],
-      ['⑤ 価格体系と継続コストを確認する','初期費用だけでなく月額・ユーザー数課金に注意'],
+      ['\u2460 \u7121\u6599\u30d7\u30e9\u30f3\u3067\u8a66\u305b\u308b\u304b','\u307e\u305a\u8cbb\u7528\u3092\u304b\u3051\u305a\u306b\u8a66\u7528\u3067\u304d\u308b\u304b\u78ba\u8a8d\u3059\u308b'],
+      ['\u2461 \u65e2\u5b58\u30c4\u30fc\u30eb\uff08Excel\u30fb\u30e1\u30fc\u30eb\u30fb\u4f1a\u8a08\u30bd\u30d5\u30c8\uff09\u3068\u9023\u643a\u3067\u304d\u308b\u304b','\u79fb\u884c\u30b3\u30b9\u30c8\u3092\u6700\u5c0f\u9650\u306b\u3059\u308b\u305f\u3081\u306b\u78ba\u8a8d\u3059\u308b'],
+      ['\u2462 \u30b9\u30bf\u30c3\u30d5\u304c\u4f7f\u3044\u3053\u306a\u305b\u308b\u96e3\u6613\u5ea6\u304b','\u5c0e\u5165\u5f8c\u306b\u4f7f\u308f\u308c\u306a\u3051\u308c\u3070\u610f\u5473\u304c\u306a\u3044'],
+      ['\u2463 \u30b5\u30dd\u30fc\u30c8\u30fb\u65e5\u672c\u8a9e\u5bfe\u5fdc\u304c\u3042\u308b\u304b','\u56f0\u3063\u305f\u3068\u304d\u306b\u76f8\u8ac7\u3067\u304d\u308b\u4f53\u5236\u304c\u3042\u308b\u304b'],
+      ['\u2464 \u4fa1\u683c\u4f53\u7cfb\u3068\u7d99\u7d9a\u30b3\u30b9\u30c8\u3092\u78ba\u8a8d\u3059\u308b','\u521d\u671f\u8cbb\u7528\u3060\u3051\u3067\u306a\u304f\u6708\u984d\u30fb\u30e6\u30fc\u30b6\u30fc\u6570\u8ab2\u91d1\u306b\u6ce8\u610f'],
     ]:outputIntent==='staff_manual'||outputIntent==='staff_organize'?[
-      ['① 各ステップを自分の言葉で書き直す','実際の作業と合っているか確認しながら修正する'],
-      ['② 判断基準（OK/NG）を書き足す','「こういう時はこうする」を具体的に記載する'],
-      ['③ スタッフに渡して抜け漏れを確認してもらう','実際にやる人の視点でチェックしてもらう'],
-      ['④ スクリーンショット・画像を貼り付ける','見て分かる資料にする'],
-      ['⑤ 定期的に見直す','業務が変わったら更新する習慣をつける'],
+      ['\u2460 \u5404\u30b9\u30c6\u30c3\u30d7\u3092\u81ea\u5206\u306e\u8a00\u8449\u3067\u66f8\u304d\u76f4\u3059','\u5b9f\u969b\u306e\u4f5c\u696d\u3068\u5408\u3063\u3066\u3044\u308b\u304b\u78ba\u8a8d\u3057\u306a\u304c\u3089\u4fee\u6b63\u3059\u308b'],
+      ['\u2461 \u5224\u65ad\u57fa\u6e96\uff08OK/NG\uff09\u3092\u66f8\u304d\u8db3\u3059','\u300c\u3053\u3046\u3044\u3046\u6642\u306f\u3053\u3046\u3059\u308b\u300d\u3092\u5177\u4f53\u7684\u306b\u8a18\u8f09\u3059\u308b'],
+      ['\u2462 \u30b9\u30bf\u30c3\u30d5\u306b\u6e21\u3057\u3066\u6297\u3051\u6f0f\u308c\u3092\u78ba\u8a8d\u3057\u3066\u3082\u3089\u3046','\u5b9f\u969b\u306b\u3084\u308b\u4eba\u306e\u8996\u70b9\u3067\u30c1\u30a7\u30c3\u30af\u3057\u3066\u3082\u3089\u3046'],
+      ['\u2463 \u30b9\u30af\u30ea\u30fc\u30f3\u30b7\u30e7\u30c3\u30c8\u30fb\u753b\u50cf\u3092\u8cbc\u308a\u4ed8\u3051\u308b',`\u898b\u3066\u5206\u304b\u308b\u8cc7\u6599\u306b\u3059\u308b\u3000\u3000${_scHint}`],
+      ['\u2464 \u5b9a\u671f\u7684\u306b\u898b\u76f4\u3059','\u696d\u52d9\u304c\u5909\u308f\u3063\u305f\u3089\u66f4\u65b0\u3059\u308b\u7fd2\u6163\u3092\u3064\u3051\u308b'],
+      ['\u2465 \u64cd\u4f5c\u304c\u591a\u3044\u30b7\u30fc\u30f3\u306f\u30b9\u30e9\u30a4\u30c9\u3092\u5206\u3051\u3066OK','1\u30b9\u30c6\u30c3\u30d7\uff1d1\u30b9\u30e9\u30a4\u30c9\u3067\u3042\u308b\u5fc5\u8981\u306f\u3042\u308a\u307e\u305b\u3093\u3002\u753b\u9762\u9077\u79fb\u30fb\u30dc\u30bf\u30f3\u64cd\u4f5c\u306a\u3069\u5834\u9762\u3054\u3068\u306b\u30b9\u30e9\u30a4\u30c9\u3092\u8907\u88fd\u3057\u3066\u30b7\u30fc\u30f3\u3092\u5897\u3084\u3057\u3066\u304f\u3060\u3055\u3044'],
     ]:[
-      ['① 各ステップを自分の言葉で書き直す','実際の作業と合っているか確認しながら修正する'],
-      ['② 判断基準（OK/NG）を書き足す','「こういう時はこうする」を具体的に記載する'],
-      ['③ 例外パターンを追記する','イレギュラーな対応もここに記録する'],
-      ['④ スクリーンショット・画像を貼り付ける','見て分かる資料にする'],
-      ['⑤ 定期的に見直す','業務が変わったら更新する習慣をつける'],
+      ['\u2460 \u5404\u30b9\u30c6\u30c3\u30d7\u3092\u81ea\u5206\u306e\u8a00\u8449\u3067\u66f8\u304d\u76f4\u3059','\u5b9f\u969b\u306e\u4f5c\u696d\u3068\u5408\u3063\u3066\u3044\u308b\u304b\u78ba\u8a8d\u3057\u306a\u304c\u3089\u4fee\u6b63\u3059\u308b'],
+      ['\u2461 \u5224\u65ad\u57fa\u6e96\uff08OK/NG\uff09\u3092\u66f8\u304d\u8db3\u3059','\u300c\u3053\u3046\u3044\u3046\u6642\u306f\u3053\u3046\u3059\u308b\u300d\u3092\u5177\u4f53\u7684\u306b\u8a18\u8f09\u3059\u308b'],
+      ['\u2462 \u4f8b\u5916\u30d1\u30bf\u30fc\u30f3\u3092\u8ffd\u8a18\u3059\u308b','\u30a4\u30ec\u30ae\u30e5\u30e9\u30fc\u306a\u5bfe\u5fdc\u3082\u3053\u3053\u306b\u8a18\u9332\u3059\u308b'],
+      ['\u2463 \u30b9\u30af\u30ea\u30fc\u30f3\u30b7\u30e7\u30c3\u30c8\u30fb\u753b\u50cf\u3092\u8cbc\u308a\u4ed8\u3051\u308b',`\u898b\u3066\u5206\u304b\u308b\u8cc7\u6599\u306b\u3059\u308b\u3000\u3000${_scHint}`],
+      ['\u2464 \u5b9a\u671f\u7684\u306b\u898b\u76f4\u3059','\u696d\u52d9\u304c\u5909\u308f\u3063\u305f\u3089\u66f4\u65b0\u3059\u308b\u7fd2\u6163\u3092\u3064\u3051\u308b'],
+      ['\u2465 \u64cd\u4f5c\u304c\u591a\u3044\u30b9\u30c6\u30c3\u30d7\u306f\u30b9\u30e9\u30a4\u30c9\u3092\u5206\u3051\u3066OK','1\u30b9\u30c6\u30c3\u30d7\uff1d1\u30b9\u30e9\u30a4\u30c9\u3067\u3042\u308b\u5fc5\u8981\u306f\u3042\u308a\u307e\u305b\u3093\u3002\u64cd\u4f5c\u3054\u3068\u306b\u30b9\u30e9\u30a4\u30c9\u3092\u53f3\u30af\u30ea\u30c3\u30af \u2192\u300c\u30b9\u30e9\u30a4\u30c9\u3092\u8907\u88fd\u300d\u3057\u3066\u5897\u3084\u3057\u3066\u304f\u3060\u3055\u3044'],
     ];
+    const _tipSp=outputIntent==='it_service'?0.72:0.65;
+    const _tipY0=outputIntent==='it_service'?0.98:0.90;
     tips.forEach(([title,sub],i)=>{
-      const y=0.98+i*0.72;
+      const y=_tipY0+i*_tipSp;
       s5.addShape(pptx.ShapeType.rect,{x:0.4,y:y,w:0.35,h:0.35,fill:{color:accent},line:{color:accent}});
       s5.addText(`${i+1}`,{x:0.4,y:y,w:0.35,h:0.35,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
       s5.addText(title,{x:0.9,y:y,w:8.4,h:0.28,fontSize:12,bold:true,color:dark});
-      s5.addText(sub,{x:0.9,y:y+0.28,w:8.4,h:0.22,fontSize:10,color:text3});
+      s5.addText(sub,{x:0.9,y:y+0.28,w:8.4,h:0.30,fontSize:10,color:text3,wrap:true});
     });
 
     // Slide 6: なぜ継続更新が必要か
@@ -2130,6 +2148,59 @@ ${targetSteps.map((s,i)=>`${i+1}. ${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}`)
     });
     s6.addText('誰かが辞めても、業務が変わっても、残り続けるものを今日作り始めてください。',{x:0.4,y:4.6,w:9,h:0.5,fontSize:12,bold:true,color:blue,align:'center',wrap:true});
     s6.addText('このファイルは、Glocal Labが提供する「業務半自動化スターターキット」をもとに生成されています。',{x:0.4,y:5.2,w:9,h:0.25,fontSize:8,color:'AAAAAA',align:'center',italic:true});
+
+    // ===== STEPスライド（見える化・マニュアル化ルート） =====
+    if(outputIntent==='visualization'||outputIntent==='staff_manual'||outputIntent==='staff_organize'){
+      const _isMSt=outputIntent==='staff_manual'||outputIntent==='staff_organize';
+      const _stAc=_isMSt?'1C559A':'168788';
+      const _stLt=_isMSt?'EFF4FB':'F0F8F8';
+      const _stIBg=_isMSt?'F5F8FD':'F7FCFB';
+      const _stIBd=_isMSt?'B8CEEA':'C8E2E0';
+      const _stLn=_isMSt?'CBD9EF':'D0EAE8';
+      const _stHt=_isMSt?'A0BBDE':'BBDDDA';
+      const _stH=5.625,_stSBW=0.9,_stRX=1.18,_stRW=8.62,_stGAP=0.16;
+      const _stMW=_isMSt?(_stRW-_stGAP)/3:(_stRW-_stGAP)/2;
+      const _stIW=_stRW-_stMW-_stGAP;
+      const _stNY=1.33,_stCH=0.28;
+      const _stNH=_stH-_stNY-0.36-_stCH-0.06;
+      const _stIX=_stRX+_stMW+_stGAP;
+      const _stLC=13;
+      const _stFY=_stH-0.28;
+      const _stSteps=(q2_1Steps||'').split('\n').filter(s=>s.trim()).map(s=>s.replace(/^[\d\.\-\s]+/,'').trim()).filter(s=>s);
+      _stSteps.forEach((stepText,idx)=>{
+        const sS=pptx.addSlide();
+        sS.background={color:bg};
+        sS.addShape(pptx.ShapeType.rect,{x:0,y:0,w:_stSBW,h:_stH,fill:{color:_stAc},line:{color:_stAc}});
+        sS.addText(`${idx+1}`,{x:0,y:1.2,w:_stSBW,h:1.3,fontSize:54,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+        sS.addText('STEP',{x:0,y:2.55,w:_stSBW,h:0.35,fontSize:9,bold:true,color:'FFFFFF',align:'center'});
+        sS.addText(`/ ${_stSteps.length}`,{x:0,y:2.92,w:_stSBW,h:0.30,fontSize:8,color:'AADDDA',align:'center'});
+        sS.addShape(pptx.ShapeType.rect,{x:_stRX,y:0.20,w:_stRW,h:0.68,fill:{color:_stLt},line:{color:_stLt}});
+        sS.addText(safe(stepText),{x:_stRX+0.12,y:0.24,w:_stRW-0.20,h:0.60,fontSize:14,bold:true,color:dark,wrap:true,valign:'middle'});
+        const _htTxt=_isMSt?'\u270f \u64cd\u4f5c\u624b\u9806\u30fb\u5224\u65ad\u57fa\u6e96\u306a\u3069\u3092\u30e1\u30e2\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u{1F4F7} \u753b\u9762\u306e\u30b9\u30af\u30b7\u30e7\u3092\u53f3\u5074\u306b\u8cbc\u308a\u4ed8\u3051\uff08\u591a\u3081\u306b\uff01\uff09':'\u{1F4A1} \u624b\u9806\u30fb\u6c17\u3092\u3064\u3051\u308b\u70b9\u306a\u3069\u3092\u30e1\u30e2\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u{1F4F7} \u30b9\u30af\u30b7\u30e7\u3084\u753b\u50cf\u3092\u53f3\u5074\u306b\u8cbc\u308a\u4ed8\u3051';
+        sS.addText(_htTxt,{x:_stRX,y:1.00,w:_stRW,h:0.28,fontSize:8,color:_stHt,italic:true});
+        sS.addShape(pptx.ShapeType.rect,{x:_stRX,y:_stNY,w:_stMW,h:_stNH,fill:{color:'FFFFFF'},line:{color:_stLn,pt:0.75}});
+        sS.addText(_isMSt?'\u270f \u64cd\u4f5c\u30e1\u30e2':'\u{1F4DD} \u624b\u9806\u30e1\u30e2',{x:_stRX+0.10,y:_stNY+0.07,w:_stMW-0.15,h:0.24,fontSize:8.5,bold:true,color:_stAc});
+        sS.addText('\u3053\u3053\u306b\u8a18\u5165\u2026',{x:_stRX+0.12,y:_stNY+0.38,w:_stMW-0.20,h:0.26,fontSize:8,color:'CCCCCC',italic:true});
+        const _stIT=_stNY+0.35,_stIB=_stNY+_stNH-0.10,_stSp=(_stIB-_stIT)/(_stLC+1);
+        for(let _li=1;_li<=_stLC;_li++){const _ly=_stIT+_stSp*_li;sS.addShape(pptx.ShapeType.rect,{x:_stRX+0.10,y:_ly,w:_stMW-0.18,h:0.008,fill:{color:_stLn},line:{color:_stLn}});}
+        sS.addShape(pptx.ShapeType.rect,{x:_stIX,y:_stNY,w:_stIW,h:_stNH,fill:{color:_stIBg},line:{color:_stIBd,pt:0.75}});
+        sS.addText(_isMSt?'\u{1F5BC} \u30b9\u30af\u30b7\u30e7\u30fb\u64cd\u4f5c\u753b\u50cf\u3092\u8cbc\u308a\u4ed8\u3051\u308b\u30a8\u30ea\u30a2\u3000\u2190 \u3053\u3053\u304c\u4e3b\u5f79\u3067\u3059':'\u{1F5BC} \u753b\u50cf\u30fb\u30b9\u30af\u30b7\u30e7\u30a8\u30ea\u30a2',{x:_stIX+0.15,y:_stNY+0.10,w:_stIW-0.25,h:0.24,fontSize:8.5,bold:true,color:_stAc});
+        const _stCy=_stNY+_stNH/2-0.55;
+        sS.addText('Ctrl+V\uff08\u2318+V\uff09\u3067\u8cbc\u308a\u4ed8\u3051',{x:_stIX,y:_stCy,w:_stIW,h:0.32,fontSize:10,bold:true,color:'C2DCDA',align:'center'});
+        sS.addText(_isMSt?'\u753b\u9762\u304c\u5909\u308f\u308b\u305f\u3073\u306b\u30b9\u30af\u30b7\u30e7\u3092\u8cbc\u308a\u5897\u3057\u3066\u3044\u304f\u3068\n\u305d\u306e\u307e\u307e\u624b\u9806\u66f8\u306b\u306a\u308a\u307e\u3059':'\u30b9\u30af\u30b7\u30e7\u30fb\u5199\u771f\u30fb\u56f3\u306a\u3069\u4f55\u3067\u3082',{x:_stIX,y:_stCy+0.36,w:_stIW,h:_isMSt?0.48:0.30,fontSize:8.5,color:'C2DCDA',align:'center',italic:true});
+        sS.addText('\u{1F4F8} Win+Shift+S\uff08Win\uff09\u3000\u2318+Shift+4\uff08Mac\uff09',{x:_stIX+0.12,y:_stNY+_stNH-0.26,w:_stIW-0.20,h:0.22,fontSize:7.5,color:'BBCCCA',italic:true});
+        if(_isMSt){
+          const _stMX=_stIX+_stIW/2;
+          sS.addShape(pptx.ShapeType.rect,{x:_stMX-0.01,y:_stNY+0.40,w:0.02,h:_stNH-0.50,fill:{color:_stIBd},line:{color:_stIBd}});
+          sS.addText('\u2460 \u64cd\u4f5c\u524d\u306e\u753b\u9762',{x:_stIX+0.15,y:_stNY+0.42,w:_stIW/2-0.25,h:0.22,fontSize:8,color:'B0C8E4',italic:true});
+          sS.addText('\u2461 \u64cd\u4f5c\u5f8c\u306e\u753b\u9762\u30fb\u7d50\u679c',{x:_stMX+0.12,y:_stNY+0.42,w:_stIW/2-0.25,h:0.22,fontSize:8,color:'B0C8E4',italic:true});
+        }
+        const _stHY=_stNY+_stNH+0.06;
+        sS.addShape(pptx.ShapeType.rect,{x:_stRX,y:_stHY,w:_stRW,h:_stCH,fill:{color:_isMSt?'EBF2FB':'E8F5F4'},line:{color:_stLn,pt:0.5}});
+        sS.addText(_isMSt?'\u{1F4A1} \u753b\u9762\u9077\u79fb\u3084\u64cd\u4f5c\u304c\u591a\u3044\u30b9\u30c6\u30c3\u30d7\u306f\u3001\u3053\u306e\u30b9\u30e9\u30a4\u30c9\u3092\u53f3\u30af\u30ea\u30c3\u30af \u2192\u300c\u30b9\u30e9\u30a4\u30c9\u3092\u8907\u88fd\u300d\u3057\u3066\u30b7\u30fc\u30f3\u3092\u5206\u3051\u3066\u304f\u3060\u3055\u3044':'\u{1F4A1} \u3053\u306e\u30b9\u30c6\u30c3\u30d7\u304c\u8907\u6570\u306e\u64cd\u4f5c\u306b\u5206\u304b\u308c\u308b\u5834\u5408\u306f\u3001\u3053\u306e\u30b9\u30e9\u30a4\u30c9\u3092\u53f3\u30af\u30ea\u30c3\u30af \u2192\u300c\u30b9\u30e9\u30a4\u30c9\u3092\u8907\u88fd\u300d\u3057\u3066\u4f7f\u3063\u3066\u304f\u3060\u3055\u3044',{x:_stRX+0.15,y:_stHY+0.04,w:_stRW-0.25,h:_stCH-0.06,fontSize:7.5,color:_stAc,italic:true});
+        sS.addText(`${_isMSt?'\u696d\u52d9\u30de\u30cb\u30e5\u30a2\u30eb\u3000\u305f\u305f\u304d\u53f0':'\u696d\u52d9\u30d5\u30ed\u30fc\u6574\u7406\u30ac\u30a4\u30c9'}\uff5c${safe(ind)}\u3000STEP ${idx+1} / ${_stSteps.length}`,{x:_stRX,y:_stFY,w:_stRW,h:0.22,fontSize:7,color:text3});
+      });
+    }
 
     // ⑦ Blobダウンロード方式（最安定）
     const fnameBase=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'業務マニュアルたたき台':outputIntent==='it_service'?'ツール選定ガイド':'業務フロー整理ガイド';
