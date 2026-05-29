@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2436;--border:#2a3050;--accent:#e87c3a;--blue:#3a7ce8;--text:#f0f2f8;--text2:#c0c8dc;--text3:#8892aa;--green:#3ac98a;--yellow:#e8c33a;--red:#e85a5a;--radius:6px;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1697,7 +1698,7 @@ async function openPayModal(){
   if(_bp==='beta2026june'){
     if(payRoute==='auto'){showActualOutput();}
     else if(payRoute==='checklist'){const ok=await genChecklistExcel();if(ok){goS('s-manual');uf(9);}}
-    else{const ok=await genManualPPTX();if(ok){goS('s-manual');uf(9);}}
+    else{const ok=await generateAndDownloadZIP();if(ok){goS('s-manual');uf(9);}}
     return;
   }
   // ===== ここまで =====
@@ -1756,7 +1757,7 @@ async function checkPurchaseSession(){
           goS('s-manual');uf(9);
         }
       }else{
-        const success=await genManualPPTX();
+        const success=await generateAndDownloadZIP();
         if(success){goS('s-manual');uf(9);}
       }
     }else{
@@ -1932,13 +1933,10 @@ function doCopy(boxId,btnId){
 }
 
 // ===== PPTX生成（マニュアルルート） =====
-async function genManualPPTX(){
+async function buildGuidePPTX(pptx){
+  // 整理ガイドPPTXのスライドを追加する（new/writeFileは呼び出し元で行う）
   try{
-    console.log('PPTX生成開始');
-    // ライブラリ読み込み確認
-    if(typeof PptxGenJS==='undefined'){
-      throw new Error('PptxGenJSライブラリが読み込まれていません。ページを再読み込みしてください。');
-    }
+    console.log('ガイドPPTX生成開始');
 
     // nullチェックヘルパー
     const safe=(v)=>v?String(v):'';
@@ -1972,17 +1970,15 @@ ${targetSteps.map((s,i)=>`${i+1}. ${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}`)
       }
     }
 
-    const pptx=new PptxGenJS();
-    // 印刷対応カラー（白背景・黒系テキスト）
+    const pptxSub=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'このたたき台をチームで育てて、引き継ぎ・教育に使える資産にしてください':outputIntent==='it_service'?'あなたの業務に合ったツールを比較・検討するためのたたき台です':'このたたき台を育てて、会社の資産にしてください';
+    // 色定数
     const bg='FFFFFF',surface='F5F6FA',accent='E87C3A',blue='1A4FA0',
           text='1A1A2E',text2='333333',text3='666680',green='1D7A4E',dark='1A1A2E';
-
     // Slide 1: Cover
     const s1=pptx.addSlide();
     s1.background={color:bg};
     s1.addShape(pptx.ShapeType.rect,{x:0,y:2.4,w:10,h:0.05,fill:{color:accent},line:{color:accent}});
     const pptxTitle=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'業務マニュアル　たたき台':outputIntent==='it_service'?'ツール選定ガイド':'業務フロー整理ガイド';
-    const pptxSub=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'このたたき台をチームで育てて、引き継ぎ・教育に使える資産にしてください':outputIntent==='it_service'?'あなたの業務に合ったツールを比較・検討するためのたたき台です':'このたたき台を育てて、会社の資産にしてください';
     s1.addText(pptxTitle,{x:0.5,y:0.6,w:9,h:1.2,fontSize:30,bold:true,color:dark,align:'center'});
     s1.addText(`${safe(ind)} / ${safe(pos)}`,{x:0.5,y:1.8,w:9,h:0.5,fontSize:14,color:accent,align:'center'});
     s1.addText(pptxSub,{x:0.5,y:2.7,w:9,h:0.5,fontSize:11,color:text3,align:'center'});
@@ -2202,37 +2198,12 @@ ${targetSteps.map((s,i)=>`${i+1}. ${safe(s.text).replace(/^STEP\s*\d+\s*/,'')}`)
       });
     }
 
-    // ⑦ Blobダウンロード方式（最安定）
-    const fnameBase=outputIntent==='staff_manual'||outputIntent==='staff_organize'?'業務マニュアルたたき台':outputIntent==='it_service'?'ツール選定ガイド':'業務フロー整理ガイド';
-    const fname=`${fnameBase}_${safe(ind)||'診断結果'}.pptx`;
-    const blob=await pptx.write('blob');
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=fname;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
-
-    // 再ダウンロードボタン
-    document.getElementById('btnReDownload').style.display='block';
-    document.getElementById('btnReDownload').onclick=async()=>{
-      try{
-        const blob2=await pptx.write('blob');
-        const url2=URL.createObjectURL(blob2);
-        const a2=document.createElement('a');
-        a2.href=url2;a2.download=fname;
-        document.body.appendChild(a2);a2.click();
-        setTimeout(()=>{URL.revokeObjectURL(url2);document.body.removeChild(a2);},1000);
-      }catch(e){alert('再ダウンロードに失敗しました：'+e.message);}
-    };
-
-    console.log('PPTX生成成功');
+    // ⑦ 呼び出し元でwrite/downloadするため、ここでは何もしない
+    console.log('ガイドPPTXスライド生成完了');
     return true;
   }catch(e){
-    console.error('PPTX生成エラー詳細:', e);
-    alert('PPTX生成に失敗しました：'+e.message);
-    return false;
+    console.error('ガイドPPTX生成エラー:', e);
+    throw e;
   }
 }
 
@@ -2924,6 +2895,1883 @@ function restart(){
   goS('s-cover');uf(0);
 }
 window.addEventListener('load', checkPurchaseSession);
+</script>
+
+<script>
+// ===== フローチャート生成ロジック =====
+// ============================================================
+// フローチャートPPTX 自動生成ロジック
+// 既存の index.html に組み込むモジュール
+// ============================================================
+
+// ── カラー定数 ──────────────────────────────────────────────
+const FC_COLORS = {
+  TEAL:    '168788',
+  NAVY:    '1C559A',
+  ORANGE:  'E06930',
+  PURPLE:  '7B4F9E',
+  WHITE:   'FFFFFF',
+  DARK:    '1A1A2E',
+  GRAY:    '888888',
+  LGRAY:   'F5F5F5',
+};
+
+// ── スタイル判定ロジック ────────────────────────────────────
+/**
+ * 診断回答からフローチャートスタイルを決定する
+ * @param {string} route       - 'A' or 'B'
+ * @param {string} category    - 'money'|'customer_ledger'|'customer_member'|
+ *                               'reservation'|'inventory'|'task'|'shift'
+ * @param {string} q2_1Text    - Q2-1の回答テキスト（業務手順）
+ * @returns {string} 'style1'|'style2'|'style3A'|'style3B'|'none'
+ */
+function determineFlowchartStyle(route, category, q2_1Text) {
+  // ルートA → 直線ステップ型
+  if (route === 'A') return 'style1';
+
+  // タスク・進捗 → フローチャートなし
+  if (category === 'task') return 'none';
+
+  // 運用系（予約・在庫・シフト） → Case別ブロック型
+  if (['reservation', 'inventory', 'shift'].includes(category)) return 'style2';
+
+  // お金・顧客系 → 分岐の深さで判定
+  const depth = estimateBranchDepth(q2_1Text);
+  return depth <= 3 ? 'style3A' : 'style3B';
+}
+
+/**
+ * Q2-1テキストから分岐の深さを推定する
+ * 接続詞・条件詞・ステップ数をカウント
+ */
+function estimateBranchDepth(text) {
+  if (!text) return 2;
+  const branchWords = [
+    'もし', '場合', '場合は', 'の場合', 'により', 'によって',
+    'または', 'あるいは', 'それとも', 'どちらか',
+    'YES', 'NO', 'はい', 'いいえ',
+    '確認', 'チェック', '判断', '分岐',
+    'ただし', '例外', '特別', '通常以外',
+  ];
+  const stepWords = ['次に', 'その後', 'さらに', 'それから', '最後に', 'まず', '→', '▶'];
+  const branchCount = branchWords.filter(w => text.includes(w)).length;
+  const stepCount   = stepWords.filter(w => text.includes(w)).length;
+
+  // 分岐ワード2個以上 または ステップ4段階以上 → 深い
+  if (branchCount >= 2 || stepCount >= 4) return 4;
+  return 2;
+}
+
+// ── カテゴリ判定ロジック ────────────────────────────────────
+/**
+ * Q1・Q2の回答からルートとカテゴリを判定する
+ */
+function detectRouteAndCategory(q1Goals, q2Pain, q2_1Text) {
+  const text = (q2Pain + ' ' + q2_1Text).toLowerCase();
+
+  // ルートA判定：見える化・マニュアル化が目的
+  const routeAKeywords = ['見える化', 'マニュアル', '手順書', '整理', '可視化'];
+  const goalsText = Array.isArray(q1Goals) ? q1Goals.join(' ') : (q1Goals || '');
+  if (routeAKeywords.some(w => goalsText.includes(w))) {
+    return { route: 'A', category: 'organize' };
+  }
+
+  // ルートB：カテゴリ別キーワードスコアリング
+  const categoryScores = {
+    money:           scoreKeywords(text, ['収支','売上','経費','請求','入金','支払い','振込','お金','資金']),
+    customer_ledger: scoreKeywords(text, ['顧客','名簿','連絡先','顧客情報','購入履歴','顧客管理']),
+    customer_member: scoreKeywords(text, ['会員','会費','月額','引落し','メンバー','サブスク']),
+    reservation:     scoreKeywords(text, ['予約','スケジュール','ダブルブッキング','空き','予約管理']),
+    inventory:       scoreKeywords(text, ['在庫','仕入れ','発注','棚卸し','入庫','出荷','在庫管理']),
+    task:            scoreKeywords(text, ['タスク','担当','進捗','誰が何を','カンバン','ToDo']),
+    shift:           scoreKeywords(text, ['シフト','勤怠','パート','出勤','時給','勤務']),
+  };
+
+  // チェックリストアドオン検知
+  const checklistKeywords = ['確認','ミス','抜け','漏れ','チェック','見落とし'];
+  const hasChecklist = checklistKeywords.some(w => text.includes(w));
+
+  // 最高スコアのカテゴリを選択
+  const topCategory = Object.entries(categoryScores)
+    .sort((a, b) => b[1] - a[1])[0];
+
+  // スコアがゼロ → フォールバック（D案：ユーザー選択）
+  if (topCategory[1] === 0) {
+    return { route: 'B', category: 'unknown', hasChecklist };
+  }
+
+  return { route: 'B', category: topCategory[0], hasChecklist };
+}
+
+function scoreKeywords(text, keywords) {
+  return keywords.filter(w => text.includes(w)).length;
+}
+
+// ── AIへの構造化データ抽出プロンプト ───────────────────────
+/**
+ * スタイルに応じたAIプロンプトを生成する
+ * AIはJSON形式でフローチャートデータを返す
+ */
+function buildFlowchartPrompt(style, diagnosisData) {
+  const { industry, position, q2Pain, q2_1Text, category } = diagnosisData;
+
+  const baseContext = `
+業界：${industry}
+ポジション：${position}
+困りごと：${q2Pain}
+業務手順：${q2_1Text}
+  `.trim();
+
+  const schemas = {
+    style1: `
+以下の業務情報をもとに、直線ステップ型フローチャートのデータをJSONで返してください。
+
+${baseContext}
+
+JSONスキーマ（このフォーマットのみ、前後の文章不要）:
+{
+  "style": "style1",
+  "title": "業務フロー（15文字以内）",
+  "steps": [
+    {"num": "01", "label": "ステップ名（8文字以内）", "note": "補足説明（20文字以内）"},
+    {"num": "02", "label": "ステップ名", "note": "補足説明"}
+  ]
+}
+
+ルール:
+- stepsは3〜5個
+- labelは動詞で終わる（例：確認する、送付する）
+- noteは担当者や判断基準のヒントになる内容
+`,
+    style2: `
+以下の業務情報をもとに、Case別ブロック型フローチャートのデータをJSONで返してください。
+
+${baseContext}
+
+JSONスキーマ（このフォーマットのみ、前後の文章不要）:
+{
+  "style": "style2",
+  "title": "業務フロー（15文字以内）",
+  "cases": [
+    {
+      "label": "Case 1　状況名（12文字以内）",
+      "color": "teal",
+      "actions": ["アクション1（10文字以内）", "アクション2", "アクション3"]
+    },
+    {
+      "label": "Case 2　状況名",
+      "color": "orange",
+      "actions": ["アクション1", "アクション2"]
+    }
+  ]
+}
+
+ルール:
+- casesは2〜4個
+- colorは "teal"/"orange"/"navy" のいずれか（Case1=teal、例外/問題=orange、その他=navy）
+- actionsは各Case2〜4個
+- 最も重要な通常フローをCase1にする
+`,
+    style3A: `
+以下の業務情報をもとに、縦型YES/NO分岐フローチャートのデータをJSONで返してください。
+分岐は2〜3段階です。
+
+${baseContext}
+
+JSONスキーマ（このフォーマットのみ、前後の文章不要）:
+{
+  "style": "style3A",
+  "title": "業務フロー（15文字以内）",
+  "root": "判断ポイント名（8文字以内）",
+  "yes_label": "YESの条件（10文字以内）",
+  "no_label": "NOの条件（10文字以内）",
+  "yes_branch": {
+    "steps": ["ステップ1（8文字以内）", "ステップ2"],
+    "sub_branch": null
+  },
+  "no_branch": {
+    "steps": ["ステップ1", "ステップ2"],
+    "sub_branch": {
+      "yes_label": "条件1（8文字以内）",
+      "no_label": "条件2",
+      "yes_steps": ["アクション1"],
+      "no_steps": ["アクション1"]
+    }
+  }
+}
+
+ルール:
+- rootは業務の最初の判断ポイント
+- yes_branchは通常フロー（teal色）、no_branchは例外フロー（orange色）
+- sub_branchはno_branch内のさらなる分岐（なければnull）
+`,
+    style3B: `
+以下の業務情報をもとに、横型YES/NO分岐フローチャートのデータをJSONで返してください。
+分岐は4段階以上、または工程数が多い場合です。
+
+${baseContext}
+
+JSONスキーマ（このフォーマットのみ、前後の文章不要）:
+{
+  "style": "style3B",
+  "title": "業務フロー（15文字以内）",
+  "root": "開始判断（8文字以内）",
+  "yes_label": "YESの条件（10文字以内）",
+  "no_label": "NOの条件（10文字以内）",
+  "yes_chain": ["ステップ1（8文字以内）", "ステップ2", "ステップ3", "ステップ4"],
+  "no_chain": ["ステップ1", "ステップ2"],
+  "yes_sub": {
+    "from_step_index": 2,
+    "yes_label": "問題なし",
+    "no_label": "問題あり",
+    "yes_action": "続行（6文字以内）",
+    "no_action": "上長報告"
+  }
+}
+
+ルール:
+- yes_chainは3〜5個のステップ（メインフロー）
+- no_chainは1〜3個（代替/短絡フロー）
+- yes_subはyes_chainの途中分岐（なければnull）
+- from_step_indexはyes_chainの何番目（0始まり）から分岐するか
+`,
+  };
+
+  return (schemas[style] || schemas['style1']).trim();
+}
+
+// ── チェックリストプロンプト ───────────────────────────────
+function buildChecklistPrompt(diagnosisData) {
+  const { q2Pain, q2_1Text } = diagnosisData;
+  return `
+以下の業務情報をもとに、業務チェックリストのデータをJSONで返してください。
+「確認・ミス・抜け・漏れ」が発生しやすい工程に焦点を当ててください。
+
+困りごと：${q2Pain}
+業務手順：${q2_1Text}
+
+JSONスキーマ（このフォーマットのみ、前後の文章不要）:
+{
+  "title": "チェックリスト名（15文字以内）",
+  "items": [
+    {"category": "カテゴリ（8文字以内）", "check": "確認内容（20文字以内）", "priority": "必須"},
+    {"category": "カテゴリ", "check": "確認内容", "priority": "推奨"}
+  ]
+}
+
+ルール:
+- itemsは5〜10個
+- categoryでグルーピングする（例：事前確認、処理中、完了後）
+- priorityは "必須" または "推奨"
+- checkは「〇〇したか？」「〇〇を確認したか？」の形式
+`.trim();
+}
+
+// ── PPTX生成：スタイル① 直線ステップ型 ───────────────────
+function generateStyle1Slide(pptx, data) {
+  const slide = pptx.addSlide();
+  const { title, steps } = data;
+
+  // ヘッダーバー
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0, y: 0, w: 10, h: 0.6,
+    fill: { color: FC_COLORS.TEAL }, line: { color: FC_COLORS.TEAL }
+  });
+  slide.addText(title + '　たたき台', {
+    x: 0.3, y: 0, w: 6.5, h: 0.6,
+    color: FC_COLORS.WHITE, fontSize: 15, bold: true, valign: 'middle'
+  });
+  slide.addText('スタイル①　直線ステップ型', {
+    x: 6.5, y: 0, w: 3.3, h: 0.6,
+    color: 'A0D8D8', fontSize: 9, valign: 'middle', align: 'right'
+  });
+
+  // ステップボックス
+  const count  = Math.min(steps.length, 5);
+  const BW     = 10 / count - 0.3;
+  const GAP    = (10 - BW * count) / (count + 1);
+  const BY     = 1.2;
+  const BH     = 2.0;
+
+  steps.slice(0, count).forEach((step, i) => {
+    const x = GAP + i * (BW + GAP);
+
+    // ボックス枠
+    slide.addShape(pptx.ShapeType.rect, {
+      x, y: BY, w: BW, h: BH,
+      fill: { color: FC_COLORS.WHITE },
+      line: { color: FC_COLORS.TEAL, width: 1.5 }
+    });
+    // ヘッダー帯
+    slide.addShape(pptx.ShapeType.rect, {
+      x, y: BY, w: BW, h: 0.4,
+      fill: { color: FC_COLORS.TEAL }, line: { color: FC_COLORS.TEAL }
+    });
+    slide.addText(`STEP ${step.num}`, {
+      x, y: BY, w: BW, h: 0.4,
+      color: FC_COLORS.WHITE, fontSize: 10, bold: true, align: 'center', valign: 'middle'
+    });
+    // ラベル
+    slide.addText(step.label, {
+      x, y: BY + 0.45, w: BW, h: 0.8,
+      color: FC_COLORS.DARK, fontSize: 16, bold: true, align: 'center', valign: 'middle'
+    });
+    // ノート
+    if (step.note) {
+      slide.addText(step.note, {
+        x: x + 0.1, y: BY + 1.3, w: BW - 0.2, h: 0.7,
+        color: FC_COLORS.GRAY, fontSize: 9, align: 'center', valign: 'top', wrap: true
+      });
+    }
+    // 矢印
+    if (i < count - 1) {
+      slide.addShape(pptx.ShapeType.line, {
+        x: x + BW, y: BY + BH / 2, w: GAP, h: 0,
+        line: { color: FC_COLORS.TEAL, width: 2, endArrowType: 'triangle' }
+      });
+    }
+  });
+
+  // 下部メモ
+  slide.addText('※ 各STEPの担当者・判断基準・例外対応を書き加えてください。', {
+    x: 0.3, y: 5.1, w: 9.4, h: 0.35,
+    color: 'BBBBBB', fontSize: 8.5, italic: true, align: 'center'
+  });
+
+  return slide;
+}
+
+// ── PPTX生成：スタイル② Case別ブロック型 ─────────────────
+function generateStyle2Slide(pptx, data) {
+  const slide = pptx.addSlide();
+  const { title, cases } = data;
+
+  const colorMap = {
+    teal:   FC_COLORS.TEAL,
+    orange: FC_COLORS.ORANGE,
+    navy:   FC_COLORS.NAVY,
+  };
+
+  // ヘッダー
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0, y: 0, w: 10, h: 0.6,
+    fill: { color: FC_COLORS.NAVY }, line: { color: FC_COLORS.NAVY }
+  });
+  slide.addText(title + '　たたき台', {
+    x: 0.3, y: 0, w: 6.5, h: 0.6,
+    color: FC_COLORS.WHITE, fontSize: 15, bold: true, valign: 'middle'
+  });
+  slide.addText('スタイル②　Case別ブロック型', {
+    x: 6.5, y: 0, w: 3.3, h: 0.6,
+    color: 'A0B8D8', fontSize: 9, valign: 'middle', align: 'right'
+  });
+
+  const count = Math.min(cases.length, 4);
+  const CW    = (10 - 0.5) / count - 0.2;
+  const CX0   = 0.3;
+  const CGAP  = (10 - CW * count - 0.3 * 2) / (count - 1) || 0.2;
+
+  cases.slice(0, count).forEach((c, i) => {
+    const x    = CX0 + i * (CW + CGAP);
+    const col  = colorMap[c.color] || FC_COLORS.TEAL;
+    const acts = c.actions.slice(0, 4);
+
+    // ケースヘッダー
+    slide.addShape(pptx.ShapeType.rect, {
+      x, y: 0.78, w: CW, h: 0.42,
+      fill: { color: col }, line: { color: col }
+    });
+    slide.addText(c.label, {
+      x, y: 0.78, w: CW, h: 0.42,
+      color: FC_COLORS.WHITE, fontSize: 10, bold: true, align: 'center', valign: 'middle'
+    });
+
+    let curY = 1.28;
+    acts.forEach((action, j) => {
+      if (j > 0) {
+        slide.addShape(pptx.ShapeType.line, {
+          x: x + CW / 2, y: curY, w: 0, h: 0.22,
+          line: { color: col, width: 1.5, endArrowType: 'triangle' }
+        });
+        curY += 0.22;
+      }
+      slide.addShape(pptx.ShapeType.rect, {
+        x: x + 0.06, y: curY, w: CW - 0.12, h: 0.52,
+        fill: { color: FC_COLORS.WHITE }, line: { color: col, width: 1.2 }
+      });
+      slide.addText(action, {
+        x: x + 0.06, y: curY, w: CW - 0.12, h: 0.52,
+        color: FC_COLORS.DARK, fontSize: 11, align: 'center', valign: 'middle'
+      });
+      curY += 0.52;
+    });
+  });
+
+  slide.addText('※ Caseを追加・削除できます。判断基準の条件を具体的に書き直してください。', {
+    x: 0.3, y: 5.1, w: 9.4, h: 0.35,
+    color: 'BBBBBB', fontSize: 8.5, italic: true, align: 'center'
+  });
+
+  return slide;
+}
+
+// ── PPTX生成：スタイル③-A 縦型分岐 ───────────────────────
+function generateStyle3ASlide(pptx, data) {
+  const slide = pptx.addSlide();
+  const { title, root, yes_label, no_label, yes_branch, no_branch } = data;
+
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0, y: 0, w: 10, h: 0.6,
+    fill: { color: FC_COLORS.TEAL }, line: { color: FC_COLORS.TEAL }
+  });
+  slide.addText(title + '　たたき台', {
+    x: 0.3, y: 0, w: 6.5, h: 0.6,
+    color: FC_COLORS.WHITE, fontSize: 15, bold: true, valign: 'middle'
+  });
+  slide.addText('スタイル③-A　縦型分岐', {
+    x: 6.5, y: 0, w: 3.3, h: 0.6,
+    color: 'A0D8D8', fontSize: 9, valign: 'middle', align: 'right'
+  });
+
+  const helper = {
+    rootBox: (label) => {
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 3.5, y: 0.82, w: 3, h: 0.55,
+        fill: { color: FC_COLORS.TEAL }, line: { color: FC_COLORS.TEAL }
+      });
+      slide.addText(label, {
+        x: 3.5, y: 0.82, w: 3, h: 0.55,
+        color: FC_COLORS.WHITE, fontSize: 14, bold: true, align: 'center', valign: 'middle'
+      });
+    },
+    stem: (x, y1, y2, color) => {
+      slide.addShape(pptx.ShapeType.line, {
+        x, y: y1, w: 0, h: y2 - y1,
+        line: { color, width: 1.5, endArrowType: 'triangle' }
+      });
+    },
+    hLine: (x1, y, x2, color) => {
+      slide.addShape(pptx.ShapeType.line, {
+        x: x1, y, w: x2 - x1, h: 0,
+        line: { color, width: 1.5 }
+      });
+    },
+    box: (x, y, w, h, label, color) => {
+      slide.addShape(pptx.ShapeType.rect, {
+        x, y, w, h, fill: { color: FC_COLORS.WHITE }, line: { color, width: 1.5 }
+      });
+      slide.addText(label, {
+        x, y, w, h, color: FC_COLORS.DARK, fontSize: 12, align: 'center', valign: 'middle'
+      });
+    },
+    label: (x, y, text, color, align = 'right') => {
+      slide.addText(text, {
+        x, y, w: 1.4, h: 0.25,
+        color, fontSize: 9, bold: true, align
+      });
+    },
+  };
+
+  // ルートボックス
+  helper.rootBox(root);
+
+  // 幹線→分岐横線
+  slide.addShape(pptx.ShapeType.line, {
+    x: 5.0, y: 1.37, w: 0, h: 0.3,
+    line: { color: FC_COLORS.TEAL, width: 1.5 }
+  });
+  helper.hLine(2.0, 1.67, 8.0, FC_COLORS.TEAL);
+
+  // YES（左）矢印
+  helper.stem(2.0, 1.67, 2.0 + 0.3, FC_COLORS.TEAL);
+  helper.label(0.3, 1.58, 'YES　' + yes_label, FC_COLORS.TEAL);
+
+  // NO（右）矢印
+  helper.stem(8.0, 1.67, 8.0 + 0.3, FC_COLORS.ORANGE);
+  helper.label(7.2, 1.58, 'NO　' + no_label, FC_COLORS.ORANGE, 'left');
+
+  // YES ブランチ
+  const YBW = 2.8;
+  let yesY = 2.04;
+  (yes_branch.steps || []).slice(0, 3).forEach((step, j) => {
+    if (j > 0) {
+      helper.stem(0.6 + YBW / 2, yesY, yesY + 0.22, FC_COLORS.TEAL);
+      yesY += 0.22;
+    }
+    helper.box(0.6, yesY, YBW, 0.52, step, FC_COLORS.TEAL);
+    yesY += 0.52;
+  });
+
+  // NO ブランチ
+  const NBW = 2.8;
+  const NX  = 6.6;
+  let noY = 2.04;
+  (no_branch.steps || []).slice(0, 2).forEach((step, j) => {
+    if (j > 0) {
+      helper.stem(NX + NBW / 2, noY, noY + 0.22, FC_COLORS.ORANGE);
+      noY += 0.22;
+    }
+    helper.box(NX, noY, NBW, 0.52, step, FC_COLORS.ORANGE);
+    noY += 0.52;
+  });
+
+  // NO サブ分岐（あれば）
+  if (no_branch.sub_branch) {
+    const sb = no_branch.sub_branch;
+    helper.stem(NX + NBW / 2, noY, noY + 0.35, FC_COLORS.ORANGE);
+    noY += 0.35;
+    const brL = NX + 0.5, brR = NX + NBW - 0.5;
+    helper.hLine(brL, noY, brR, FC_COLORS.ORANGE);
+    helper.stem(brL, noY, noY + 0.22, FC_COLORS.TEAL);
+    helper.stem(brR, noY, noY + 0.22, FC_COLORS.ORANGE);
+    slide.addText(sb.yes_label || '問題なし', {
+      x: brL - 1.1, y: noY - 0.12, w: 1.0, h: 0.22,
+      color: FC_COLORS.TEAL, fontSize: 8, align: 'right'
+    });
+    slide.addText(sb.no_label || '問題あり', {
+      x: brR + 0.08, y: noY - 0.12, w: 1.0, h: 0.22,
+      color: FC_COLORS.ORANGE, fontSize: 8, align: 'left'
+    });
+    noY += 0.22;
+    const sbW = 1.1;
+    helper.box(brL - sbW / 2, noY, sbW, 0.5, sb.yes_steps?.[0] || '続行', FC_COLORS.TEAL);
+    helper.box(brR - sbW / 2, noY, sbW, 0.5, sb.no_steps?.[0]  || '上長報告', FC_COLORS.ORANGE);
+  }
+
+  slide.addText('※ 分岐条件・担当者・期限日数などを書き加えてください。', {
+    x: 0.3, y: 5.1, w: 9.4, h: 0.35,
+    color: 'BBBBBB', fontSize: 8.5, italic: true, align: 'center'
+  });
+
+  return slide;
+}
+
+// ── PPTX生成：スタイル③-B 横型分岐 ───────────────────────
+function generateStyle3BSlide(pptx, data) {
+  const slide = pptx.addSlide();
+  const { title, root, yes_label, no_label, yes_chain, no_chain, yes_sub } = data;
+
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0, y: 0, w: 10, h: 0.6,
+    fill: { color: FC_COLORS.TEAL }, line: { color: FC_COLORS.TEAL }
+  });
+  slide.addText(title + '　たたき台', {
+    x: 0.3, y: 0, w: 6.5, h: 0.6,
+    color: FC_COLORS.WHITE, fontSize: 15, bold: true, valign: 'middle'
+  });
+  slide.addText('スタイル③-B　横型分岐', {
+    x: 6.5, y: 0, w: 3.3, h: 0.6,
+    color: 'A0D8D8', fontSize: 9, valign: 'middle', align: 'right'
+  });
+
+  const BH = 0.52, BW = 1.6;
+  const Y_YES = 1.2, Y_NO = 3.1;
+  const COL_START = 0.4;
+  const COL_GAP   = 0.2;
+
+  // 起点ボックス（縦中央）
+  const startY = (Y_YES + Y_NO) / 2 - 0.05;
+  slide.addShape(pptx.ShapeType.rect, {
+    x: COL_START, y: startY, w: BW, h: BH,
+    fill: { color: FC_COLORS.TEAL }, line: { color: FC_COLORS.TEAL }
+  });
+  slide.addText(root, {
+    x: COL_START, y: startY, w: BW, h: BH,
+    color: FC_COLORS.WHITE, fontSize: 12, bold: true, align: 'center', valign: 'middle'
+  });
+
+  // 幹から分岐
+  const branchX = COL_START + BW + 0.25;
+  slide.addShape(pptx.ShapeType.line, {
+    x: COL_START + BW, y: startY + BH / 2, w: 0.25, h: 0,
+    line: { color: FC_COLORS.TEAL, width: 1.5 }
+  });
+  slide.addShape(pptx.ShapeType.line, {
+    x: branchX, y: Y_YES + BH / 2, w: 0, h: (Y_NO + BH / 2) - (Y_YES + BH / 2),
+    line: { color: FC_COLORS.TEAL, width: 1.5 }
+  });
+
+  // YES/NO ラベル＋矢印
+  const firstBoxX = branchX + 0.2;
+  slide.addShape(pptx.ShapeType.line, {
+    x: branchX, y: Y_YES + BH / 2, w: 0.2, h: 0,
+    line: { color: FC_COLORS.TEAL, width: 1.5, endArrowType: 'triangle' }
+  });
+  slide.addShape(pptx.ShapeType.line, {
+    x: branchX, y: Y_NO + BH / 2, w: 0.2, h: 0,
+    line: { color: FC_COLORS.NAVY, width: 1.5, endArrowType: 'triangle' }
+  });
+  slide.addText('YES　' + yes_label, {
+    x: branchX + 0.04, y: Y_YES + BH / 2 - 0.28, w: 1.4, h: 0.24,
+    color: FC_COLORS.TEAL, fontSize: 8, bold: true
+  });
+  slide.addText('NO　' + no_label, {
+    x: branchX + 0.04, y: Y_NO + BH / 2 + 0.05, w: 1.4, h: 0.24,
+    color: FC_COLORS.NAVY, fontSize: 8, bold: true
+  });
+
+  // YES チェーン（上段）
+  let yesX = firstBoxX;
+  (yes_chain || []).slice(0, 5).forEach((step, i) => {
+    slide.addShape(pptx.ShapeType.rect, {
+      x: yesX, y: Y_YES, w: BW, h: BH,
+      fill: { color: FC_COLORS.WHITE }, line: { color: FC_COLORS.TEAL, width: 1.5 }
+    });
+    slide.addText(step, {
+      x: yesX, y: Y_YES, w: BW, h: BH,
+      color: FC_COLORS.DARK, fontSize: 11, align: 'center', valign: 'middle'
+    });
+    if (i < yes_chain.length - 1) {
+      slide.addShape(pptx.ShapeType.line, {
+        x: yesX + BW, y: Y_YES + BH / 2, w: COL_GAP, h: 0,
+        line: { color: FC_COLORS.TEAL, width: 1.5, endArrowType: 'triangle' }
+      });
+    }
+    // サブ分岐（yes_sub）
+    if (yes_sub && i === yes_sub.from_step_index) {
+      const subX = yesX + BW / 2;
+      slide.addShape(pptx.ShapeType.line, {
+        x: subX, y: Y_YES + BH, w: 0, h: 0.3,
+        line: { color: FC_COLORS.ORANGE, width: 1.5 }
+      });
+      const sbrL = subX - 0.6, sbrR = subX + 0.6;
+      slide.addShape(pptx.ShapeType.line, {
+        x: sbrL, y: Y_YES + BH + 0.3, w: sbrR - sbrL, h: 0,
+        line: { color: FC_COLORS.ORANGE, width: 1.5 }
+      });
+      slide.addShape(pptx.ShapeType.line, {
+        x: sbrL, y: Y_YES + BH + 0.3, w: 0, h: 0.22,
+        line: { color: FC_COLORS.TEAL, width: 1.5, endArrowType: 'triangle' }
+      });
+      slide.addShape(pptx.ShapeType.line, {
+        x: sbrR, y: Y_YES + BH + 0.3, w: 0, h: 0.22,
+        line: { color: FC_COLORS.ORANGE, width: 1.5, endArrowType: 'triangle' }
+      });
+      slide.addText(yes_sub.yes_label || '問題なし', {
+        x: sbrL - 0.8, y: Y_YES + BH + 0.2, w: 0.9, h: 0.22,
+        color: FC_COLORS.TEAL, fontSize: 7.5, align: 'right'
+      });
+      slide.addText(yes_sub.no_label || '問題あり', {
+        x: sbrR + 0.06, y: Y_YES + BH + 0.2, w: 0.9, h: 0.22,
+        color: FC_COLORS.ORANGE, fontSize: 7.5, align: 'left'
+      });
+      const sbW = 1.1;
+      slide.addShape(pptx.ShapeType.rect, {
+        x: sbrL - sbW / 2, y: Y_YES + BH + 0.52, w: sbW, h: 0.48,
+        fill: { color: FC_COLORS.WHITE }, line: { color: FC_COLORS.TEAL, width: 1.2 }
+      });
+      slide.addText(yes_sub.yes_action || '続行', {
+        x: sbrL - sbW / 2, y: Y_YES + BH + 0.52, w: sbW, h: 0.48,
+        color: FC_COLORS.DARK, fontSize: 10, align: 'center', valign: 'middle'
+      });
+      slide.addShape(pptx.ShapeType.rect, {
+        x: sbrR - sbW / 2, y: Y_YES + BH + 0.52, w: sbW, h: 0.48,
+        fill: { color: FC_COLORS.WHITE }, line: { color: FC_COLORS.ORANGE, width: 1.2 }
+      });
+      slide.addText(yes_sub.no_action || '上長報告', {
+        x: sbrR - sbW / 2, y: Y_YES + BH + 0.52, w: sbW, h: 0.48,
+        color: FC_COLORS.DARK, fontSize: 10, align: 'center', valign: 'middle'
+      });
+    }
+    yesX += BW + COL_GAP;
+  });
+
+  // NO チェーン（下段）
+  let noX = firstBoxX;
+  (no_chain || []).slice(0, 3).forEach((step, i) => {
+    slide.addShape(pptx.ShapeType.rect, {
+      x: noX, y: Y_NO, w: BW, h: BH,
+      fill: { color: FC_COLORS.WHITE }, line: { color: FC_COLORS.NAVY, width: 1.5 }
+    });
+    slide.addText(step, {
+      x: noX, y: Y_NO, w: BW, h: BH,
+      color: FC_COLORS.DARK, fontSize: 11, align: 'center', valign: 'middle'
+    });
+    if (i < no_chain.length - 1) {
+      slide.addShape(pptx.ShapeType.line, {
+        x: noX + BW, y: Y_NO + BH / 2, w: COL_GAP, h: 0,
+        line: { color: FC_COLORS.NAVY, width: 1.5, endArrowType: 'triangle' }
+      });
+    }
+    noX += BW + COL_GAP;
+  });
+
+  slide.addText('※ 分岐が深くなる場合はこの横型を使用します。右方向に工程を増やせます。', {
+    x: 0.3, y: 5.1, w: 9.4, h: 0.35,
+    color: 'BBBBBB', fontSize: 8.5, italic: true, align: 'center'
+  });
+
+  return slide;
+}
+
+// ── チェックリストスライド生成 ────────────────────────────
+function generateChecklistSlide(pptx, data) {
+  const slide = pptx.addSlide();
+  const { title, items } = data;
+
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0, y: 0, w: 10, h: 0.6,
+    fill: { color: FC_COLORS.ORANGE }, line: { color: FC_COLORS.ORANGE }
+  });
+  slide.addText('✅  ' + title, {
+    x: 0.3, y: 0, w: 7, h: 0.6,
+    color: FC_COLORS.WHITE, fontSize: 15, bold: true, valign: 'middle'
+  });
+  slide.addText('アドオン　チェックリスト', {
+    x: 7, y: 0, w: 2.8, h: 0.6,
+    color: 'FFE0C0', fontSize: 9, valign: 'middle', align: 'right'
+  });
+
+  let curY = 0.85;
+  let prevCategory = '';
+
+  (items || []).slice(0, 10).forEach((item, i) => {
+    if (item.category !== prevCategory) {
+      if (i > 0) curY += 0.1;
+      slide.addText(item.category, {
+        x: 0.3, y: curY, w: 2.0, h: 0.28,
+        color: FC_COLORS.ORANGE, fontSize: 10, bold: true, valign: 'middle'
+      });
+      curY += 0.28;
+      prevCategory = item.category;
+    }
+
+    const isPriority = item.priority === '必須';
+    slide.addShape(pptx.ShapeType.rect, {
+      x: 0.3, y: curY, w: 0.32, h: 0.32,
+      fill: { color: FC_COLORS.WHITE },
+      line: { color: isPriority ? FC_COLORS.ORANGE : FC_COLORS.GRAY, width: 1.2 }
+    });
+    slide.addText(isPriority ? '必須' : '推奨', {
+      x: 0.68, y: curY, w: 0.7, h: 0.32,
+      color: isPriority ? FC_COLORS.ORANGE : FC_COLORS.GRAY,
+      fontSize: 8, bold: isPriority, valign: 'middle'
+    });
+    slide.addText(item.check, {
+      x: 1.44, y: curY, w: 8.3, h: 0.32,
+      color: FC_COLORS.DARK, fontSize: 11, valign: 'middle'
+    });
+    curY += 0.36;
+  });
+
+  slide.addText('※ チェック項目を追加・編集して、自社の業務に合わせてください。', {
+    x: 0.3, y: 5.1, w: 9.4, h: 0.35,
+    color: 'BBBBBB', fontSize: 8.5, italic: true, align: 'center'
+  });
+
+  return slide;
+}
+
+// ── メイン：フローチャートPPTX生成 ────────────────────────
+/**
+ * 診断データからフローチャートPPTXを生成する
+ * 既存の generatePPTX() と同様の呼び出し方で使用する
+ *
+ * @param {Object} diagnosisData - {industry, position, q1Goals, q2Pain, q2_1Text}
+ * @param {Function} callAI      - 既存のAI呼び出し関数 (prompt) => Promise<string>
+ * @returns {Promise<pptxgen>}   - PptxGenJSインスタンス（addSlideで追記可能）
+ */
+async function generateFlowchartPPTX(diagnosisData, callAI) {
+  const { q1Goals, q2Pain, q2_1Text } = diagnosisData;
+
+  // ① ルート・カテゴリ判定
+  const { route, category, hasChecklist } = detectRouteAndCategory(
+    q1Goals, q2Pain, q2_1Text
+  );
+
+  // ② スタイル決定
+  const style = determineFlowchartStyle(route, category, q2_1Text);
+
+  // フローチャートなし（タスク管理カテゴリ）
+  if (style === 'none') {
+    return null;
+  }
+
+  // ③ AIにフローチャートデータを依頼
+  const fcPrompt = buildFlowchartPrompt(style, diagnosisData);
+  let fcData;
+  try {
+    const raw = await callAI(fcPrompt);
+    const json = raw.replace(/```json|```/g, '').trim();
+    fcData = JSON.parse(json);
+  } catch (e) {
+    console.error('フローチャートデータ取得エラー:', e);
+    // フォールバック：最小限のデータで生成
+    fcData = getFallbackData(style, diagnosisData);
+  }
+
+  // ④ PPTX生成
+  const pptx = new PptxGenJS();
+  pptx.layout = 'LAYOUT_16x9';
+
+  // スタイルに応じたスライド生成
+  switch (style) {
+    case 'style1':  generateStyle1Slide(pptx, fcData);  break;
+    case 'style2':  generateStyle2Slide(pptx, fcData);  break;
+    case 'style3A': generateStyle3ASlide(pptx, fcData); break;
+    case 'style3B': generateStyle3BSlide(pptx, fcData); break;
+  }
+
+  // ⑤ チェックリストアドオン（該当する場合）
+  if (hasChecklist) {
+    const clPrompt = buildChecklistPrompt(diagnosisData);
+    try {
+      const raw = await callAI(clPrompt);
+      const json = raw.replace(/```json|```/g, '').trim();
+      const clData = JSON.parse(json);
+      generateChecklistSlide(pptx, clData);
+    } catch (e) {
+      console.error('チェックリストデータ取得エラー:', e);
+    }
+  }
+
+  return { pptx, style, category, hasChecklist };
+}
+
+// ── フォールバックデータ ───────────────────────────────────
+function getFallbackData(style, diagnosisData) {
+  const title = diagnosisData.q2Pain?.slice(0, 15) || '業務フロー';
+  switch (style) {
+    case 'style1':
+      return {
+        style: 'style1', title,
+        steps: [
+          { num: '01', label: '確認する', note: '内容を確認' },
+          { num: '02', label: '処理する', note: '作業を実施' },
+          { num: '03', label: '完了する', note: '完了を記録' },
+        ]
+      };
+    case 'style2':
+      return {
+        style: 'style2', title,
+        cases: [
+          { label: 'Case 1　通常対応', color: 'teal',
+            actions: ['状況を確認', '処理を実施', '完了を記録'] },
+          { label: 'Case 2　例外対応', color: 'orange',
+            actions: ['上長に報告', '対応方針を決定', '対応を実施'] },
+        ]
+      };
+    case 'style3A':
+    case 'style3B':
+      return {
+        style, title,
+        root: '状況確認',
+        yes_label: '問題なし',
+        no_label: '問題あり',
+        yes_branch: { steps: ['通常処理', '完了記録'], sub_branch: null },
+        no_branch:  {
+          steps: ['原因確認'],
+          sub_branch: {
+            yes_label: '自己解決可', no_label: '要エスカレ',
+            yes_steps: ['処理継続'], no_steps: ['上長報告']
+          }
+        },
+        yes_chain: ['確認する', '処理する', '記録する'],
+        no_chain:  ['原因確認', '上長報告'],
+        yes_sub: null,
+      };
+  }
+}
+
+// ── D案：フォールバック選択UI ──────────────────────────────
+/**
+ * キーワード不一致時にユーザーへカテゴリ選択を促す
+ * 返り値は選択されたカテゴリ文字列
+ */
+function buildCategorySelector() {
+  const categories = [
+    { id: 'money',           label: '① お金・収支・請求管理' },
+    { id: 'customer_ledger', label: '② 顧客管理（一般顧客）' },
+    { id: 'customer_member', label: '③ 顧客管理（会員・月額）' },
+    { id: 'reservation',     label: '④ 予約・スケジュール管理' },
+    { id: 'inventory',       label: '⑤ 在庫・仕入れ管理' },
+    { id: 'task',            label: '⑥ タスク・進捗管理' },
+    { id: 'shift',           label: '⑦ シフト・勤怠管理' },
+  ];
+  return categories;
+}
+
+// ── エクスポート（ブラウザ環境用） ────────────────────────
+window.FlowchartGenerator = {
+  determineFlowchartStyle,
+  detectRouteAndCategory,
+  buildFlowchartPrompt,
+  buildChecklistPrompt,
+  generateFlowchartPPTX,
+  buildCategorySelector,
+  generateStyle1Slide,
+  generateStyle2Slide,
+  generateStyle3ASlide,
+  generateStyle3BSlide,
+  generateChecklistSlide,
+};
+// ============================================================
+// index.html 組み込みパッチ
+// 以下の3ステップで既存のindex.htmlに追加してください
+// ============================================================
+
+// ════════════════════════════════════════════════════════════
+// STEP 1：JSZipライブラリの追加
+// ════════════════════════════════════════════════════════════
+// index.htmlの <head> 内、PptxGenJSの読み込みの直後に追記：
+//
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+//
+// ════════════════════════════════════════════════════════════
+// STEP 2：flowchart_generator.js の内容を丸ごと追加
+// ════════════════════════════════════════════════════════════
+// index.htmlの 
+<script>
+// ===== 動的Excel生成モジュール（AI業界用語アレンジ対応） =====
+// ============================================================
+// 動的Excel生成モジュール
+// AIが業界用語に合わせた列名・サンプルデータを生成してExcelを動的に作成する
+// ============================================================
+
+// ── AIへのExcel構造アレンジ依頼プロンプト ──────────────────
+function buildExcelArrangePrompt(category, diagData) {
+  const { industry, position, q2Pain } = diagData;
+
+  const categorySchemas = {
+    money: {
+      label: 'お金・支払い管理',
+      sheets: [
+        { id: 'csv_paste',    cols: ['日付','摘要（取引内容）','金額（円）※出金はマイナス','残高（円）','科目','備考'] },
+        { id: 'income_mgmt', cols: ['科目','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','年間合計'] },
+        { id: 'supplier',    cols: ['取引先ID','取引先名','担当者','連絡先','支払サイクル','標準金額（円）','科目','備考'] },
+        { id: 'payment',     cols: ['支払月','取引先名','科目','金額（円）','支払予定日','支払済フラグ','備考'] },
+        { id: 'invoice',     cols: ['品目・内容','摘要','数量','単価（円）','金額（円）','備考'] },
+        { id: 'receipt',     cols: ['請求書番号','請求先','請求金額（円）','請求日','支払期限','入金日','入金額（円）','差額（円）','状態','備考'] },
+      ],
+      subjects: '売上、その他収入、仕入、交通費、通信費、消耗品費、外注費、地代家賃、広告宣伝費、水道光熱費、雑費',
+    },
+    customer_ledger: {
+      label: '顧客管理（台帳型）',
+      sheets: [
+        { id: 'master',   cols: ['顧客ID','氏名','フリガナ','電話番号','メールアドレス','住所','登録日','備考'] },
+        { id: 'purchase', cols: ['記録ID','日付','顧客ID','顧客名（自動）','商品名・サービス','数量','単価（円）','金額（円）','担当者','備考'] },
+        { id: 'analysis', cols: ['月','売上合計（円）','件数'] },
+      ],
+      subjects: null,
+    },
+    customer_member: {
+      label: '顧客管理（会員型）',
+      sheets: [
+        { id: 'member',   cols: ['会員ID','氏名','フリガナ','電話番号','メールアドレス','プラン','月額（円）','開始日','ステータス','備考'] },
+        { id: 'csv',      cols: ['日付','摘要（振込人名など）','金額（円）','残高（円）','備考'] },
+        { id: 'payment',  cols: ['会員ID','氏名（自動）','プラン（自動）','請求金額（自動）','摘要キーワード','照合結果（自動）','入金金額（自動）','差額（自動）','状態','備考'] },
+        { id: 'plan',     cols: ['プラン名','月額（円）','内容・特典','備考'] },
+        { id: 'analysis', cols: ['月','収入合計（円）','会員数'] },
+      ],
+      subjects: null,
+    },
+    reservation: {
+      label: '予約・スケジュール管理',
+      sheets: [
+        { id: 'customer', cols: ['顧客ID','氏名','フリガナ','電話番号','メールアドレス','備考'] },
+        { id: 'booking',  cols: ['予約ID','日付','開始時間','終了時間','顧客ID','顧客名（自動）','メニュー','担当者','状態','備考'] },
+      ],
+      subjects: null,
+    },
+    inventory: {
+      label: '在庫・仕入れ管理',
+      sheets: [
+        { id: 'product',   cols: ['商品ID','商品名','規格・単位','仕入単価（円）','販売単価（円）','仕入先ID','最低在庫数','在庫管理','備考'] },
+        { id: 'supplier',  cols: ['仕入先ID','会社名','担当者','電話番号','メールアドレス','支払サイクル','備考'] },
+        { id: 'inbound',   cols: ['入庫ID','入庫日','商品ID','商品名（自動）','数量','仕入単価（自動）','仕入金額（自動）','仕入先ID','仕入先名（自動）','備考'] },
+        { id: 'outbound',  cols: ['出庫ID','出庫日','商品ID','商品名（自動）','数量','販売単価（自動）','売上金額（自動）','出庫先・販売先','備考'] },
+      ],
+      subjects: null,
+    },
+    shift: {
+      label: 'シフト・勤怠管理',
+      sheets: [
+        { id: 'employee', cols: ['従業員ID','氏名','フリガナ','雇用形態','時給（円）','所定労働時間/日','連絡先','入社日','備考'] },
+        { id: 'attend',   cols: ['記録ID','日付','従業員ID','氏名（自動）','出勤時間','退勤時間','休憩時間（h）','実働時間（自動）','所定労働時間（自動）','残業時間（自動）','備考'] },
+        { id: 'payroll',  cols: ['従業員ID','氏名（自動）','雇用形態（自動）','時給（自動）','実働時間合計','残業時間合計','基本給（自動）','残業代（自動）','支給合計（自動）','備考'] },
+      ],
+      subjects: null,
+    },
+  };
+
+  const schema = categorySchemas[category];
+  if (!schema) return null;
+
+  const sheetList = schema.sheets.map(s => `・${s.id}：${s.cols.join(' / ')}`).join('\n');
+
+  return `
+以下の業種・業務の情報をもとに、「${schema.label}」Excelテンプレートの列名とサンプルデータを業界用語に合わせてアレンジしてください。
+
+業種：${industry}
+担当：${position}
+困りごと：${q2Pain}
+
+【現在の列名と構成】
+${sheetList}
+${schema.subjects ? `科目の参考リスト：${schema.subjects}` : ''}
+
+JSONのみ返してください（前後の文章不要）:
+{
+  "industry_label": "この業界での呼び方（例：美容室、整体院、小売店）",
+  "sheets": [
+    {
+      "id": "シートID（上記のidと完全一致）",
+      "columns": ["アレンジ後の列名1", "列名2"],
+      "samples": [
+        ["サンプル行1の値1", "値2"],
+        ["サンプル行2の値1", "値2"]
+      ]
+    }
+  ]${schema.subjects ? `,\n  "subjects": ["科目1", "科目2"]` : ''}
+}
+
+ルール：
+・columnsの数は変えない（元の列数を厳守）
+・業界固有の用語に置き換える（例：「顧客」→「患者」「お客様」、「商品」→「施術」「メニュー」）
+・（自動）という補足はそのまま維持する
+・samplesは各シート2〜3行、実際の業務らしいリアルなデータにする
+・samplesの列数もcolumnsと同じ数にする
+`.trim();
+}
+
+// ── ヘルパー：AIデータからシート情報を取得 ────────────────
+function getSheet(arrangedData, id) {
+  if (!arrangedData || !arrangedData.sheets) return null;
+  return arrangedData.sheets.find(s => s.id === id) || null;
+}
+function getCols(arrangedData, id, defaults) {
+  const sheet = getSheet(arrangedData, id);
+  return (sheet && sheet.columns && sheet.columns.length === defaults.length)
+    ? sheet.columns : defaults;
+}
+function getSamples(arrangedData, id, defaults) {
+  const sheet = getSheet(arrangedData, id);
+  return (sheet && sheet.samples && sheet.samples.length > 0) ? sheet.samples : defaults;
+}
+
+// ── 共通Excelヘルパー ────────────────────────────────────
+function addGuideSheet(wb, label, sheetsInfo, linksInfo, acc) {
+  const ws = wb.addWorksheet('📋 使い方ガイド');
+  ws.properties.tabColor = { argb: 'FF' + acc };
+  ws.getColumn(1).width = 22; ws.getColumn(2).width = 36; ws.getColumn(3).width = 42;
+
+  const t = ws.addRow([label]);
+  ws.mergeCells(1,1,1,3); t.height = 32;
+  t.getCell(1).fill = XS.fill('FF'+acc);
+  t.getCell(1).font = { bold:true, size:16, color:{argb:XS.C.WHITE} };
+  t.getCell(1).alignment = { vertical:'middle' };
+  ws.addRow([]);
+
+  const h1 = ws.addRow(['シート名','役割','主な操作']);
+  h1.height = 22;
+  h1.eachCell({includeEmpty:true},(c,ci)=>{
+    if(ci>3)return;
+    c.fill=XS.fill('FF'+acc); c.font={bold:true,size:10,color:{argb:XS.C.WHITE}};
+    c.alignment={vertical:'middle'};
+  });
+  sheetsInfo.forEach((s,i)=>{
+    const r=ws.addRow(s); r.height=22;
+    if(i%2===0) r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=3)c.fill=XS.fill('FFEFF8F8');});
+    r.getCell(1).font={bold:true,size:10,color:{argb:'FF'+acc}};
+  });
+  ws.addRow([]);
+
+  const h2 = ws.addRow(['入力元','参照先','つながりの内容']);
+  h2.height = 22;
+  h2.eachCell({includeEmpty:true},(c,ci)=>{
+    if(ci>3)return;
+    c.fill=XS.fill('FF'+acc); c.font={bold:true,size:10,color:{argb:XS.C.WHITE}};
+    c.alignment={vertical:'middle'};
+  });
+  linksInfo.forEach((l,i)=>{
+    const r=ws.addRow(l); r.height=20;
+    if(i%2===0) r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=3)c.fill=XS.fill('FFEFF8F8');});
+    r.getCell(1).font={bold:true,size:10,color:{argb:'FF'+acc}};
+    r.getCell(2).font={bold:true,size:10,color:{argb:'FF'+acc}};
+  });
+  ws.addRow([]);
+  const note=ws.addRow(['💡 青字のセルは自動計算セルです。直接入力すると数式が消えるためご注意ください。']);
+  ws.mergeCells(note.number,1,note.number,3);
+  note.getCell(1).font={size:9,color:{argb:'FFE06930'},italic:true};
+}
+
+function addSheetHeader(wb, sheetName, title, note, acc) {
+  const ws = wb.addWorksheet(sheetName);
+  ws.properties.tabColor = { argb: 'FF'+acc };
+  const t = ws.addRow([title]);
+  ws.mergeCells(1,1,1,10); t.height=24;
+  t.getCell(1).font = { bold:true, size:13, color:{argb:'FF'+acc} };
+  if(note){
+    const n=ws.addRow([note]);
+    ws.mergeCells(2,1,2,10); n.height=16;
+    n.getCell(1).font={size:9,color:{argb:'FF888888'},italic:true};
+  }
+  return ws;
+}
+
+function addHeader(ws, cols, acc) {
+  const row = ws.addRow(cols);
+  row.height = 28;
+  row.eachCell({includeEmpty:true},(c,ci)=>{
+    if(ci>cols.length)return;
+    c.fill=XS.fill('FF'+acc); c.font={bold:true,size:10,color:{argb:XS.C.WHITE}};
+    c.alignment={horizontal:'center',vertical:'middle',wrapText:true};
+    c.border={bottom:{style:'thin',color:{argb:'FFCCCCCC'}}};
+  });
+  return row;
+}
+
+function addDataRows(ws, samples, numCols, altArgb) {
+  const alt = altArgb || 'FFEFF8F8';
+  samples.forEach((sample,i)=>{
+    const row=ws.addRow(sample); row.height=20;
+    const bg = i%2===0 ? alt : XS.C.WHITE;
+    row.eachCell({includeEmpty:true},(c,ci)=>{
+      if(ci>numCols)return;
+      c.fill=XS.fill(bg);
+      c.font={size:10,color:{argb:'FFAAAAAA'},italic:true};
+      c.border={bottom:{style:'thin',color:{argb:'FFDDDDDD'}}};
+    });
+  });
+  for(let r=0;r<20;r++){
+    const row=ws.addRow(Array(numCols).fill('')); row.height=20;
+    const bg=(samples.length+r)%2===0 ? alt : XS.C.WHITE;
+    row.eachCell({includeEmpty:true},(c,ci)=>{
+      if(ci>numCols)return;
+      c.fill=XS.fill(bg); c.font={size:10};
+      c.border={bottom:{style:'thin',color:{argb:'FFDDDDDD'}}};
+    });
+  }
+}
+
+async function wbToBlob(wb) {
+  const buffer = await wb.xlsx.writeBuffer();
+  return new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+// ── 動的Excel生成メイン ────────────────────────────────────
+async function generateDynamicExcel(category, diagData) {
+  if(!category || category==='task' || category==='unknown') return null;
+
+  let arrangedData = null;
+  const prompt = buildExcelArrangePrompt(category, diagData);
+  if(prompt){
+    try{
+      const raw = await callAIForFlowchart(prompt);
+      const json = raw.replace(/```json|```/g,'').trim();
+      arrangedData = JSON.parse(json);
+    }catch(e){ console.warn('Excel列名アレンジ失敗、デフォルトで生成:', e); }
+  }
+
+  const gen = {
+    money:           genMoneyExcel,
+    customer_ledger: genCustomerLedgerExcel,
+    customer_member: genCustomerMemberExcel,
+    reservation:     genReservationExcel,
+    inventory:       genInventoryExcel,
+    shift:           genShiftExcel,
+  }[category];
+
+  if(!gen) return null;
+  try{ return await gen(arrangedData, diagData); }
+  catch(e){ console.error('Excel動的生成エラー:', e); return null; }
+}
+
+// ── ① お金・支払い管理 ──────────────────────────────────
+async function genMoneyExcel(ai, d) {
+  const wb=new ExcelJS.Workbook(), A='168788', ALT='FFE1F5EE';
+  const DC = {
+    csv_paste: ['日付','摘要（取引内容）','金額（円）※出金はマイナス','残高（円）','科目','備考'],
+    income_mgmt:['科目','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','年間合計'],
+    supplier:  ['取引先ID','取引先名','担当者','連絡先','支払サイクル','標準金額（円）','科目','備考'],
+    payment:   ['支払月','取引先名','科目','金額（円）','支払予定日','支払済フラグ','備考'],
+    invoice:   ['品目・内容','摘要','数量','単価（円）','金額（円）','備考'],
+    receipt:   ['請求書番号','請求先','請求金額（円）','請求日','支払期限','入金日','入金額（円）','差額（円）','状態','備考'],
+  };
+  const subjects=(ai&&ai.subjects)||['売上','その他収入','仕入','交通費','通信費','消耗品費','外注費','地代家賃','広告宣伝費','水道光熱費','雑費'];
+
+  addGuideSheet(wb,'① お金・支払い管理',
+    [['①CSVペースト','銀行・カードのCSVを貼る場所','日付・摘要・金額（出金はマイナス）・科目を入力'],
+     ['②収支管理','科目×月のマトリクスで自動集計','①の入力が完了すると自動更新'],
+     ['③取引先マスタ','定期的な支払先を登録','取引先名・支払サイクル・金額を入力'],
+     ['④支払管理','月締め支払一覧。取引先選択で金額自動入力','取引先を選ぶと科目・金額が自動参照'],
+     ['⑤請求書作成','PDF出力可能な請求書フォーム','品目・数量・単価を入力→金額自動計算'],
+     ['⑥入金確認','発行した請求書の入金状況を管理','請求書番号・金額・入金日を記録']],
+    [['①CSVペースト','②収支管理','科目列と日付列から月別・科目別で自動集計'],
+     ['③取引先マスタ','④支払管理','取引先名選択で科目・金額を自動参照'],
+     ['⑤請求書作成','⑥入金確認','請求情報を手動転記して入金状況を追跡']],A);
+
+  // ①CSVペースト
+  const w1=addSheetHeader(wb,'①CSVペースト','① CSVペースト　― 銀行・カードのCSVを貼り付けてください',
+    '※ 金額は入金プラス・出金マイナスで1列に入力。科目を選ぶと②収支管理に自動集計されます',A);
+  const c1=getCols(ai,'csv_paste',DC.csv_paste);
+  [14,40,20,14,16,24].forEach((w,i)=>w1.getColumn(i+1).width=w);
+  addHeader(w1,c1,A);
+  addDataRows(w1,getSamples(ai,'csv_paste',[
+    ['2026/06/01','振込入金',150000,500000,'売上',''],['2026/06/03','仕入引落し',-45000,455000,'仕入','']]),c1.length,ALT);
+
+  // ②収支管理
+  const w2=addSheetHeader(wb,'②収支管理','② 収支管理　― 科目×月の自動集計表','※ ①CSVペーストの科目・日付を入力すると自動更新されます',A);
+  w2.getColumn(1).width=20; for(let i=2;i<=15;i++) w2.getColumn(i).width=11;
+  addHeader(w2,getCols(ai,'income_mgmt',DC.income_mgmt),A);
+  subjects.forEach((s,i)=>{
+    const r=w2.addRow([s]); r.height=20;
+    if(i%2===0) r.getCell(1).fill=XS.fill(ALT);
+  });
+
+  // ③取引先マスタ
+  const w3=addSheetHeader(wb,'③取引先マスタ','③ 取引先マスタ　― 支払先を登録しておくと④支払管理で選択できます','',A);
+  const c3=getCols(ai,'supplier',DC.supplier);
+  [14,28,16,20,16,18,16,24].forEach((w,i)=>w3.getColumn(i+1).width=w);
+  addHeader(w3,c3,A);
+  addDataRows(w3,getSamples(ai,'supplier',[
+    ['T001','〇〇商事','山田','03-XXXX-XXXX','月末払い',50000,'仕入',''],['T002','△△サービス','','','月次払い',5500,'通信費','']]),c3.length,ALT);
+
+  // ④支払管理
+  const w4=addSheetHeader(wb,'④支払管理','④ 支払管理（月締め）　― 取引先を選ぶと金額・科目が自動入力されます','',A);
+  const c4=getCols(ai,'payment',DC.payment);
+  [12,28,16,16,16,14,24].forEach((w,i)=>w4.getColumn(i+1).width=w);
+  addHeader(w4,c4,A); addDataRows(w4,[],c4.length,ALT);
+
+  // ⑤請求書作成
+  const w5=addSheetHeader(wb,'⑤請求書作成','⑤ 請求書作成　― PDF出力可能な帳票フォームです',
+    '※ ファイル→エクスポート→PDFでそのまま出力できます',A);
+  w5.getColumn(1).width=16; w5.getColumn(2).width=40;
+  [['請求書番号','INV-001'],['発行日',''],['支払期限',''],['請求先',''],['件名','']].forEach(([l,v])=>{
+    const r=w5.addRow([l,v]); r.height=22;
+    r.getCell(1).fill=XS.fill('FFD6E4F7'); r.getCell(1).font={bold:true,size:10};
+  });
+  w5.addRow([]);
+  const c5=getCols(ai,'invoice',DC.invoice);
+  addHeader(w5,c5,A); addDataRows(w5,[],c5.length,ALT);
+
+  // ⑥入金確認
+  const w6=addSheetHeader(wb,'⑥入金確認','⑥ 入金確認　― 請求ごとの入金状況を管理します','',A);
+  const c6=getCols(ai,'receipt',DC.receipt);
+  [16,24,16,14,14,14,16,14,12,24].forEach((w,i)=>w6.getColumn(i+1).width=w);
+  addHeader(w6,c6,A); addDataRows(w6,[],c6.length,ALT);
+
+  return await wbToBlob(wb);
+}
+
+// ── ② 顧客管理（台帳型） ────────────────────────────────
+async function genCustomerLedgerExcel(ai, d) {
+  const wb=new ExcelJS.Workbook(), A='1C559A', ALT='FFD6E4F7';
+  const DC={
+    master:  ['顧客ID','氏名','フリガナ','電話番号','メールアドレス','住所','登録日','備考'],
+    purchase:['記録ID','日付','顧客ID','顧客名（自動）','商品名・サービス','数量','単価（円）','金額（円）','担当者','備考'],
+    analysis:['月','売上合計（円）','件数'],
+  };
+  addGuideSheet(wb,'【台帳型】顧客管理',
+    [['①顧客マスタ','基本情報を登録する台帳','顧客IDは変更しない'],
+     ['②購買記録','売上と顧客を紐づけて記録','顧客ID入力で氏名自動表示'],
+     ['③顧客カルテ','IDを入力すると履歴を表示','B3セルに顧客IDを入力'],
+     ['④売上分析','月別売上グラフと集計','②の入力が完了すると自動更新']],
+    [['①顧客マスタ','②購買記録','顧客IDをもとに氏名を自動参照'],
+     ['②購買記録','③顧客カルテ','顧客IDで購買履歴・累計金額を表示'],
+     ['②購買記録','④売上分析','日付と金額から月別売上を自動集計']],A);
+
+  const w1=addSheetHeader(wb,'①顧客マスタ','【台帳型】① 顧客マスタ','※ 顧客IDは変更しないでください',A);
+  const c1=getCols(ai,'master',DC.master);
+  [10,16,16,16,28,36,14,24].forEach((w,i)=>w1.getColumn(i+1).width=w);
+  addHeader(w1,c1,A);
+  addDataRows(w1,getSamples(ai,'master',[
+    ['C001','山田太郎','ヤマダタロウ','090-1234-5678','','','2026/01/10',''],
+    ['C002','鈴木花子','スズキハナコ','080-9876-5432','','','2026/02/15','常連']]),c1.length,ALT);
+
+  const w2=addSheetHeader(wb,'②購買記録','【台帳型】② 購買記録','※ 顧客IDを入力すると氏名が自動表示されます',A);
+  const c2=getCols(ai,'purchase',DC.purchase);
+  [10,13,10,16,24,8,14,14,14,20].forEach((w,i)=>w2.getColumn(i+1).width=w);
+  addHeader(w2,c2,A);
+  addDataRows(w2,getSamples(ai,'purchase',[
+    ['R001','2026/06/01','C001','','サービス名','1',5000,5000,'担当者',''],
+    ['R002','2026/06/10','C002','','サービス名','2',3000,6000,'担当者','']]),c2.length,ALT);
+
+  const w3=addSheetHeader(wb,'③顧客カルテ','【台帳型】③ 顧客カルテ','※ B3セルに顧客IDを入力すると基本情報と累計購買金額が表示されます',A);
+  w3.getColumn(1).width=16; w3.getColumn(2).width=40;
+  const ir=w3.addRow(['顧客ID','C001']); ir.height=28;
+  ir.getCell(1).fill=XS.fill('FF'+A); ir.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
+  ir.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
+  w3.addRow([]);
+  const n3=w3.addRow(['顧客IDを変更すると、②購買記録シートのデータから累計購買金額を自動集計します。']);
+  ws.mergeCells&&w3.mergeCells(n3.number,1,n3.number,2);
+  n3.getCell(1).font={size:9,color:{argb:'FFE06930'},italic:true};
+
+  const w4=addSheetHeader(wb,'④売上分析','【台帳型】④ 売上分析','※ ②購買記録の入力が完了すると自動集計されます',A);
+  const c4=getCols(ai,'analysis',DC.analysis);
+  [8,18,10].forEach((w,i)=>w4.getColumn(i+1).width=w);
+  addHeader(w4,c4,A);
+  ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'].forEach((m,i)=>{
+    const r=w4.addRow([m,'','']); r.height=20;
+    if(i%2===0) r.eachCell((c,ci)=>{if(ci<=3)c.fill=XS.fill(ALT);});
+    r.getCell(1).font={bold:true,size:10};
+  });
+  const tot=w4.addRow(['年間合計','','']); tot.height=24;
+  tot.eachCell((c,ci)=>{if(ci<=3){c.fill=XS.fill('FF'+A);c.font={bold:true,size:10,color:{argb:XS.C.WHITE}};}});
+
+  return await wbToBlob(wb);
+}
+
+// ── ③ 顧客管理（会員型） ────────────────────────────────
+async function genCustomerMemberExcel(ai, d) {
+  const wb=new ExcelJS.Workbook(), A='1C559A', ALT='FFD6E4F7';
+  const DC={
+    member: ['会員ID','氏名','フリガナ','電話番号','メールアドレス','プラン','月額（円）','開始日','ステータス','備考'],
+    csv:    ['日付','摘要（振込人名など）','金額（円）','残高（円）','備考'],
+    payment:['会員ID','氏名（自動）','プラン（自動）','請求金額（自動）','摘要キーワード','照合結果（自動）','入金金額（自動）','差額（自動）','状態','備考'],
+    plan:   ['プラン名','月額（円）','内容・特典','備考'],
+    analysis:['月','収入合計（円）','会員数'],
+  };
+  addGuideSheet(wb,'【会員型】顧客管理',
+    [['【会員】①会員マスタ','会員情報・プラン・ステータスを管理','退会者は自動で赤く色分け'],
+     ['【会員】②CSVペースト','金融機関の入金CSVを貼る場所','③引落し管理で自動照合される'],
+     ['【会員】③引落し管理','会員ごとの入金状況を照合・確認','対象月(B3)を入力すると自動照合'],
+     ['【会員】③プランマスタ','プラン名と月額を登録','①会員マスタのドロップダウンで選択可'],
+     ['【会員】④売上分析','月別会費収入とプラン別構成を確認','③の「済」データから自動集計']],
+    [['【会員】③プランマスタ','【会員】①会員マスタ','プランのドロップダウンと月額の自動参照'],
+     ['【会員】①会員マスタ','【会員】③引落し管理','会員IDで氏名・プラン・請求金額を自動参照'],
+     ['【会員】②CSVペースト','【会員】③引落し管理','摘要キーワードと対象月で入金データを自動照合'],
+     ['【会員】③引落し管理','【会員】④売上分析','「済」フラグから月別会費収入を集計']],A);
+
+  const w1=addSheetHeader(wb,'【会員】①会員マスタ','【会員型】① 会員マスタ','※ ステータス列で在籍/休会/退会を管理。退会者は自動で赤くなります',A);
+  const c1=getCols(ai,'member',DC.member);
+  [10,16,16,16,28,16,14,14,12,24].forEach((w,i)=>w1.getColumn(i+1).width=w);
+  addHeader(w1,c1,A);
+  addDataRows(w1,getSamples(ai,'member',[
+    ['M001','田中一郎','タナカイチロウ','090-1111-2222','','スタンダード',5000,'2026/01/01','在籍',''],
+    ['M002','山本二郎','ヤマモトジロウ','','','プレミアム',10000,'2026/02/01','休会','']]),c1.length,ALT);
+
+  const w2=addSheetHeader(wb,'【会員】②CSVペースト','【会員型】② CSVペースト','※ 金融機関の入金データを貼り付けてください。③引落し管理シートで自動照合されます',A);
+  const c2=getCols(ai,'csv',DC.csv);
+  [14,40,16,16,24].forEach((w,i)=>w2.getColumn(i+1).width=w);
+  addHeader(w2,c2,A);
+  addDataRows(w2,getSamples(ai,'csv',[
+    ['2026/06/25','タナカ イチロウ',5000,'',''],['2026/06/25','ヤマモト ジロウ',10000,'','']]),c2.length,ALT);
+
+  const w3=addSheetHeader(wb,'【会員】③引落し管理','【会員型】③ 引落し管理','※ B3セルに対象月を入力。②CSVと照合して入金状況を自動判定します',A);
+  w3.getColumn(1).width=14; w3.getColumn(2).width=14;
+  const mr=w3.addRow(['対象月','2026/06']); mr.height=28;
+  mr.getCell(1).fill=XS.fill('FF'+A); mr.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
+  mr.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
+  w3.addRow([]);
+  const c3=getCols(ai,'payment',DC.payment);
+  [12,16,16,16,20,16,16,14,14,20].forEach((w,i)=>w3.getColumn(i+1).width=w);
+  addHeader(w3,c3,A); addDataRows(w3,[],c3.length,ALT);
+
+  const w4=addSheetHeader(wb,'【会員】③プランマスタ','【会員型】③ プランマスタ','※ プラン名を登録すると①会員マスタのドロップダウンで選択できます',A);
+  const c4=getCols(ai,'plan',DC.plan);
+  [20,14,40,24].forEach((w,i)=>w4.getColumn(i+1).width=w);
+  addHeader(w4,c4,A);
+  addDataRows(w4,getSamples(ai,'plan',[
+    ['ライト',3000,'月2回利用可',''],['スタンダード',5000,'月4回利用可',''],['プレミアム',10000,'無制限','']]),c4.length,ALT);
+
+  const w5=addSheetHeader(wb,'【会員】④売上分析','【会員型】④ 売上分析','※ ③引落し管理の「済」データから自動集計されます',A);
+  const c5=getCols(ai,'analysis',DC.analysis);
+  [8,18,10].forEach((w,i)=>w5.getColumn(i+1).width=w);
+  addHeader(w5,c5,A);
+  ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'].forEach((m,i)=>{
+    const r=w5.addRow([m,'','']); r.height=20;
+    if(i%2===0) r.eachCell((c,ci)=>{if(ci<=3)c.fill=XS.fill(ALT);});
+    r.getCell(1).font={bold:true,size:10};
+  });
+
+  return await wbToBlob(wb);
+}
+
+// ── ④ 予約・スケジュール管理 ────────────────────────────
+async function genReservationExcel(ai, d) {
+  const wb=new ExcelJS.Workbook(), A='7B4F9E', ALT='FFEFE4F7';
+  const DC={
+    customer:['顧客ID','氏名','フリガナ','電話番号','メールアドレス','備考'],
+    booking: ['予約ID','日付','開始時間','終了時間','顧客ID','顧客名（自動）','メニュー','担当者','状態','備考'],
+  };
+  addGuideSheet(wb,'③ 予約・スケジュール管理',
+    [['①顧客マスタ','予約者の基本情報を登録','顧客IDは変更しない'],
+     ['②予約入力','日々の予約を記録する台帳','顧客ID入力で氏名自動表示'],
+     ['③カレンダー（月表示）','月単位で予約を俯瞰','B3に年月を入力すると自動更新'],
+     ['④時間帯表（日表示）','1日のスケジュールを確認','B3に日付を入力すると当日分を表示']],
+    [['①顧客マスタ','②予約入力','顧客IDをもとに氏名を自動参照'],
+     ['②予約入力','③カレンダー（月表示）','日付データから予約件数を月カレンダーに集計'],
+     ['②予約入力','④時間帯表（日表示）','日付・時間・担当者データを時間帯に表示']],A);
+
+  const w1=addSheetHeader(wb,'①顧客マスタ','① 顧客マスタ','※ 顧客IDは変更しないでください',A);
+  const c1=getCols(ai,'customer',DC.customer);
+  [10,16,16,16,28,30].forEach((w,i)=>w1.getColumn(i+1).width=w);
+  addHeader(w1,c1,A);
+  addDataRows(w1,getSamples(ai,'customer',[
+    ['C001','山田太郎','ヤマダタロウ','090-1234-5678','',''],['C002','鈴木花子','スズキハナコ','080-9876-5432','','常連']]),c1.length,ALT);
+
+  const w2=addSheetHeader(wb,'②予約入力','② 予約入力','※ 顧客ID入力で氏名が自動表示されます。キャンセル・変更は上書きで管理してください',A);
+  const c2=getCols(ai,'booking',DC.booking);
+  [10,13,12,12,10,16,20,14,12,24].forEach((w,i)=>w2.getColumn(i+1).width=w);
+  addHeader(w2,c2,A);
+  addDataRows(w2,getSamples(ai,'booking',[
+    ['R001','2026/06/10','10:00','11:00','C001','','メニュー名','担当者名','確定',''],
+    ['R002','2026/06/10','13:00','15:00','C002','','メニュー名','担当者名','仮予約','']]),c2.length,ALT);
+
+  // ③④ は説明シートとして追加
+  [['③カレンダー（月表示）','③ カレンダー（月表示）','※ B3セルに確認したい年月を入力（例：2026/06）。②予約入力のデータが自動反映されます'],
+   ['④時間帯表（日表示）','④ 時間帯表（日表示）','※ B3セルに確認したい日付を入力。②予約入力の当日分が時間帯ごとに表示されます']].forEach(([sn,t,n])=>{
+    const ws=addSheetHeader(wb,sn,t,n,A);
+    ws.getColumn(1).width=14; ws.getColumn(2).width=14;
+    const mr=ws.addRow(['確認月/日','2026/06']); mr.height=28;
+    mr.getCell(1).fill=XS.fill('FF'+A); mr.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
+    mr.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
+  });
+
+  return await wbToBlob(wb);
+}
+
+// ── ⑤ 在庫・仕入れ管理 ──────────────────────────────────
+async function genInventoryExcel(ai, d) {
+  const wb=new ExcelJS.Workbook(), A='548235', ALT='FFE2EFDA';
+  const DC={
+    product:  ['商品ID','商品名','規格・単位','仕入単価（円）','販売単価（円）','仕入先ID','最低在庫数','在庫管理','備考'],
+    supplier: ['仕入先ID','会社名','担当者','電話番号','メールアドレス','支払サイクル','備考'],
+    inbound:  ['入庫ID','入庫日','商品ID','商品名（自動）','数量','仕入単価（自動）','仕入金額（自動）','仕入先ID','仕入先名（自動）','備考'],
+    outbound: ['出庫ID','出庫日','商品ID','商品名（自動）','数量','販売単価（自動）','売上金額（自動）','出庫先・販売先','備考'],
+    stock:    ['商品ID（自動）','商品名（自動）','在庫管理','最低在庫数','入庫合計（自動）','出庫合計（自動）','現在庫数（自動）','状態（自動）','備考'],
+    stocktake:['商品ID（自動）','商品名（自動）','帳簿在庫（自動）','実在庫数（入力）','差異（自動）','差異コメント','確認済'],
+  };
+  addGuideSheet(wb,'⑤ 在庫・仕入れ管理',
+    [['①商品マスタ','商品・価格・在庫管理フラグを登録','「在庫管理」が管理するの商品のみアラート対象'],
+     ['②仕入先マスタ','仕入先情報を管理','③入庫管理と連動'],
+     ['③入庫管理','仕入れ・入荷を記録','商品ID入力で商品名・単価を自動参照'],
+     ['④出庫管理','販売・払出しを記録','商品ID入力で商品名・単価を自動参照'],
+     ['⑤在庫残高','入庫－出庫で現在庫を自動計算','在庫なし→赤・要発注→黄で色分け'],
+     ['⑥棚卸しシート','定期的な実在庫確認','帳簿在庫と実在庫の差異を自動計算']],
+    [['①商品マスタ','③入庫管理','商品IDで商品名・仕入単価を自動参照'],
+     ['①商品マスタ','④出庫管理','商品IDで商品名・販売単価を自動参照'],
+     ['①商品マスタ','⑤在庫残高','最低在庫数・管理フラグをアラート判定に使用'],
+     ['②仕入先マスタ','③入庫管理','仕入先IDで仕入先名を自動参照'],
+     ['③入庫管理','⑤在庫残高','商品ごとの入庫数合計を在庫残高に反映'],
+     ['④出庫管理','⑤在庫残高','商品ごとの出庫数合計を在庫残高に反映'],
+     ['⑤在庫残高','⑥棚卸しシート','帳簿在庫数を棚卸しシートに自動参照']],A);
+
+  const sheets=[
+    {id:'product', name:'①商品マスタ',title:'① 商品マスタ',note:'※「在庫管理」を「管理する」にした商品のみ⑤でアラートが表示されます',
+     widths:[12,24,14,16,16,12,14,14,24],
+     def_samples:[['P001','商品A','個',500,1200,'S001',10,'管理する',''],['P002','商品B','箱',2000,4500,'S001',5,'管理する',''],['P003','消耗品C','個',300,800,'S002',0,'管理しない','']]},
+    {id:'supplier',name:'②仕入先マスタ',title:'② 仕入先マスタ',note:'',
+     widths:[12,28,16,18,28,18,24],
+     def_samples:[['S001','〇〇商事','山田','03-XXXX-XXXX','','月末払い',''],['S002','△△卸売','鈴木','','','都度払い','']]},
+    {id:'inbound', name:'③入庫管理',title:'③ 入庫管理',note:'※ 商品IDを入力すると商品名・仕入単価・仕入先名が自動表示されます',
+     widths:[10,13,10,22,8,16,16,12,24,20],
+     def_samples:[['IN001','2026/06/01','P001','',50,'','','S001','',''],['IN002','2026/06/05','P002','',20,'','','S001','','']]},
+    {id:'outbound',name:'④出庫管理',title:'④ 出庫管理',note:'※ 商品IDを入力すると商品名・販売単価が自動表示されます',
+     widths:[10,13,10,22,8,16,16,24,20],def_samples:[]},
+    {id:'stock',   name:'⑤在庫残高',title:'⑤ 在庫残高',note:'※「管理する」商品のみアラート対象。在庫なし→赤、要発注→黄で自動色分けされます',
+     widths:[14,24,14,14,16,16,16,16,20],def_samples:[]},
+    {id:'stocktake',name:'⑥棚卸しシート',title:'⑥ 棚卸しシート',note:'※ 実在庫数を入力すると帳簿在庫との差異が自動計算されます',
+     widths:[14,24,16,16,14,24,10],def_samples:[]},
+  ];
+  sheets.forEach(s=>{
+    const ws=addSheetHeader(wb,s.name,s.title,s.note,A);
+    const cols=getCols(ai,s.id,DC[s.id]);
+    s.widths.forEach((w,i)=>ws.getColumn(i+1).width=w);
+    addHeader(ws,cols,A);
+    addDataRows(ws,getSamples(ai,s.id,s.def_samples),cols.length,ALT);
+  });
+
+  return await wbToBlob(wb);
+}
+
+// ── ⑦ シフト・勤怠管理 ──────────────────────────────────
+async function genShiftExcel(ai, d) {
+  const wb=new ExcelJS.Workbook(), A='A0522D', ALT='FFF5EDE6';
+  const DC={
+    employee:['従業員ID','氏名','フリガナ','雇用形態','時給（円）','所定労働時間/日','連絡先','入社日','備考'],
+    attend:  ['記録ID','日付','従業員ID','氏名（自動）','出勤時間','退勤時間','休憩時間（h）','実働時間（自動）','所定労働時間（自動）','残業時間（自動）','備考'],
+    payroll: ['従業員ID','氏名（自動）','雇用形態（自動）','時給（自動）','実働時間合計','残業時間合計','基本給（自動）','残業代（自動）','支給合計（自動）','備考'],
+  };
+  addGuideSheet(wb,'⑦ シフト・勤怠管理',
+    [['①従業員マスタ','従業員の基本情報・時給・所定労働時間を登録','従業員IDは変更しない'],
+     ['②シフト入力','月単位のシフト表を作成','B3に対象月を入力すると日付・曜日が自動生成'],
+     ['③勤怠記録','日々の出退勤時間を記録','実働時間・残業時間を自動計算'],
+     ['④給与計算','月次の給与を自動集計','B3に対象月を入力すると③から自動計算']],
+    [['①従業員マスタ','②シフト入力','従業員IDで氏名・雇用形態を参照'],
+     ['①従業員マスタ','③勤怠記録','従業員IDで氏名・時給・所定労働時間を参照'],
+     ['①従業員マスタ','④給与計算','従業員IDで時給・所定労働時間を参照'],
+     ['③勤怠記録','④給与計算','対象月の実働・残業時間から給与を自動計算']],A);
+
+  const w1=addSheetHeader(wb,'①従業員マスタ','① 従業員マスタ','※ 従業員IDは変更しないでください。②〜④のシートと紐づいています',A);
+  const c1=getCols(ai,'employee',DC.employee);
+  [12,16,16,14,12,18,18,14,20].forEach((w,i)=>w1.getColumn(i+1).width=w);
+  addHeader(w1,c1,A);
+  addDataRows(w1,getSamples(ai,'employee',[
+    ['E001','田中一郎','タナカイチロウ','正社員',1500,8.0,'090-1111-2222','2026/04/01',''],
+    ['E002','鈴木花子','スズキハナコ','パート',1100,4.0,'080-3333-4444','2026/01/15','']]),c1.length,ALT);
+
+  const w2=addSheetHeader(wb,'②シフト入力','② シフト入力',
+    '※ B3セルに対象月を入力すると日付・曜日が自動生成されます。○/×/有/半/特でドロップダウン入力',A);
+  w2.getColumn(1).width=14; w2.getColumn(2).width=14;
+  const mr2=w2.addRow(['対象月','2026/06']); mr2.height=28;
+  mr2.getCell(1).fill=XS.fill('FF'+A); mr2.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
+  mr2.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
+  w2.addRow([]);
+  const sn=w2.addRow(['対象月を変更するとシフト表の日付・曜日が自動更新されます。各セルに ○（出勤）/ ×（休み）/ 有（有休）/ 半（半休）/ 特（特休）を入力してください。']);
+  w2.mergeCells(sn.number,1,sn.number,4);
+  sn.getCell(1).font={size:9,color:{argb:'FFE06930'},italic:true};
+
+  const w3=addSheetHeader(wb,'③勤怠記録','③ 勤怠記録','※ 従業員IDを入力すると氏名が自動表示されます。実働・残業時間を自動計算します',A);
+  const c3=getCols(ai,'attend',DC.attend);
+  [10,13,12,16,12,12,14,16,18,16,20].forEach((w,i)=>w3.getColumn(i+1).width=w);
+  addHeader(w3,c3,A); addDataRows(w3,[],c3.length,ALT);
+
+  const w4=addSheetHeader(wb,'④給与計算','④ 給与計算',
+    '※ B3セルに対象月を入力。③勤怠記録から実働・残業時間を自動集計して給与を計算します',A);
+  w4.getColumn(1).width=14; w4.getColumn(2).width=14;
+  const mr4=w4.addRow(['対象月','2026/06']); mr4.height=28;
+  mr4.getCell(1).fill=XS.fill('FF'+A); mr4.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
+  mr4.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
+  w4.addRow([]);
+  const c4=getCols(ai,'payroll',DC.payroll);
+  [12,16,14,12,14,14,16,16,16,20].forEach((w,i)=>w4.getColumn(i+1).width=w);
+  addHeader(w4,c4,A); addDataRows(w4,[],c4.length,ALT);
+
+  return await wbToBlob(wb);
+}
+
+// ── _generateZIPWithCategory を動的Excel対応版で上書き ────
+async function _generateZIPWithCategory(zip, diagData, route, category, hasChecklist, setMsg) {
+  try {
+    // ① フローチャートPPTX
+    setMsg('🔄 フローチャートを生成中...');
+    const style = FlowchartGenerator.determineFlowchartStyle(route, category, diagData.q2_1Text);
+    if (style !== 'none') {
+      const prompt = FlowchartGenerator.buildFlowchartPrompt(style, diagData);
+      let fcData;
+      try {
+        const raw = await callAIForFlowchart(prompt);
+        fcData = JSON.parse(raw.replace(/```json|```/g,'').trim());
+      } catch(e) { fcData = getFallbackData(style, diagData); }
+
+      const fcPptx = new PptxGenJS();
+      fcPptx.layout = 'LAYOUT_16x9';
+      switch(style) {
+        case 'style1':  FlowchartGenerator.generateStyle1Slide(fcPptx,fcData); break;
+        case 'style2':  FlowchartGenerator.generateStyle2Slide(fcPptx,fcData); break;
+        case 'style3A': FlowchartGenerator.generateStyle3ASlide(fcPptx,fcData); break;
+        case 'style3B': FlowchartGenerator.generateStyle3BSlide(fcPptx,fcData); break;
+      }
+      if (hasChecklist) {
+        try {
+          const cr = await callAIForFlowchart(FlowchartGenerator.buildChecklistPrompt(diagData));
+          FlowchartGenerator.generateChecklistSlide(fcPptx, JSON.parse(cr.replace(/```json|```/g,'').trim()));
+        } catch(e) { console.warn('チェックリスト生成失敗:',e); }
+      }
+      zip.file('フローチャート.pptx', await fcPptx.write({outputType:'blob'}));
+    }
+
+    // ② 整理ガイドPPTX
+    setMsg('📊 整理ガイドを生成中...');
+    const gPptx = new PptxGenJS();
+    gPptx.layout = 'LAYOUT_16x9';
+    await buildGuidePPTX(gPptx, diagData);
+    zip.file('整理ガイド.pptx', await gPptx.write({outputType:'blob'}));
+
+    // ③ Excel動的生成（AI が業界用語にアレンジ）
+    if (route === 'B' && category !== 'task') {
+      setMsg('📋 管理ファイルを生成中（業界用語にアレンジしています）...');
+      const excelBlob = await generateDynamicExcel(category, diagData);
+      if (excelBlob) zip.file('管理ファイル.xlsx', excelBlob);
+    }
+
+    // ④ README
+    zip.file('README.txt', buildReadmeTxt(route, category));
+
+    // ⑤ ZIP ダウンロード
+    setMsg('⬇ ダウンロードを準備中...');
+    const zipBlob = await zip.generateAsync({type:'blob'});
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `業務整理キット_${diagData.industry||'診断結果'}.zip`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    return true;
+  } catch(e) { console.error('ZIP内部エラー:',e); throw e; }
+}
+
+</script>
+</body> 直前に、flowchart_generator.js の内容を
+// <script> タグで囲んで貼り付けてください。
+//
+// ════════════════════════════════════════════════════════════
+// STEP 3：既存コードへの追加・変更箇所
+// ════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────
+// [追加] AI呼び出しラッパー関数
+// 既存の fetch(WORKER_URL) を使う薄いラッパー。
+// execPayment() や analyze() の近くに追記してください。
+// ─────────────────────────────────────────────────────────
+
+async function callAIForFlowchart(prompt) {
+  const res = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) throw new Error('AI呼び出しエラー: ' + res.status);
+  const data = await res.json();
+  return data.content?.map(b => b.text || '').join('') || '';
+}
+
+// ─────────────────────────────────────────────────────────
+// [追加] ZIP生成＆ダウンロード関数
+// execPayment() 内の genManualPPTX() 呼び出しをこれで置き換える
+// ─────────────────────────────────────────────────────────
+
+async function generateAndDownloadZIP() {
+  const loadingEl = document.getElementById('loading') ||
+    (() => {
+      const el = document.createElement('div');
+      el.id = 'loading';
+      el.style.cssText =
+        'position:fixed;inset:0;background:rgba(0,0,0,.55);' +
+        'display:flex;flex-direction:column;align-items:center;' +
+        'justify-content:center;z-index:9999;color:#fff;gap:12px;';
+      document.body.appendChild(el);
+      return el;
+    })();
+
+  const setMsg = (msg) => {
+    loadingEl.innerHTML =
+      `<div style="font-size:18px;">${msg}</div>` +
+      `<div style="font-size:13px;opacity:.7;">しばらくお待ちください...</div>`;
+    loadingEl.style.display = 'flex';
+  };
+
+  try {
+    const zip = new JSZip();
+
+    const diagData = {
+      industry: typeof ind        !== 'undefined' ? ind        : '',
+      position: typeof pos        !== 'undefined' ? pos        : '',
+      q1Goals:  typeof q1Goals    !== 'undefined' ? q1Goals    : [],
+      q2Pain:   typeof q2Pain     !== 'undefined' ? q2Pain     : '',
+      q2_1Text: typeof q2_1Steps  !== 'undefined' ? q2_1Steps  : '',
+    };
+
+    // ルート・カテゴリ判定
+    const { route, category, hasChecklist } =
+      FlowchartGenerator.detectRouteAndCategory(
+        diagData.q1Goals, diagData.q2Pain, diagData.q2_1Text
+      );
+
+    // カテゴリ不明 → D案：ユーザー選択
+    if (category === 'unknown') {
+      loadingEl.style.display = 'none';
+      return new Promise((resolve) => {
+        showCategorySelector(async (selectedCategory) => {
+          // 選択されたカテゴリで再実行
+          diagData._overrideCategory = selectedCategory;
+          const result = await _generateZIPWithCategory(
+            zip, diagData, route, selectedCategory, hasChecklist, setMsg
+          );
+          resolve(result);
+        });
+      });
+    }
+
+    return await _generateZIPWithCategory(
+      zip, diagData, route, category, hasChecklist, setMsg
+    );
+
+  } catch (e) {
+    console.error('ZIP生成エラー:', e);
+    alert('ファイル生成中にエラーが発生しました。\n' + e.message);
+    return false;
+  } finally {
+    loadingEl.style.display = 'none';
+  }
+}
+
+// ZIP生成の本体（カテゴリ確定後に呼ばれる）
+
+// ─────────────────────────────────────────────────────────
+// [追加] Excelテンプレート取得（GitHub Pages の assets/ から）
+// ─────────────────────────────────────────────────────────
+
+const EXCEL_TEMPLATE_MAP = {
+  'money':           'assets/excel/01_money.xlsx',
+  'customer_ledger': 'assets/excel/02_customer.xlsx',
+  'customer_member': 'assets/excel/02_customer.xlsx',
+  'reservation':     'assets/excel/03_reservation.xlsx',
+  'inventory':       'assets/excel/05_inventory.xlsx',
+  'shift':           'assets/excel/07_shift.xlsx',
+};
+
+async function fetchExcelTemplate(category) {
+  const path = EXCEL_TEMPLATE_MAP[category];
+  if (!path) return null;
+  try {
+    const res = await fetch(path);
+    if (!res.ok) { console.warn('Excel取得失敗:', res.status); return null; }
+    return await res.blob();
+  } catch (e) {
+    console.warn('Excelテンプレート取得エラー:', e);
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// [追加] README.txt 生成
+// ─────────────────────────────────────────────────────────
+
+function buildReadmeTxt(route, category) {
+  const catLabels = {
+    'money':           'お金・支払い管理',
+    'customer_ledger': '顧客管理（台帳型）',
+    'customer_member': '顧客管理（会員型）',
+    'reservation':     '予約・スケジュール管理',
+    'inventory':       '在庫・仕入れ管理',
+    'task':            'タスク・進捗管理',
+    'shift':           'シフト・勤怠管理',
+  };
+  const catLabel = catLabels[category] || '業務管理';
+  const today = new Date().toLocaleDateString('ja-JP');
+
+  return [
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    '  業務整理キット　ご利用ガイド',
+    `  作成日：${today}　/ Glocal Lab.`,
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    '',
+    '【このキットの内容】',
+    '',
+    '  ■ フローチャート.pptx',
+    '    業務の流れをたたき台として整理したものです。',
+    '    PowerPoint または Google スライド・Canva（無料）で編集できます。',
+    '',
+    '  ■ 整理ガイド.pptx',
+    '    業務改善のポイントや改善提案をまとめたスライドです。',
+    '',
+    ...(route === 'B' && category !== 'task' ? [
+      `  ■ 管理ファイル.xlsx（${catLabel}）`,
+      '    日々の業務に使える管理ツールです。',
+      '    Excel または Google スプレッドシート（無料）で使えます。',
+      '',
+    ] : []),
+    '【ファイルの開き方】',
+    '  .pptx：PowerPoint / Google スライド（drive.google.com）/ Canva（canva.com）',
+    '  .xlsx：Excel / Google スプレッドシート（drive.google.com にアップロード）',
+    '',
+    '【ZIP の解凍】',
+    '  Windows：右クリック →「すべて展開」',
+    '  Mac    ：ダブルクリックで自動解凍',
+    '',
+    '【使い方のポイント】',
+    '  このファイルはたたき台です。',
+    '  チームで内容を確認・加筆することで実用的なツールになります。',
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    '  お問い合わせ：main.addr@glocalab.net',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+  ].join('\n');
+}
+
+// ─────────────────────────────────────────────────────────
+// [追加] フォールバック D案：カテゴリ選択UI
+// ─────────────────────────────────────────────────────────
+
+function showCategorySelector(onSelect) {
+  const categories = FlowchartGenerator.buildCategorySelector();
+  const overlay = document.createElement('div');
+  overlay.style.cssText =
+    'position:fixed;inset:0;background:rgba(0,0,0,.6);' +
+    'display:flex;align-items:center;justify-content:center;z-index:9998;';
+
+  const box = document.createElement('div');
+  box.style.cssText =
+    'background:#fff;border-radius:12px;padding:28px;max-width:420px;' +
+    'width:90%;box-shadow:0 8px 32px rgba(0,0,0,.25);';
+  box.innerHTML = `
+    <div style="font-size:16px;font-weight:bold;margin-bottom:6px;color:#1A1A2E;">
+      管理したい業務を選んでください
+    </div>
+    <div style="font-size:13px;color:#888;margin-bottom:18px;">
+      最も近いカテゴリをお選びください。
+    </div>
+    <div id="cat-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <button id="cat-cancel"
+      style="margin-top:14px;width:100%;padding:10px;border:1px solid #ddd;
+      border-radius:8px;background:#fff;cursor:pointer;color:#888;font-size:13px;">
+      キャンセル
+    </button>
+  `;
+
+  box.querySelector('#cat-cancel').onclick = () => overlay.remove();
+  const list = box.querySelector('#cat-list');
+  categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.textContent = cat.label;
+    btn.style.cssText =
+      'padding:12px 14px;border:1.5px solid #168788;border-radius:8px;' +
+      'background:#fff;cursor:pointer;color:#1A1A2E;font-size:14px;' +
+      'text-align:left;width:100%;transition:background .15s;';
+    btn.onmouseenter = () => { btn.style.background = '#E1F5EE'; };
+    btn.onmouseleave = () => { btn.style.background = '#fff'; };
+    btn.onclick = () => { overlay.remove(); onSelect(cat.id); };
+    list.appendChild(btn);
+  });
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+// ─────────────────────────────────────────────────────────
+// [修正メモ] execPayment() の変更箇所
+//
+// 既存の execPayment() 内でPPTX生成している箇所（例：）
+//   await genManualPPTX();
+// を以下に置き換えてください：
+//
+//   const success = await generateAndDownloadZIP();
+//   if (success) {
+//     goScreen('s-download'); // または既存の完了画面名
+//   }
+//
+// ─────────────────────────────────────────────────────────
+// [修正メモ] genManualPPTX → buildGuidePPTX へのリネーム
+//
+// 既存の genManualPPTX() を以下のように修正してください：
+//
+//   // 変更前
+//   async function genManualPPTX() {
+//     const pptx = new PptxGenJS();
+//     ...（スライド追加処理）...
+//     await pptx.writeFile({fileName: fname});
+//   }
+//
+//   // 変更後
+//   async function buildGuidePPTX(pptx, diagData) {
+//     // ① new PptxGenJS() の行を削除（引数で受け取るため）
+//     // ② writeFile の行を削除（ZIP内に格納するため）
+//     // ③ ind, pos 等の変数は diagData.industry, diagData.position に変更（または既存変数をそのまま使用可）
+//     ...（スライド追加処理のみ残す）...
+//   }
+//
+// ─────────────────────────────────────────────────────────
+// [追加メモ] Excelファイルの GitHub Pages 配置
+//
+// gyomu-kaikaku-tool リポジトリに以下のフォルダ構成でExcelを配置：
+//
+//   assets/
+//   └── excel/
+//       ├── 01_money.xlsx        ← ①お金・支払い管理.xlsx をリネーム
+//       ├── 02_customer.xlsx     ← ②顧客管理.xlsx をリネーム
+//       ├── 03_reservation.xlsx  ← ③予約・スケジュール管理.xlsx をリネーム
+//       ├── 05_inventory.xlsx    ← ⑤在庫・仕入れ管理.xlsx をリネーム（zaiko_management.xlsx）
+//       └── 07_shift.xlsx        ← ⑦シフト・勤怠管理.xlsx をリネーム（shift_management.xlsx）
+//
+// ─────────────────────────────────────────────────────────
+
 </script>
 </body>
 </html>
