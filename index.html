@@ -1873,6 +1873,8 @@ function showPreview(){
     document.getElementById('ocrTxt').textContent=previewOcr;
     document.getElementById('blockOcr').style.display='block';
   }
+  // ZIP出力内容のプレビュー
+  {
     const catLabels2 = {
       'money':'お金・支払い管理', 'customer_ledger':'顧客管理（台帳型）',
       'customer_member':'顧客管理（会員型）', 'reservation':'予約・スケジュール管理',
@@ -1891,6 +1893,7 @@ function showPreview(){
     </div>`;
     document.getElementById('excelDesc').innerHTML='診断結果をもとに生成されるZIPファイルの内容です。'+sheetList;
     document.getElementById('blockExcel').style.display='block';
+  }
 }
 
 // ===== 実際の成果物表示（課金後・自動化ルート） =====
@@ -3807,22 +3810,9 @@ window.FlowchartGenerator = {
   generateStyle3BSlide,
   generateChecklistSlide,
 };
-// ============================================================
-// index.html 組み込みパッチ
-// 以下の3ステップで既存のindex.htmlに追加してください
-// ============================================================
-
-// ════════════════════════════════════════════════════════════
-// STEP 1：JSZipライブラリの追加
-// ════════════════════════════════════════════════════════════
-// index.htmlの head 内、PptxGenJSの読み込みの直後に追記：
-// script src cdnjs jszip min js
-//
-// ════════════════════════════════════════════════════════════
-// STEP 2：flowchart_generator.js の内容を丸ごと追加
-// ════════════════════════════════════════════════════════════
+</script>
 <script>
-// ── _generateZIPWithCategory を動的Excel対応版で上書き ────
+// ── _generateZIPWithCategory ────────────────────────────────
 async function _generateZIPWithCategory(zip, diagData, route, category, hasChecklist, setMsg) {
   try {
     // ① フローチャートPPTX
@@ -4173,6 +4163,7 @@ function showCategorySelector(onSelect) {
 //
 // ─────────────────────────────────────────────────────────
 // [修正メモ] genManualPPTX → buildGuidePPTX へのリネーム
+//
 // 既存の genManualPPTX() を以下のように修正してください：
 //
 //   // 変更前
