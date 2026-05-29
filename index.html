@@ -2993,7 +2993,9 @@ function detectRouteAndCategory(q1Goals, q2Pain, q2_1Text) {
   };
 
   // チェックリストアドオン検知
-  const checklistKeywords = ['確認','ミス','抜け','漏れ','チェック','見落とし'];
+  const checklistKeywords = ['確認','ミス','抜け','漏れ','チェック','見落とし',
+    '忘れ','し忘れ','やり忘れ','抜かす','飛ばす','たまに','たまに忘れ',
+    '抜け漏れ','もれ','対応漏れ','やり損ね','やりそびれ'];
   const hasChecklist = checklistKeywords.some(w => text.includes(w));
 
   // 最高スコアのカテゴリを選択
