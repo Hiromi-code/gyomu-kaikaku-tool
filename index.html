@@ -1696,8 +1696,7 @@ async function openPayModal(){
   // ===== ベータ無料バイパス =====
   const _bp=new URLSearchParams(window.location.search).get('beta');
   if(_bp==='beta2026june'){
-    if(payRoute==='auto'){showActualOutput();}
-    else if(payRoute==='checklist'){const ok=await genChecklistExcel();if(ok){goS('s-manual');uf(9);}}
+    if(payRoute==='checklist'){const ok=await genChecklistExcel();if(ok){goS('s-manual');uf(9);}}
     else{const ok=await generateAndDownloadZIP();if(ok){goS('s-manual');uf(9);}}
     return;
   }
@@ -1745,9 +1744,7 @@ async function checkPurchaseSession(){
     });
     const data=await res.json();
     if(data.valid){
-      if(payRoute==='auto'){
-        showActualOutput();
-      }else if(payRoute==='checklist'){
+      if(payRoute==='checklist'){
         const success=await genChecklistExcel();
         if(success){
           document.getElementById('manualDoneIcon').textContent='✅';
@@ -1876,19 +1873,24 @@ function showPreview(){
     document.getElementById('ocrTxt').textContent=previewOcr;
     document.getElementById('blockOcr').style.display='block';
   }
-  if(task.hasExcel){
+    const catLabels2 = {
+      'money':'お金・支払い管理', 'customer_ledger':'顧客管理（台帳型）',
+      'customer_member':'顧客管理（会員型）', 'reservation':'予約・スケジュール管理',
+      'inventory':'在庫・仕入れ管理', 'task':'タスク・進捗管理', 'shift':'シフト・勤怠管理',
+    };
+    const { route:pvRoute, category:pvCat } = FlowchartGenerator.detectRouteAndCategory(
+      typeof q1Goals!=='undefined'?q1Goals:[], typeof q2Pain!=='undefined'?q2Pain:'', typeof q2_1Steps!=='undefined'?q2_1Steps:'');
+    const pvCatLabel = catLabels2[pvCat] || '業務管理';
+    const hasExcelFile = pvRoute==='B' && pvCat!=='task' && pvCat!=='unknown';
     const sheetList=`<div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:2;">
-      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">含まれるシート</div>
-      ✅ メイン管理シート（すぐ使える標準版）<br>
-      ✅ フローチャート（自動化区分・AIヒント付き）<br>
-      ✅ AI活用ポイント（工程別の指示例）<br>
-      ✅ カスタマイズガイド（自社用カスタマイズ手順）<br>
-      ✅ AI質問集（困ったときのプロンプト集）<br>
-      ✅ README＆プロンプト（使い方・全文プロンプト）
+      <div style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.15em;margin-bottom:6px;">ZIPに含まれるファイル</div>
+      ✅ フローチャート.pptx（業務の流れをAIが生成）<br>
+      ✅ 整理ガイド.pptx（業務改善のたたき台）<br>
+      ${hasExcelFile?`✅ 管理ファイル.xlsx（${pvCatLabel}）<br>`:''}
+      ✅ README.txt（使い方ガイド・業界向けヒント）
     </div>`;
-    document.getElementById('excelDesc').innerHTML=(task.excelDesc||'')+sheetList;
+    document.getElementById('excelDesc').innerHTML='診断結果をもとに生成されるZIPファイルの内容です。'+sheetList;
     document.getElementById('blockExcel').style.display='block';
-  }
 }
 
 // ===== 実際の成果物表示（課金後・自動化ルート） =====
@@ -3813,14 +3815,12 @@ window.FlowchartGenerator = {
 // ════════════════════════════════════════════════════════════
 // STEP 1：JSZipライブラリの追加
 // ════════════════════════════════════════════════════════════
-// index.htmlの <head> 内、PptxGenJSの読み込みの直後に追記：
-//
-// <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+// index.htmlの head 内、PptxGenJSの読み込みの直後に追記：
+// script src cdnjs jszip min js
 //
 // ════════════════════════════════════════════════════════════
 // STEP 2：flowchart_generator.js の内容を丸ごと追加
 // ════════════════════════════════════════════════════════════
-// index.htmlの 
 <script>
 // ── _generateZIPWithCategory を動的Excel対応版で上書き ────
 async function _generateZIPWithCategory(zip, diagData, route, category, hasChecklist, setMsg) {
