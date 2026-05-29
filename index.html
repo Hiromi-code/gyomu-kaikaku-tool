@@ -3822,616 +3822,6 @@ window.FlowchartGenerator = {
 // ════════════════════════════════════════════════════════════
 // index.htmlの 
 <script>
-// ===== 動的Excel生成モジュール（AI業界用語アレンジ対応） =====
-// ============================================================
-// 動的Excel生成モジュール
-// AIが業界用語に合わせた列名・サンプルデータを生成してExcelを動的に作成する
-// ============================================================
-
-// ── AIへのExcel構造アレンジ依頼プロンプト ──────────────────
-function buildExcelArrangePrompt(category, diagData) {
-  const { industry, position, q2Pain } = diagData;
-
-  const categorySchemas = {
-    money: {
-      label: 'お金・支払い管理',
-      sheets: [
-        { id: 'csv_paste',    cols: ['日付','摘要（取引内容）','金額（円）※出金はマイナス','残高（円）','科目','備考'] },
-        { id: 'income_mgmt', cols: ['科目','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','年間合計'] },
-        { id: 'supplier',    cols: ['取引先ID','取引先名','担当者','連絡先','支払サイクル','標準金額（円）','科目','備考'] },
-        { id: 'payment',     cols: ['支払月','取引先名','科目','金額（円）','支払予定日','支払済フラグ','備考'] },
-        { id: 'invoice',     cols: ['品目・内容','摘要','数量','単価（円）','金額（円）','備考'] },
-        { id: 'receipt',     cols: ['請求書番号','請求先','請求金額（円）','請求日','支払期限','入金日','入金額（円）','差額（円）','状態','備考'] },
-      ],
-      subjects: '売上、その他収入、仕入、交通費、通信費、消耗品費、外注費、地代家賃、広告宣伝費、水道光熱費、雑費',
-    },
-    customer_ledger: {
-      label: '顧客管理（台帳型）',
-      sheets: [
-        { id: 'master',   cols: ['顧客ID','氏名','フリガナ','電話番号','メールアドレス','住所','登録日','備考'] },
-        { id: 'purchase', cols: ['記録ID','日付','顧客ID','顧客名（自動）','商品名・サービス','数量','単価（円）','金額（円）','担当者','備考'] },
-        { id: 'analysis', cols: ['月','売上合計（円）','件数'] },
-      ],
-      subjects: null,
-    },
-    customer_member: {
-      label: '顧客管理（会員型）',
-      sheets: [
-        { id: 'member',   cols: ['会員ID','氏名','フリガナ','電話番号','メールアドレス','プラン','月額（円）','開始日','ステータス','備考'] },
-        { id: 'csv',      cols: ['日付','摘要（振込人名など）','金額（円）','残高（円）','備考'] },
-        { id: 'payment',  cols: ['会員ID','氏名（自動）','プラン（自動）','請求金額（自動）','摘要キーワード','照合結果（自動）','入金金額（自動）','差額（自動）','状態','備考'] },
-        { id: 'plan',     cols: ['プラン名','月額（円）','内容・特典','備考'] },
-        { id: 'analysis', cols: ['月','収入合計（円）','会員数'] },
-      ],
-      subjects: null,
-    },
-    reservation: {
-      label: '予約・スケジュール管理',
-      sheets: [
-        { id: 'customer', cols: ['顧客ID','氏名','フリガナ','電話番号','メールアドレス','備考'] },
-        { id: 'booking',  cols: ['予約ID','日付','開始時間','終了時間','顧客ID','顧客名（自動）','メニュー','担当者','状態','備考'] },
-      ],
-      subjects: null,
-    },
-    inventory: {
-      label: '在庫・仕入れ管理',
-      sheets: [
-        { id: 'product',   cols: ['商品ID','商品名','規格・単位','仕入単価（円）','販売単価（円）','仕入先ID','最低在庫数','在庫管理','備考'] },
-        { id: 'supplier',  cols: ['仕入先ID','会社名','担当者','電話番号','メールアドレス','支払サイクル','備考'] },
-        { id: 'inbound',   cols: ['入庫ID','入庫日','商品ID','商品名（自動）','数量','仕入単価（自動）','仕入金額（自動）','仕入先ID','仕入先名（自動）','備考'] },
-        { id: 'outbound',  cols: ['出庫ID','出庫日','商品ID','商品名（自動）','数量','販売単価（自動）','売上金額（自動）','出庫先・販売先','備考'] },
-      ],
-      subjects: null,
-    },
-    shift: {
-      label: 'シフト・勤怠管理',
-      sheets: [
-        { id: 'employee', cols: ['従業員ID','氏名','フリガナ','雇用形態','時給（円）','所定労働時間/日','連絡先','入社日','備考'] },
-        { id: 'attend',   cols: ['記録ID','日付','従業員ID','氏名（自動）','出勤時間','退勤時間','休憩時間（h）','実働時間（自動）','所定労働時間（自動）','残業時間（自動）','備考'] },
-        { id: 'payroll',  cols: ['従業員ID','氏名（自動）','雇用形態（自動）','時給（自動）','実働時間合計','残業時間合計','基本給（自動）','残業代（自動）','支給合計（自動）','備考'] },
-      ],
-      subjects: null,
-    },
-  };
-
-  const schema = categorySchemas[category];
-  if (!schema) return null;
-
-  const sheetList = schema.sheets.map(s => `・${s.id}：${s.cols.join(' / ')}`).join('\n');
-
-  return `
-以下の業種・業務の情報をもとに、「${schema.label}」Excelテンプレートの列名とサンプルデータを業界用語に合わせてアレンジしてください。
-
-業種：${industry}
-担当：${position}
-困りごと：${q2Pain}
-
-【現在の列名と構成】
-${sheetList}
-${schema.subjects ? `科目の参考リスト：${schema.subjects}` : ''}
-
-JSONのみ返してください（前後の文章不要）:
-{
-  "industry_label": "この業界での呼び方（例：美容室、整体院、小売店）",
-  "sheets": [
-    {
-      "id": "シートID（上記のidと完全一致）",
-      "columns": ["アレンジ後の列名1", "列名2"],
-      "samples": [
-        ["サンプル行1の値1", "値2"],
-        ["サンプル行2の値1", "値2"]
-      ]
-    }
-  ]${schema.subjects ? `,\n  "subjects": ["科目1", "科目2"]` : ''}
-}
-
-ルール：
-・columnsの数は変えない（元の列数を厳守）
-・業界固有の用語に置き換える（例：「顧客」→「患者」「お客様」、「商品」→「施術」「メニュー」）
-・（自動）という補足はそのまま維持する
-・samplesは各シート2〜3行、実際の業務らしいリアルなデータにする
-・samplesの列数もcolumnsと同じ数にする
-`.trim();
-}
-
-// ── ヘルパー：AIデータからシート情報を取得 ────────────────
-function getSheet(arrangedData, id) {
-  if (!arrangedData || !arrangedData.sheets) return null;
-  return arrangedData.sheets.find(s => s.id === id) || null;
-}
-function getCols(arrangedData, id, defaults) {
-  const sheet = getSheet(arrangedData, id);
-  return (sheet && sheet.columns && sheet.columns.length === defaults.length)
-    ? sheet.columns : defaults;
-}
-function getSamples(arrangedData, id, defaults) {
-  const sheet = getSheet(arrangedData, id);
-  return (sheet && sheet.samples && sheet.samples.length > 0) ? sheet.samples : defaults;
-}
-
-// ── 共通Excelヘルパー ────────────────────────────────────
-function addGuideSheet(wb, label, sheetsInfo, linksInfo, acc) {
-  const ws = wb.addWorksheet('📋 使い方ガイド');
-  ws.properties.tabColor = { argb: 'FF' + acc };
-  ws.getColumn(1).width = 22; ws.getColumn(2).width = 36; ws.getColumn(3).width = 42;
-
-  const t = ws.addRow([label]);
-  ws.mergeCells(1,1,1,3); t.height = 32;
-  t.getCell(1).fill = XS.fill('FF'+acc);
-  t.getCell(1).font = { bold:true, size:16, color:{argb:XS.C.WHITE} };
-  t.getCell(1).alignment = { vertical:'middle' };
-  ws.addRow([]);
-
-  const h1 = ws.addRow(['シート名','役割','主な操作']);
-  h1.height = 22;
-  h1.eachCell({includeEmpty:true},(c,ci)=>{
-    if(ci>3)return;
-    c.fill=XS.fill('FF'+acc); c.font={bold:true,size:10,color:{argb:XS.C.WHITE}};
-    c.alignment={vertical:'middle'};
-  });
-  sheetsInfo.forEach((s,i)=>{
-    const r=ws.addRow(s); r.height=22;
-    if(i%2===0) r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=3)c.fill=XS.fill('FFEFF8F8');});
-    r.getCell(1).font={bold:true,size:10,color:{argb:'FF'+acc}};
-  });
-  ws.addRow([]);
-
-  const h2 = ws.addRow(['入力元','参照先','つながりの内容']);
-  h2.height = 22;
-  h2.eachCell({includeEmpty:true},(c,ci)=>{
-    if(ci>3)return;
-    c.fill=XS.fill('FF'+acc); c.font={bold:true,size:10,color:{argb:XS.C.WHITE}};
-    c.alignment={vertical:'middle'};
-  });
-  linksInfo.forEach((l,i)=>{
-    const r=ws.addRow(l); r.height=20;
-    if(i%2===0) r.eachCell({includeEmpty:true},(c,ci)=>{if(ci<=3)c.fill=XS.fill('FFEFF8F8');});
-    r.getCell(1).font={bold:true,size:10,color:{argb:'FF'+acc}};
-    r.getCell(2).font={bold:true,size:10,color:{argb:'FF'+acc}};
-  });
-  ws.addRow([]);
-  const note=ws.addRow(['💡 青字のセルは自動計算セルです。直接入力すると数式が消えるためご注意ください。']);
-  ws.mergeCells(note.number,1,note.number,3);
-  note.getCell(1).font={size:9,color:{argb:'FFE06930'},italic:true};
-}
-
-function addSheetHeader(wb, sheetName, title, note, acc) {
-  const ws = wb.addWorksheet(sheetName);
-  ws.properties.tabColor = { argb: 'FF'+acc };
-  const t = ws.addRow([title]);
-  ws.mergeCells(1,1,1,10); t.height=24;
-  t.getCell(1).font = { bold:true, size:13, color:{argb:'FF'+acc} };
-  if(note){
-    const n=ws.addRow([note]);
-    ws.mergeCells(2,1,2,10); n.height=16;
-    n.getCell(1).font={size:9,color:{argb:'FF888888'},italic:true};
-  }
-  return ws;
-}
-
-function addHeader(ws, cols, acc) {
-  const row = ws.addRow(cols);
-  row.height = 28;
-  row.eachCell({includeEmpty:true},(c,ci)=>{
-    if(ci>cols.length)return;
-    c.fill=XS.fill('FF'+acc); c.font={bold:true,size:10,color:{argb:XS.C.WHITE}};
-    c.alignment={horizontal:'center',vertical:'middle',wrapText:true};
-    c.border={bottom:{style:'thin',color:{argb:'FFCCCCCC'}}};
-  });
-  return row;
-}
-
-function addDataRows(ws, samples, numCols, altArgb) {
-  const alt = altArgb || 'FFEFF8F8';
-  samples.forEach((sample,i)=>{
-    const row=ws.addRow(sample); row.height=20;
-    const bg = i%2===0 ? alt : XS.C.WHITE;
-    row.eachCell({includeEmpty:true},(c,ci)=>{
-      if(ci>numCols)return;
-      c.fill=XS.fill(bg);
-      c.font={size:10,color:{argb:'FFAAAAAA'},italic:true};
-      c.border={bottom:{style:'thin',color:{argb:'FFDDDDDD'}}};
-    });
-  });
-  for(let r=0;r<20;r++){
-    const row=ws.addRow(Array(numCols).fill('')); row.height=20;
-    const bg=(samples.length+r)%2===0 ? alt : XS.C.WHITE;
-    row.eachCell({includeEmpty:true},(c,ci)=>{
-      if(ci>numCols)return;
-      c.fill=XS.fill(bg); c.font={size:10};
-      c.border={bottom:{style:'thin',color:{argb:'FFDDDDDD'}}};
-    });
-  }
-}
-
-async function wbToBlob(wb) {
-  const buffer = await wb.xlsx.writeBuffer();
-  return new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-}
-
-// ── 動的Excel生成メイン ────────────────────────────────────
-async function generateDynamicExcel(category, diagData) {
-  if(!category || category==='task' || category==='unknown') return null;
-
-  let arrangedData = null;
-  const prompt = buildExcelArrangePrompt(category, diagData);
-  if(prompt){
-    try{
-      const raw = await callAIForFlowchart(prompt);
-      const json = raw.replace(/```json|```/g,'').trim();
-      arrangedData = JSON.parse(json);
-    }catch(e){ console.warn('Excel列名アレンジ失敗、デフォルトで生成:', e); }
-  }
-
-  const gen = {
-    money:           genMoneyExcel,
-    customer_ledger: genCustomerLedgerExcel,
-    customer_member: genCustomerMemberExcel,
-    reservation:     genReservationExcel,
-    inventory:       genInventoryExcel,
-    shift:           genShiftExcel,
-  }[category];
-
-  if(!gen) return null;
-  try{ return await gen(arrangedData, diagData); }
-  catch(e){ console.error('Excel動的生成エラー:', e); return null; }
-}
-
-// ── ① お金・支払い管理 ──────────────────────────────────
-async function genMoneyExcel(ai, d) {
-  const wb=new ExcelJS.Workbook(), A='168788', ALT='FFE1F5EE';
-  const DC = {
-    csv_paste: ['日付','摘要（取引内容）','金額（円）※出金はマイナス','残高（円）','科目','備考'],
-    income_mgmt:['科目','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','年間合計'],
-    supplier:  ['取引先ID','取引先名','担当者','連絡先','支払サイクル','標準金額（円）','科目','備考'],
-    payment:   ['支払月','取引先名','科目','金額（円）','支払予定日','支払済フラグ','備考'],
-    invoice:   ['品目・内容','摘要','数量','単価（円）','金額（円）','備考'],
-    receipt:   ['請求書番号','請求先','請求金額（円）','請求日','支払期限','入金日','入金額（円）','差額（円）','状態','備考'],
-  };
-  const subjects=(ai&&ai.subjects)||['売上','その他収入','仕入','交通費','通信費','消耗品費','外注費','地代家賃','広告宣伝費','水道光熱費','雑費'];
-
-  addGuideSheet(wb,'① お金・支払い管理',
-    [['①CSVペースト','銀行・カードのCSVを貼る場所','日付・摘要・金額（出金はマイナス）・科目を入力'],
-     ['②収支管理','科目×月のマトリクスで自動集計','①の入力が完了すると自動更新'],
-     ['③取引先マスタ','定期的な支払先を登録','取引先名・支払サイクル・金額を入力'],
-     ['④支払管理','月締め支払一覧。取引先選択で金額自動入力','取引先を選ぶと科目・金額が自動参照'],
-     ['⑤請求書作成','PDF出力可能な請求書フォーム','品目・数量・単価を入力→金額自動計算'],
-     ['⑥入金確認','発行した請求書の入金状況を管理','請求書番号・金額・入金日を記録']],
-    [['①CSVペースト','②収支管理','科目列と日付列から月別・科目別で自動集計'],
-     ['③取引先マスタ','④支払管理','取引先名選択で科目・金額を自動参照'],
-     ['⑤請求書作成','⑥入金確認','請求情報を手動転記して入金状況を追跡']],A);
-
-  // ①CSVペースト
-  const w1=addSheetHeader(wb,'①CSVペースト','① CSVペースト　― 銀行・カードのCSVを貼り付けてください',
-    '※ 金額は入金プラス・出金マイナスで1列に入力。科目を選ぶと②収支管理に自動集計されます',A);
-  const c1=getCols(ai,'csv_paste',DC.csv_paste);
-  [14,40,20,14,16,24].forEach((w,i)=>w1.getColumn(i+1).width=w);
-  addHeader(w1,c1,A);
-  addDataRows(w1,getSamples(ai,'csv_paste',[
-    ['2026/06/01','振込入金',150000,500000,'売上',''],['2026/06/03','仕入引落し',-45000,455000,'仕入','']]),c1.length,ALT);
-
-  // ②収支管理
-  const w2=addSheetHeader(wb,'②収支管理','② 収支管理　― 科目×月の自動集計表','※ ①CSVペーストの科目・日付を入力すると自動更新されます',A);
-  w2.getColumn(1).width=20; for(let i=2;i<=15;i++) w2.getColumn(i).width=11;
-  addHeader(w2,getCols(ai,'income_mgmt',DC.income_mgmt),A);
-  subjects.forEach((s,i)=>{
-    const r=w2.addRow([s]); r.height=20;
-    if(i%2===0) r.getCell(1).fill=XS.fill(ALT);
-  });
-
-  // ③取引先マスタ
-  const w3=addSheetHeader(wb,'③取引先マスタ','③ 取引先マスタ　― 支払先を登録しておくと④支払管理で選択できます','',A);
-  const c3=getCols(ai,'supplier',DC.supplier);
-  [14,28,16,20,16,18,16,24].forEach((w,i)=>w3.getColumn(i+1).width=w);
-  addHeader(w3,c3,A);
-  addDataRows(w3,getSamples(ai,'supplier',[
-    ['T001','〇〇商事','山田','03-XXXX-XXXX','月末払い',50000,'仕入',''],['T002','△△サービス','','','月次払い',5500,'通信費','']]),c3.length,ALT);
-
-  // ④支払管理
-  const w4=addSheetHeader(wb,'④支払管理','④ 支払管理（月締め）　― 取引先を選ぶと金額・科目が自動入力されます','',A);
-  const c4=getCols(ai,'payment',DC.payment);
-  [12,28,16,16,16,14,24].forEach((w,i)=>w4.getColumn(i+1).width=w);
-  addHeader(w4,c4,A); addDataRows(w4,[],c4.length,ALT);
-
-  // ⑤請求書作成
-  const w5=addSheetHeader(wb,'⑤請求書作成','⑤ 請求書作成　― PDF出力可能な帳票フォームです',
-    '※ ファイル→エクスポート→PDFでそのまま出力できます',A);
-  w5.getColumn(1).width=16; w5.getColumn(2).width=40;
-  [['請求書番号','INV-001'],['発行日',''],['支払期限',''],['請求先',''],['件名','']].forEach(([l,v])=>{
-    const r=w5.addRow([l,v]); r.height=22;
-    r.getCell(1).fill=XS.fill('FFD6E4F7'); r.getCell(1).font={bold:true,size:10};
-  });
-  w5.addRow([]);
-  const c5=getCols(ai,'invoice',DC.invoice);
-  addHeader(w5,c5,A); addDataRows(w5,[],c5.length,ALT);
-
-  // ⑥入金確認
-  const w6=addSheetHeader(wb,'⑥入金確認','⑥ 入金確認　― 請求ごとの入金状況を管理します','',A);
-  const c6=getCols(ai,'receipt',DC.receipt);
-  [16,24,16,14,14,14,16,14,12,24].forEach((w,i)=>w6.getColumn(i+1).width=w);
-  addHeader(w6,c6,A); addDataRows(w6,[],c6.length,ALT);
-
-  return await wbToBlob(wb);
-}
-
-// ── ② 顧客管理（台帳型） ────────────────────────────────
-async function genCustomerLedgerExcel(ai, d) {
-  const wb=new ExcelJS.Workbook(), A='1C559A', ALT='FFD6E4F7';
-  const DC={
-    master:  ['顧客ID','氏名','フリガナ','電話番号','メールアドレス','住所','登録日','備考'],
-    purchase:['記録ID','日付','顧客ID','顧客名（自動）','商品名・サービス','数量','単価（円）','金額（円）','担当者','備考'],
-    analysis:['月','売上合計（円）','件数'],
-  };
-  addGuideSheet(wb,'【台帳型】顧客管理',
-    [['①顧客マスタ','基本情報を登録する台帳','顧客IDは変更しない'],
-     ['②購買記録','売上と顧客を紐づけて記録','顧客ID入力で氏名自動表示'],
-     ['③顧客カルテ','IDを入力すると履歴を表示','B3セルに顧客IDを入力'],
-     ['④売上分析','月別売上グラフと集計','②の入力が完了すると自動更新']],
-    [['①顧客マスタ','②購買記録','顧客IDをもとに氏名を自動参照'],
-     ['②購買記録','③顧客カルテ','顧客IDで購買履歴・累計金額を表示'],
-     ['②購買記録','④売上分析','日付と金額から月別売上を自動集計']],A);
-
-  const w1=addSheetHeader(wb,'①顧客マスタ','【台帳型】① 顧客マスタ','※ 顧客IDは変更しないでください',A);
-  const c1=getCols(ai,'master',DC.master);
-  [10,16,16,16,28,36,14,24].forEach((w,i)=>w1.getColumn(i+1).width=w);
-  addHeader(w1,c1,A);
-  addDataRows(w1,getSamples(ai,'master',[
-    ['C001','山田太郎','ヤマダタロウ','090-1234-5678','','','2026/01/10',''],
-    ['C002','鈴木花子','スズキハナコ','080-9876-5432','','','2026/02/15','常連']]),c1.length,ALT);
-
-  const w2=addSheetHeader(wb,'②購買記録','【台帳型】② 購買記録','※ 顧客IDを入力すると氏名が自動表示されます',A);
-  const c2=getCols(ai,'purchase',DC.purchase);
-  [10,13,10,16,24,8,14,14,14,20].forEach((w,i)=>w2.getColumn(i+1).width=w);
-  addHeader(w2,c2,A);
-  addDataRows(w2,getSamples(ai,'purchase',[
-    ['R001','2026/06/01','C001','','サービス名','1',5000,5000,'担当者',''],
-    ['R002','2026/06/10','C002','','サービス名','2',3000,6000,'担当者','']]),c2.length,ALT);
-
-  const w3=addSheetHeader(wb,'③顧客カルテ','【台帳型】③ 顧客カルテ','※ B3セルに顧客IDを入力すると基本情報と累計購買金額が表示されます',A);
-  w3.getColumn(1).width=16; w3.getColumn(2).width=40;
-  const ir=w3.addRow(['顧客ID','C001']); ir.height=28;
-  ir.getCell(1).fill=XS.fill('FF'+A); ir.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
-  ir.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
-  w3.addRow([]);
-  const n3=w3.addRow(['顧客IDを変更すると、②購買記録シートのデータから累計購買金額を自動集計します。']);
-  ws.mergeCells&&w3.mergeCells(n3.number,1,n3.number,2);
-  n3.getCell(1).font={size:9,color:{argb:'FFE06930'},italic:true};
-
-  const w4=addSheetHeader(wb,'④売上分析','【台帳型】④ 売上分析','※ ②購買記録の入力が完了すると自動集計されます',A);
-  const c4=getCols(ai,'analysis',DC.analysis);
-  [8,18,10].forEach((w,i)=>w4.getColumn(i+1).width=w);
-  addHeader(w4,c4,A);
-  ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'].forEach((m,i)=>{
-    const r=w4.addRow([m,'','']); r.height=20;
-    if(i%2===0) r.eachCell((c,ci)=>{if(ci<=3)c.fill=XS.fill(ALT);});
-    r.getCell(1).font={bold:true,size:10};
-  });
-  const tot=w4.addRow(['年間合計','','']); tot.height=24;
-  tot.eachCell((c,ci)=>{if(ci<=3){c.fill=XS.fill('FF'+A);c.font={bold:true,size:10,color:{argb:XS.C.WHITE}};}});
-
-  return await wbToBlob(wb);
-}
-
-// ── ③ 顧客管理（会員型） ────────────────────────────────
-async function genCustomerMemberExcel(ai, d) {
-  const wb=new ExcelJS.Workbook(), A='1C559A', ALT='FFD6E4F7';
-  const DC={
-    member: ['会員ID','氏名','フリガナ','電話番号','メールアドレス','プラン','月額（円）','開始日','ステータス','備考'],
-    csv:    ['日付','摘要（振込人名など）','金額（円）','残高（円）','備考'],
-    payment:['会員ID','氏名（自動）','プラン（自動）','請求金額（自動）','摘要キーワード','照合結果（自動）','入金金額（自動）','差額（自動）','状態','備考'],
-    plan:   ['プラン名','月額（円）','内容・特典','備考'],
-    analysis:['月','収入合計（円）','会員数'],
-  };
-  addGuideSheet(wb,'【会員型】顧客管理',
-    [['【会員】①会員マスタ','会員情報・プラン・ステータスを管理','退会者は自動で赤く色分け'],
-     ['【会員】②CSVペースト','金融機関の入金CSVを貼る場所','③引落し管理で自動照合される'],
-     ['【会員】③引落し管理','会員ごとの入金状況を照合・確認','対象月(B3)を入力すると自動照合'],
-     ['【会員】③プランマスタ','プラン名と月額を登録','①会員マスタのドロップダウンで選択可'],
-     ['【会員】④売上分析','月別会費収入とプラン別構成を確認','③の「済」データから自動集計']],
-    [['【会員】③プランマスタ','【会員】①会員マスタ','プランのドロップダウンと月額の自動参照'],
-     ['【会員】①会員マスタ','【会員】③引落し管理','会員IDで氏名・プラン・請求金額を自動参照'],
-     ['【会員】②CSVペースト','【会員】③引落し管理','摘要キーワードと対象月で入金データを自動照合'],
-     ['【会員】③引落し管理','【会員】④売上分析','「済」フラグから月別会費収入を集計']],A);
-
-  const w1=addSheetHeader(wb,'【会員】①会員マスタ','【会員型】① 会員マスタ','※ ステータス列で在籍/休会/退会を管理。退会者は自動で赤くなります',A);
-  const c1=getCols(ai,'member',DC.member);
-  [10,16,16,16,28,16,14,14,12,24].forEach((w,i)=>w1.getColumn(i+1).width=w);
-  addHeader(w1,c1,A);
-  addDataRows(w1,getSamples(ai,'member',[
-    ['M001','田中一郎','タナカイチロウ','090-1111-2222','','スタンダード',5000,'2026/01/01','在籍',''],
-    ['M002','山本二郎','ヤマモトジロウ','','','プレミアム',10000,'2026/02/01','休会','']]),c1.length,ALT);
-
-  const w2=addSheetHeader(wb,'【会員】②CSVペースト','【会員型】② CSVペースト','※ 金融機関の入金データを貼り付けてください。③引落し管理シートで自動照合されます',A);
-  const c2=getCols(ai,'csv',DC.csv);
-  [14,40,16,16,24].forEach((w,i)=>w2.getColumn(i+1).width=w);
-  addHeader(w2,c2,A);
-  addDataRows(w2,getSamples(ai,'csv',[
-    ['2026/06/25','タナカ イチロウ',5000,'',''],['2026/06/25','ヤマモト ジロウ',10000,'','']]),c2.length,ALT);
-
-  const w3=addSheetHeader(wb,'【会員】③引落し管理','【会員型】③ 引落し管理','※ B3セルに対象月を入力。②CSVと照合して入金状況を自動判定します',A);
-  w3.getColumn(1).width=14; w3.getColumn(2).width=14;
-  const mr=w3.addRow(['対象月','2026/06']); mr.height=28;
-  mr.getCell(1).fill=XS.fill('FF'+A); mr.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
-  mr.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
-  w3.addRow([]);
-  const c3=getCols(ai,'payment',DC.payment);
-  [12,16,16,16,20,16,16,14,14,20].forEach((w,i)=>w3.getColumn(i+1).width=w);
-  addHeader(w3,c3,A); addDataRows(w3,[],c3.length,ALT);
-
-  const w4=addSheetHeader(wb,'【会員】③プランマスタ','【会員型】③ プランマスタ','※ プラン名を登録すると①会員マスタのドロップダウンで選択できます',A);
-  const c4=getCols(ai,'plan',DC.plan);
-  [20,14,40,24].forEach((w,i)=>w4.getColumn(i+1).width=w);
-  addHeader(w4,c4,A);
-  addDataRows(w4,getSamples(ai,'plan',[
-    ['ライト',3000,'月2回利用可',''],['スタンダード',5000,'月4回利用可',''],['プレミアム',10000,'無制限','']]),c4.length,ALT);
-
-  const w5=addSheetHeader(wb,'【会員】④売上分析','【会員型】④ 売上分析','※ ③引落し管理の「済」データから自動集計されます',A);
-  const c5=getCols(ai,'analysis',DC.analysis);
-  [8,18,10].forEach((w,i)=>w5.getColumn(i+1).width=w);
-  addHeader(w5,c5,A);
-  ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'].forEach((m,i)=>{
-    const r=w5.addRow([m,'','']); r.height=20;
-    if(i%2===0) r.eachCell((c,ci)=>{if(ci<=3)c.fill=XS.fill(ALT);});
-    r.getCell(1).font={bold:true,size:10};
-  });
-
-  return await wbToBlob(wb);
-}
-
-// ── ④ 予約・スケジュール管理 ────────────────────────────
-async function genReservationExcel(ai, d) {
-  const wb=new ExcelJS.Workbook(), A='7B4F9E', ALT='FFEFE4F7';
-  const DC={
-    customer:['顧客ID','氏名','フリガナ','電話番号','メールアドレス','備考'],
-    booking: ['予約ID','日付','開始時間','終了時間','顧客ID','顧客名（自動）','メニュー','担当者','状態','備考'],
-  };
-  addGuideSheet(wb,'③ 予約・スケジュール管理',
-    [['①顧客マスタ','予約者の基本情報を登録','顧客IDは変更しない'],
-     ['②予約入力','日々の予約を記録する台帳','顧客ID入力で氏名自動表示'],
-     ['③カレンダー（月表示）','月単位で予約を俯瞰','B3に年月を入力すると自動更新'],
-     ['④時間帯表（日表示）','1日のスケジュールを確認','B3に日付を入力すると当日分を表示']],
-    [['①顧客マスタ','②予約入力','顧客IDをもとに氏名を自動参照'],
-     ['②予約入力','③カレンダー（月表示）','日付データから予約件数を月カレンダーに集計'],
-     ['②予約入力','④時間帯表（日表示）','日付・時間・担当者データを時間帯に表示']],A);
-
-  const w1=addSheetHeader(wb,'①顧客マスタ','① 顧客マスタ','※ 顧客IDは変更しないでください',A);
-  const c1=getCols(ai,'customer',DC.customer);
-  [10,16,16,16,28,30].forEach((w,i)=>w1.getColumn(i+1).width=w);
-  addHeader(w1,c1,A);
-  addDataRows(w1,getSamples(ai,'customer',[
-    ['C001','山田太郎','ヤマダタロウ','090-1234-5678','',''],['C002','鈴木花子','スズキハナコ','080-9876-5432','','常連']]),c1.length,ALT);
-
-  const w2=addSheetHeader(wb,'②予約入力','② 予約入力','※ 顧客ID入力で氏名が自動表示されます。キャンセル・変更は上書きで管理してください',A);
-  const c2=getCols(ai,'booking',DC.booking);
-  [10,13,12,12,10,16,20,14,12,24].forEach((w,i)=>w2.getColumn(i+1).width=w);
-  addHeader(w2,c2,A);
-  addDataRows(w2,getSamples(ai,'booking',[
-    ['R001','2026/06/10','10:00','11:00','C001','','メニュー名','担当者名','確定',''],
-    ['R002','2026/06/10','13:00','15:00','C002','','メニュー名','担当者名','仮予約','']]),c2.length,ALT);
-
-  // ③④ は説明シートとして追加
-  [['③カレンダー（月表示）','③ カレンダー（月表示）','※ B3セルに確認したい年月を入力（例：2026/06）。②予約入力のデータが自動反映されます'],
-   ['④時間帯表（日表示）','④ 時間帯表（日表示）','※ B3セルに確認したい日付を入力。②予約入力の当日分が時間帯ごとに表示されます']].forEach(([sn,t,n])=>{
-    const ws=addSheetHeader(wb,sn,t,n,A);
-    ws.getColumn(1).width=14; ws.getColumn(2).width=14;
-    const mr=ws.addRow(['確認月/日','2026/06']); mr.height=28;
-    mr.getCell(1).fill=XS.fill('FF'+A); mr.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
-    mr.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
-  });
-
-  return await wbToBlob(wb);
-}
-
-// ── ⑤ 在庫・仕入れ管理 ──────────────────────────────────
-async function genInventoryExcel(ai, d) {
-  const wb=new ExcelJS.Workbook(), A='548235', ALT='FFE2EFDA';
-  const DC={
-    product:  ['商品ID','商品名','規格・単位','仕入単価（円）','販売単価（円）','仕入先ID','最低在庫数','在庫管理','備考'],
-    supplier: ['仕入先ID','会社名','担当者','電話番号','メールアドレス','支払サイクル','備考'],
-    inbound:  ['入庫ID','入庫日','商品ID','商品名（自動）','数量','仕入単価（自動）','仕入金額（自動）','仕入先ID','仕入先名（自動）','備考'],
-    outbound: ['出庫ID','出庫日','商品ID','商品名（自動）','数量','販売単価（自動）','売上金額（自動）','出庫先・販売先','備考'],
-    stock:    ['商品ID（自動）','商品名（自動）','在庫管理','最低在庫数','入庫合計（自動）','出庫合計（自動）','現在庫数（自動）','状態（自動）','備考'],
-    stocktake:['商品ID（自動）','商品名（自動）','帳簿在庫（自動）','実在庫数（入力）','差異（自動）','差異コメント','確認済'],
-  };
-  addGuideSheet(wb,'⑤ 在庫・仕入れ管理',
-    [['①商品マスタ','商品・価格・在庫管理フラグを登録','「在庫管理」が管理するの商品のみアラート対象'],
-     ['②仕入先マスタ','仕入先情報を管理','③入庫管理と連動'],
-     ['③入庫管理','仕入れ・入荷を記録','商品ID入力で商品名・単価を自動参照'],
-     ['④出庫管理','販売・払出しを記録','商品ID入力で商品名・単価を自動参照'],
-     ['⑤在庫残高','入庫－出庫で現在庫を自動計算','在庫なし→赤・要発注→黄で色分け'],
-     ['⑥棚卸しシート','定期的な実在庫確認','帳簿在庫と実在庫の差異を自動計算']],
-    [['①商品マスタ','③入庫管理','商品IDで商品名・仕入単価を自動参照'],
-     ['①商品マスタ','④出庫管理','商品IDで商品名・販売単価を自動参照'],
-     ['①商品マスタ','⑤在庫残高','最低在庫数・管理フラグをアラート判定に使用'],
-     ['②仕入先マスタ','③入庫管理','仕入先IDで仕入先名を自動参照'],
-     ['③入庫管理','⑤在庫残高','商品ごとの入庫数合計を在庫残高に反映'],
-     ['④出庫管理','⑤在庫残高','商品ごとの出庫数合計を在庫残高に反映'],
-     ['⑤在庫残高','⑥棚卸しシート','帳簿在庫数を棚卸しシートに自動参照']],A);
-
-  const sheets=[
-    {id:'product', name:'①商品マスタ',title:'① 商品マスタ',note:'※「在庫管理」を「管理する」にした商品のみ⑤でアラートが表示されます',
-     widths:[12,24,14,16,16,12,14,14,24],
-     def_samples:[['P001','商品A','個',500,1200,'S001',10,'管理する',''],['P002','商品B','箱',2000,4500,'S001',5,'管理する',''],['P003','消耗品C','個',300,800,'S002',0,'管理しない','']]},
-    {id:'supplier',name:'②仕入先マスタ',title:'② 仕入先マスタ',note:'',
-     widths:[12,28,16,18,28,18,24],
-     def_samples:[['S001','〇〇商事','山田','03-XXXX-XXXX','','月末払い',''],['S002','△△卸売','鈴木','','','都度払い','']]},
-    {id:'inbound', name:'③入庫管理',title:'③ 入庫管理',note:'※ 商品IDを入力すると商品名・仕入単価・仕入先名が自動表示されます',
-     widths:[10,13,10,22,8,16,16,12,24,20],
-     def_samples:[['IN001','2026/06/01','P001','',50,'','','S001','',''],['IN002','2026/06/05','P002','',20,'','','S001','','']]},
-    {id:'outbound',name:'④出庫管理',title:'④ 出庫管理',note:'※ 商品IDを入力すると商品名・販売単価が自動表示されます',
-     widths:[10,13,10,22,8,16,16,24,20],def_samples:[]},
-    {id:'stock',   name:'⑤在庫残高',title:'⑤ 在庫残高',note:'※「管理する」商品のみアラート対象。在庫なし→赤、要発注→黄で自動色分けされます',
-     widths:[14,24,14,14,16,16,16,16,20],def_samples:[]},
-    {id:'stocktake',name:'⑥棚卸しシート',title:'⑥ 棚卸しシート',note:'※ 実在庫数を入力すると帳簿在庫との差異が自動計算されます',
-     widths:[14,24,16,16,14,24,10],def_samples:[]},
-  ];
-  sheets.forEach(s=>{
-    const ws=addSheetHeader(wb,s.name,s.title,s.note,A);
-    const cols=getCols(ai,s.id,DC[s.id]);
-    s.widths.forEach((w,i)=>ws.getColumn(i+1).width=w);
-    addHeader(ws,cols,A);
-    addDataRows(ws,getSamples(ai,s.id,s.def_samples),cols.length,ALT);
-  });
-
-  return await wbToBlob(wb);
-}
-
-// ── ⑦ シフト・勤怠管理 ──────────────────────────────────
-async function genShiftExcel(ai, d) {
-  const wb=new ExcelJS.Workbook(), A='A0522D', ALT='FFF5EDE6';
-  const DC={
-    employee:['従業員ID','氏名','フリガナ','雇用形態','時給（円）','所定労働時間/日','連絡先','入社日','備考'],
-    attend:  ['記録ID','日付','従業員ID','氏名（自動）','出勤時間','退勤時間','休憩時間（h）','実働時間（自動）','所定労働時間（自動）','残業時間（自動）','備考'],
-    payroll: ['従業員ID','氏名（自動）','雇用形態（自動）','時給（自動）','実働時間合計','残業時間合計','基本給（自動）','残業代（自動）','支給合計（自動）','備考'],
-  };
-  addGuideSheet(wb,'⑦ シフト・勤怠管理',
-    [['①従業員マスタ','従業員の基本情報・時給・所定労働時間を登録','従業員IDは変更しない'],
-     ['②シフト入力','月単位のシフト表を作成','B3に対象月を入力すると日付・曜日が自動生成'],
-     ['③勤怠記録','日々の出退勤時間を記録','実働時間・残業時間を自動計算'],
-     ['④給与計算','月次の給与を自動集計','B3に対象月を入力すると③から自動計算']],
-    [['①従業員マスタ','②シフト入力','従業員IDで氏名・雇用形態を参照'],
-     ['①従業員マスタ','③勤怠記録','従業員IDで氏名・時給・所定労働時間を参照'],
-     ['①従業員マスタ','④給与計算','従業員IDで時給・所定労働時間を参照'],
-     ['③勤怠記録','④給与計算','対象月の実働・残業時間から給与を自動計算']],A);
-
-  const w1=addSheetHeader(wb,'①従業員マスタ','① 従業員マスタ','※ 従業員IDは変更しないでください。②〜④のシートと紐づいています',A);
-  const c1=getCols(ai,'employee',DC.employee);
-  [12,16,16,14,12,18,18,14,20].forEach((w,i)=>w1.getColumn(i+1).width=w);
-  addHeader(w1,c1,A);
-  addDataRows(w1,getSamples(ai,'employee',[
-    ['E001','田中一郎','タナカイチロウ','正社員',1500,8.0,'090-1111-2222','2026/04/01',''],
-    ['E002','鈴木花子','スズキハナコ','パート',1100,4.0,'080-3333-4444','2026/01/15','']]),c1.length,ALT);
-
-  const w2=addSheetHeader(wb,'②シフト入力','② シフト入力',
-    '※ B3セルに対象月を入力すると日付・曜日が自動生成されます。○/×/有/半/特でドロップダウン入力',A);
-  w2.getColumn(1).width=14; w2.getColumn(2).width=14;
-  const mr2=w2.addRow(['対象月','2026/06']); mr2.height=28;
-  mr2.getCell(1).fill=XS.fill('FF'+A); mr2.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
-  mr2.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
-  w2.addRow([]);
-  const sn=w2.addRow(['対象月を変更するとシフト表の日付・曜日が自動更新されます。各セルに ○（出勤）/ ×（休み）/ 有（有休）/ 半（半休）/ 特（特休）を入力してください。']);
-  w2.mergeCells(sn.number,1,sn.number,4);
-  sn.getCell(1).font={size:9,color:{argb:'FFE06930'},italic:true};
-
-  const w3=addSheetHeader(wb,'③勤怠記録','③ 勤怠記録','※ 従業員IDを入力すると氏名が自動表示されます。実働・残業時間を自動計算します',A);
-  const c3=getCols(ai,'attend',DC.attend);
-  [10,13,12,16,12,12,14,16,18,16,20].forEach((w,i)=>w3.getColumn(i+1).width=w);
-  addHeader(w3,c3,A); addDataRows(w3,[],c3.length,ALT);
-
-  const w4=addSheetHeader(wb,'④給与計算','④ 給与計算',
-    '※ B3セルに対象月を入力。③勤怠記録から実働・残業時間を自動集計して給与を計算します',A);
-  w4.getColumn(1).width=14; w4.getColumn(2).width=14;
-  const mr4=w4.addRow(['対象月','2026/06']); mr4.height=28;
-  mr4.getCell(1).fill=XS.fill('FF'+A); mr4.getCell(1).font={bold:true,size:10,color:{argb:XS.C.WHITE}};
-  mr4.getCell(2).font={bold:true,size:12,color:{argb:'FF'+A}};
-  w4.addRow([]);
-  const c4=getCols(ai,'payroll',DC.payroll);
-  [12,16,14,12,14,14,16,16,16,20].forEach((w,i)=>w4.getColumn(i+1).width=w);
-  addHeader(w4,c4,A); addDataRows(w4,[],c4.length,ALT);
-
-  return await wbToBlob(wb);
-}
-
 // ── _generateZIPWithCategory を動的Excel対応版で上書き ────
 async function _generateZIPWithCategory(zip, diagData, route, category, hasChecklist, setMsg) {
   try {
@@ -4470,15 +3860,17 @@ async function _generateZIPWithCategory(zip, diagData, route, category, hasCheck
     await buildGuidePPTX(gPptx, diagData);
     zip.file('整理ガイド.pptx', await gPptx.write({outputType:'blob'}));
 
-    // ③ Excel動的生成（AI が業界用語にアレンジ）
+    // ③ Excelテンプレート配布（ルートBのみ）
     if (route === 'B' && category !== 'task') {
-      setMsg('📋 管理ファイルを生成中（業界用語にアレンジしています）...');
-      const excelBlob = await generateDynamicExcel(category, diagData);
+      setMsg('📋 管理ファイルを準備中...');
+      const excelBlob = await fetchExcelTemplate(category);
       if (excelBlob) zip.file('管理ファイル.xlsx', excelBlob);
     }
 
-    // ④ README
-    zip.file('README.txt', buildReadmeTxt(route, category));
+    // ④ README（AIが業界・業務に合わせて個別生成）
+    setMsg('📝 使い方ガイドを作成中...');
+    const readmeTxt = await buildReadmeTxtAI(route, category, diagData);
+    zip.file('README.txt', readmeTxt);
 
     // ⑤ ZIP ダウンロード
     setMsg('⬇ ダウンロードを準備中...');
@@ -4494,7 +3886,7 @@ async function _generateZIPWithCategory(zip, diagData, route, category, hasCheck
 }
 
 </script>
-//
+<script>
 // ════════════════════════════════════════════════════════════
 // STEP 3：既存コードへの追加・変更箇所
 // ════════════════════════════════════════════════════════════
@@ -4675,7 +4067,51 @@ function buildReadmeTxt(route, category) {
 }
 
 // ─────────────────────────────────────────────────────────
-// [追加] フォールバック D案：カテゴリ選択UI
+// AI生成README（業界・業務に合わせた使い方ガイド）
+// ─────────────────────────────────────────────────────────
+async function buildReadmeTxtAI(route, category, diagData) {
+  const base = buildReadmeTxt(route, category);
+
+  // ルートAまたはタスクカテゴリはAI生成なしでbaseを返す
+  if (route === 'A' || category === 'task' || category === 'unknown') return base;
+
+  const catLabels = {
+    'money':           'お金・支払い管理',
+    'customer_ledger': '顧客管理（台帳型）',
+    'customer_member': '顧客管理（会員型）',
+    'reservation':     '予約・スケジュール管理',
+    'inventory':       '在庫・仕入れ管理',
+    'shift':           'シフト・勤怠管理',
+  };
+  const catLabel = catLabels[category] || '業務管理';
+
+  const prompt = `
+以下の業種・業務情報をもとに、Excelテンプレート（${catLabel}）の活用ガイドを書いてください。
+
+業種：${diagData.industry}
+担当：${diagData.position}
+困りごと：${diagData.q2Pain}
+
+【出力形式】テキストのみ（マークダウン・記号不要）
+【文字数】200〜300文字
+【内容】
+・この業種での各シートの具体的な使い方（業界用語を使う）
+・最初に入力すべき項目
+・よくある使い方のコツ1〜2つ
+
+冒頭は「【あなたの業務向け　使い方のヒント】」で始めてください。
+`.trim();
+
+  try {
+    const raw = await callAIForFlowchart(prompt);
+    const aiGuide = raw.trim();
+    return base + '\n\n' + aiGuide + '\n';
+  } catch(e) {
+    console.warn('README AI生成失敗、標準版を使用:', e);
+    return base;
+  }
+}
+
 // ─────────────────────────────────────────────────────────
 
 function showCategorySelector(onSelect) {
